@@ -13,9 +13,6 @@
 
 #include "fp_msg_converter.hpp"
 
-namespace fp_common {
-namespace ros_io {
-
 FpMsgConverter::FpMsgConverter() : BaseConverter() {  // load imu antenna extrinsics
 }
 nav_msgs::Odometry FpMsgConverter::convert(const std::string& state) {
