@@ -24,6 +24,9 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "base_converter.hpp"
+#include "fp_msg_converter.hpp"
+
 enum INPUT_TYPE { tcp = 1, serial = 2 };
 
 class FixpositionOutput {
@@ -43,6 +46,8 @@ class FixpositionOutput {
     int client_fd_ = -1;  //!< TCP/IP socket
     int serial_fd_ = -1;  //!< Serial file descriptor
     struct termios options_save_;
+    char inbuf_[113];
+    size_t inbuf_used_ = 0;
 
     ros::Publisher odometry_pub_;
 

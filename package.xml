@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+    <name>fixposition_output</name>
+    <version>0.0.0</version>
+    <description>Fixposition Message Streaming via ROS</description>
+
+    <maintainer email="andreea.lutac@fixposition.ch">Andreea Lutac</maintainer>
+
+    <license>MIT</license>
+
+    <buildtool_depend>catkin</buildtool_depend>
+    <depend>roscpp</depend>
+    <depend>nav_msgs</depend>
+    <depend>std_msgs</depend>
+
+</package>

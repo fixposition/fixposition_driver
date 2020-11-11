@@ -30,7 +30,10 @@ FixpositionOutput::FixpositionOutput(ros::NodeHandle *nh, const OUTPUT_TYPE &typ
         if (serial_fd_ <= 0) {
             throw "Could not configure serial port.";
         }
+    } else{
+        throw "Unknown output type."
     }
+    
      if (!InitializeInputConverter()) {
         throw "Could not initialize output converter!";
     }
@@ -49,7 +52,88 @@ bool FixpositionOutput::InitializeInputConverter() {
     converter_->LoadParameters();
     return true;
 }
-void FixpositionOutput::Run() {}
+void FixpositionOutput::Run() {
+    ros::Rate rate(rate_);
+    int res_counter = 0;
+    bool ret;
+    while (ros::ok()) {
+        if (type_ == OUTPUT_TYPE::tcp) {
+            ret = TCPReadAndPublish();
+        } else if (type_ == OUTPUT_TYPE::serial) {
+            ret = SerialReadAndPublish();
+        }
+
+        if (!ret) {
+            if (res_counter > 10) {
+                ROS_FATAL("Too many connection or publishing failures. Exiting...");
+                return -1;
+            }
+            res_counter++;
+        }
+        ros::spinOnce();
+        rate.sleep();
+    }
+}
+
+bool FixpositionOutput::TCPReadAndPublish() {
+    size_t inbuf_remain = sizeof(inbuf_) - inbuf_used_;
+    if (inbuf_remain == 0) {
+        fprintf(stderr, "Line exceeded buffer length!\n");
+        abort();
+    }
+
+    ssize_t rv = recv(client_fd_, (void *)&inbuf[inbuf_used_], inbuf_remain, MSG_DONTWAIT);
+    if (rv == 0) {
+        fprintf(stderr, "Connection closed.\n");
+        abort();
+    }
+    if (rv < 0 && errno == EAGAIN) {
+        /* no data for now, call back when the socket is readable */
+        return false;
+    }
+    if (rv < 0) {
+        perror("Connection error");
+        abort();
+    }
+    inbuf_used_ += rv;
+
+    /* Scan for newlines in the line buffer; we're careful here to deal with embedded \0s
+     * an evil server may send, as well as only processing lines that are complete.
+     */
+    char *line_start = inbuf_;
+    char *line_end;
+    while ((line_end = (char *)memchr((void *)line_start, '\n', inbuf_used_ - (line_start - inbuf_)))) {
+        *line_end = 0;
+        std::string str_state = line_start;
+        nav_msgs::Odometry msg = converter_->convert(str_state);
+        odometry_pub_.publish(msg);
+        line_start = line_end + 1;
+    }
+    /* Shift buffer down so the unprocessed data is at the start */
+    inbuf_used_ -= (line_start - inbuf_);
+    memmove(innbuf_, line_start, inbuf_used_);
+    return true;
+}
+
+bool FixpositionOutput::SerialReadAndPublish() {
+    if (serial_fd_ >= 0) {
+        ssize_t rd = read(serial_fd_, inbuf_, 113);
+        if (rd >= 0) {
+            ROS_DEBUG_STREAM("Read " << rd << " bytes from fd " << serial_fd_);
+            inbuf_[rc] = '\0';
+            std::string str_state = inbuf_;
+            nav_msgs::Odometry msg = converter_->convert(str_state);
+            odometry_pub_.publish(msg);
+            return true;
+        } else {
+            ROS_ERROR_STREAM("No data read from fd " << serial_fd_);
+            return false;
+        }
+    } else {
+        ROS_FATAL("Serial file descriptor is not open.");
+        return false;
+    }
+}
 void FixpositionOutput::CreateTCPSocket(const int port, const std::string &ip) {
     const char *ip_address;
     int connection_status;
