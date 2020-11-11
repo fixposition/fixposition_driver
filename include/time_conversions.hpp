@@ -1,8 +1,30 @@
+/**
+ * @file time_conversions.hpp
+ * @author Andreea Lutac (andreea.lutac@fixposition.ch)
+ * @brief
+ * version 0.1
+ * @date 2020-11-11
+ *
+ * @copyright Copyright (c) 2020
+ *
+ */
+#ifndef TIME_CONVERSIONS
+#define TIME_CONVERSIONS
+
 #include <ros/duration.h>
 #include <ros/ros.h>
 #include <ros/time.h>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+using namespace boost::posix_time;
+
+#define GPS_LEAP_TIME_S \
+    18  // need to be incremented by 1 when another leap second is introduced in
+        // UTC
+#define SECONDS_PER_WEEK 604800
+#define SECONDS_PER_DAY 86400
+static const std::string unix_epoch_begin = "1970-01-01 00:00:00.000";
+static const std::string gps_epoch_begin = "1980-01-06 00:00:00.000";
 
 /**
  * @brief Time formatted as GPS week + seconds in week. Only time in this format
@@ -147,8 +169,10 @@ class GPSWeekSec {
  * @return ptime
  */
 static ptime GPSWeekSec2Ptime(GPSWeekSec gps_time) {
-    unsigned long long micro_s = (gps_time.gps_week * SEC_PER_WEEK + gps_time.gps_sec - GPS_LEAP_TIME_S) * 1e6;
+    unsigned long long micro_s = (gps_time.gps_week * SECONDS_PER_WEEK + gps_time.gps_sec - GPS_LEAP_TIME_S) * 1e6;
     ptime gps_start = time_from_string(gps_epoch_begin);
     return gps_start + microseconds(micro_s);
 }
 static ros::Time GPSWeekSec2RosTime(GPSWeekSec input) { return ros::Time::fromBoost(GPSWeekSec2Ptime(input)); }
+
+#endif

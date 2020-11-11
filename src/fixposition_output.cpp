@@ -11,45 +11,57 @@
 
 #include "fixposition_output.hpp"
 
-FixpositionOutput::FixpositionOutput(ros::NodeHandle *nh, const OUTPUT_TYPE &type) : nh_(*nh), type_(type) {
+FixpositionOutput::FixpositionOutput(ros::NodeHandle *nh, const INPUT_TYPE &type, const int rate)
+    : nh_(*nh), type_(type), rate_(rate) {
     nh_.param<std::string>("input_format", input_format_, "fp");
 
     // Get parameters: port (required)
-    nh_.param<std::string>("tcp_ip", tcp_address_, "192.168.49.1");
-    if (!nh_.getParam("input_port", input_port_){
+    nh_.param<std::string>("tcp_ip", tcp_ip_, "192.168.49.1");
+    if (!nh_.getParam("input_port", input_port_)) {
         throw "Missing parameter: input_port";
     }
-    if(type_==OUTPUT_TYPE::tcp){
-        CreateTCPSocket(input_port_, tcp_address_);
+    if (type_ == INPUT_TYPE::tcp) {
+        CreateTCPSocket(std::stoi(input_port_), tcp_ip_);
         if (client_fd_ <= 0) {
             throw "Could not open socket.";
         }
-    } else if(type_==OUTPUT_TYPE::serial){
+    } else if (type_ == INPUT_TYPE::serial) {
         nh_.param<int>("serial_baudrate", serial_baudrate_, 115200);
         CreateSerialConnection(input_port_.c_str(), serial_baudrate_);
         if (serial_fd_ <= 0) {
             throw "Could not configure serial port.";
         }
-    } else{
-        throw "Unknown output type."
+    } else {
+        throw "Unknown output type.";
     }
-    
-     if (!InitializeInputConverter()) {
+
+    if (!InitializeInputConverter()) {
         throw "Could not initialize output converter!";
     }
     odometry_pub_ = nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry", 100);
 }
 
-bool FixpositionOutput::InitializeInputConverter() {
-    switch (input_format_) {
-        case OUTPUT_FORMAT::FP:
-            converter_ = std::unique_ptr<FpMsgConverter>(new FpMsgConverter());
-            break;
-        default:
-            ROS_ERROR_STREAM("Unknown input format: " << input_format_);
-            break;
+FixpositionOutput::~FixpositionOutput() {
+    if (type_ == INPUT_TYPE::tcp) {
+        if (client_fd_ != -1) {
+            // Reset settings:
+            tcsetattr(client_fd_, TCSANOW, &options_save_);
+            close(client_fd_);
+        }
+    } else if (type_ == INPUT_TYPE::serial) {
+        if (serial_fd_ != -1) {
+            close(serial_fd_);
+        }
     }
-    converter_->LoadParameters();
+}
+
+bool FixpositionOutput::InitializeInputConverter() {
+    if (input_format_ == "fp") {
+        converter_ = std::unique_ptr<FpMsgConverter>(new FpMsgConverter());
+    } else {
+        ROS_ERROR_STREAM("Unknown input format: " << input_format_);
+        return false;
+    }
     return true;
 }
 void FixpositionOutput::Run() {
@@ -57,16 +69,16 @@ void FixpositionOutput::Run() {
     int res_counter = 0;
     bool ret;
     while (ros::ok()) {
-        if (type_ == OUTPUT_TYPE::tcp) {
+        if (type_ == INPUT_TYPE::tcp) {
             ret = TCPReadAndPublish();
-        } else if (type_ == OUTPUT_TYPE::serial) {
+        } else if (type_ == INPUT_TYPE::serial) {
             ret = SerialReadAndPublish();
         }
 
         if (!ret) {
             if (res_counter > 10) {
                 ROS_FATAL("Too many connection or publishing failures. Exiting...");
-                return -1;
+                ros::shutdown();
             }
             res_counter++;
         }
@@ -82,7 +94,7 @@ bool FixpositionOutput::TCPReadAndPublish() {
         abort();
     }
 
-    ssize_t rv = recv(client_fd_, (void *)&inbuf[inbuf_used_], inbuf_remain, MSG_DONTWAIT);
+    ssize_t rv = recv(client_fd_, (void *)&inbuf_[inbuf_used_], inbuf_remain, MSG_DONTWAIT);
     if (rv == 0) {
         fprintf(stderr, "Connection closed.\n");
         abort();
@@ -111,7 +123,7 @@ bool FixpositionOutput::TCPReadAndPublish() {
     }
     /* Shift buffer down so the unprocessed data is at the start */
     inbuf_used_ -= (line_start - inbuf_);
-    memmove(innbuf_, line_start, inbuf_used_);
+    memmove(inbuf_, line_start, inbuf_used_);
     return true;
 }
 
@@ -120,7 +132,7 @@ bool FixpositionOutput::SerialReadAndPublish() {
         ssize_t rd = read(serial_fd_, inbuf_, 113);
         if (rd >= 0) {
             ROS_DEBUG_STREAM("Read " << rd << " bytes from fd " << serial_fd_);
-            inbuf_[rc] = '\0';
+            inbuf_[rd] = '\0';
             std::string str_state = inbuf_;
             nav_msgs::Odometry msg = converter_->convert(str_state);
             odometry_pub_.publish(msg);
@@ -134,7 +146,8 @@ bool FixpositionOutput::SerialReadAndPublish() {
         return false;
     }
 }
-void FixpositionOutput::CreateTCPSocket(const int port, const std::string &ip) {
+
+bool FixpositionOutput::CreateTCPSocket(const int port, const std::string &ip) {
     const char *ip_address;
     int connection_status;
     struct sockaddr_in server_address;
@@ -142,7 +155,7 @@ void FixpositionOutput::CreateTCPSocket(const int port, const std::string &ip) {
 
     if (client_fd_ < 0) {
         std::cerr << "Error in client creation." << std::endl;
-        return -1;
+        return false;
     } else
         std::cout << "Client created." << std::endl;
 
@@ -159,7 +172,7 @@ void FixpositionOutput::CreateTCPSocket(const int port, const std::string &ip) {
     return true;
 }
 
-void FixpositionOutput::CreateSerialConnection(const char *name, int baudrate = 115200, int read_timeout_s = 5) {
+bool FixpositionOutput::CreateSerialConnection(const char *name, int baudrate = 115200, int read_timeout_s = 5) {
     serial_fd_ = open(name, O_RDWR | O_NOCTTY);
 
     struct termios options;
@@ -214,6 +227,7 @@ void FixpositionOutput::CreateSerialConnection(const char *name, int baudrate = 
     if (serial_fd_ == -1) {
         // Could not open the port.
         std::cerr << "Failed to open serial port " << strerror(errno) << std::endl;
+        return false;
     } else {
         // Get current serial port options:
         tcgetattr(serial_fd_, &options);
@@ -231,4 +245,5 @@ void FixpositionOutput::CreateSerialConnection(const char *name, int baudrate = 
         cfsetospeed(&options, speed); /* baud rate */
         tcsetattr(serial_fd_, TCSANOW, &options);
     }
+    return true;
 }

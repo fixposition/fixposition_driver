@@ -8,6 +8,10 @@
  * @copyright Copyright (c) 2020
  *
  */
+
+#ifndef FIXPOSITION_OUTPUT
+#define FIXPOSITION_OUTPUT
+
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -31,18 +35,23 @@ enum INPUT_TYPE { tcp = 1, serial = 2 };
 
 class FixpositionOutput {
    public:
-    FixpositionOutput(ros::NodeHandle* nh, const INPUT_TYPE& type);
+    FixpositionOutput(ros::NodeHandle* nh, const INPUT_TYPE& type, const int rate);
     ~FixpositionOutput();
     bool InitializeInputConverter();
-    void CreateTCPSocket(const int port, const std::string& ip);
-    void CreateSerialConnection(const char* name, int baudrate = 115200, int read_timeout_s = 5);
+    bool TCPReadAndPublish();
+    bool SerialReadAndPublish();
+    bool CreateTCPSocket(const int port, const std::string& ip);
+    bool CreateSerialConnection(const char* name, int baudrate = 115200, int read_timeout_s = 5);
     void Run();
 
    private:
     ros::NodeHandle nh_;
-    INPUT_TYPE type;
+    int rate_;
+    INPUT_TYPE type_;
+    std::string input_format_;
     std::string tcp_ip_;
-    int input_port_;
+    std::string input_port_;
+    int serial_baudrate_;
     int client_fd_ = -1;  //!< TCP/IP socket
     int serial_fd_ = -1;  //!< Serial file descriptor
     struct termios options_save_;
@@ -52,4 +61,6 @@ class FixpositionOutput {
     ros::Publisher odometry_pub_;
 
     std::unique_ptr<BaseConverter> converter_;
-}
+};
+
+#endif

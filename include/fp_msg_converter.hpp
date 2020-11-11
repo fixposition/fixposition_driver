@@ -11,8 +11,8 @@
  * @date 2020-08-10
  *
  */
-#ifndef FP_COMMON_ROS_OUTPUT_CONVERTER_FPMSGCONVERTER
-#define FP_COMMON_ROS_OUTPUT_CONVERTER_FPMSGCONVERTER
+#ifndef FP_MSGCONVERTER
+#define FP_MSGCONVERTER
 
 #include "base_converter.hpp"
 #include "time_conversions.hpp"
@@ -36,4 +36,4 @@ class FpMsgConverter : public BaseConverter {
     nav_msgs::Odometry convert(const std::string& state) override;
 };
 
-#endif  // FP_COMMON_ROS_OUTPUT_CONVERTER_FPMSGCONVERTER
+#endif  // FP_MSGCONVERTER

@@ -13,15 +13,14 @@
 
 #include "fp_msg_converter.hpp"
 
-FpMsgConverter::FpMsgConverter() : BaseConverter() {  // load imu antenna extrinsics
-}
+FpMsgConverter::FpMsgConverter() : BaseConverter() {}
 nav_msgs::Odometry FpMsgConverter::convert(const std::string& state) {
     nav_msgs::Odometry msg;
 
     if (!state.empty()) {
         std::size_t star = state.find_last_of("*");
         std::string state_data = state.substr(0, star);
-        std::string state_data = state_data.erase(0);
+        state_data = state_data.erase(0);
 
         unsigned int checksum = std::stoul(state.substr(star + 1, 2), nullptr, 16);
         bool ret = verify_checksum(state_data, checksum);
@@ -39,18 +38,18 @@ nav_msgs::Odometry FpMsgConverter::convert(const std::string& state) {
         }
         GPSWeekSec weeksec(std::stoi(tokens[1]), std::stod(tokens[2]));
         msg.header.stamp = GPSWeekSec2RosTime(weeksec);
-        msg.pose.pose.position.x = if (tokens[3].empty()) 0 : std::stod(tokens[3]);
-        msg.pose.pose.position.y = if (tokens[4].empty()) 0 : std::stod(tokens[4]);
-        msg.pose.pose.position.z = if (tokens[5].empty()) 0 : std::stod(tokens[5]);
+        msg.pose.pose.position.x = tokens[3].empty() ? 0 : std::stod(tokens[3]);
+        msg.pose.pose.position.y = tokens[4].empty() ? 0 : std::stod(tokens[4]);
+        msg.pose.pose.position.z = tokens[5].empty() ? 0 : std::stod(tokens[5]);
 
-        msg.twist.twist.linear.x = if (tokens[6].empty()) 0 : std::stod(tokens[6]);
-        msg.twist.twist.linear.y = if (tokens[7].empty()) 0 : std::stod(tokens[7]);
-        msg.twist.twist.linear.z = if (tokens[8].empty()) 0 : std::stod(tokens[8]);
+        msg.twist.twist.linear.x = tokens[6].empty() ? 0 : std::stod(tokens[6]);
+        msg.twist.twist.linear.y = tokens[7].empty() ? 0 : std::stod(tokens[7]);
+        msg.twist.twist.linear.z = tokens[8].empty() ? 0 : std::stod(tokens[8]);
 
-        msg.pose.pose.orientation.w = if (tokens[9].empty()) 0 : std::stod(tokens[9]);
-        msg.pose.pose.orientation.x = if (tokens[10].empty()) 0 : std::stod(tokens[10]);
-        msg.pose.pose.orientation.y = if (tokens[11].empty()) 0 : std::stod(tokens[11]);
-        msg.pose.pose.orientation.z = if (tokens[12].empty()) 0 : std::stod(tokens[12]);
+        msg.pose.pose.orientation.w = tokens[9].empty() ? 0 : std::stod(tokens[9]);
+        msg.pose.pose.orientation.x = tokens[10].empty() ? 0 : std::stod(tokens[10]);
+        msg.pose.pose.orientation.y = tokens[11].empty() ? 0 : std::stod(tokens[11]);
+        msg.pose.pose.orientation.z = tokens[12].empty() ? 0 : std::stod(tokens[12]);
     } else {
         ROS_ERROR_STREAM("State message empty!");
     }

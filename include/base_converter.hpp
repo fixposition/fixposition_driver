@@ -11,13 +11,10 @@
  * @details
  */
 
-#ifndef ROS_OUTPUTCONVERTER
-#define ROS_OUTPUTCONVERTER
+#ifndef ROS_BASECONVERTER
+#define ROS_BASECONVERTER
 
 #include <nav_msgs/Odometry.h>
-
-#include <fp_common_datatypes/datatypes.hpp>
-#include <fp_common_io/format_utils.hpp>
 
 #include "time_conversions.hpp"
 
@@ -55,13 +52,12 @@ class BaseConverter {
     }
 
     static void split_message(const std::string& msg, const std::string& delim, std::vector<std::string>* tokens) {
-        std::vector<std::string> tokens;
         size_t pos = 0;
         size_t newpos;
-        while (pos != string::npos) {
+        while (pos != std::string::npos) {
             newpos = msg.find_first_of(delim, pos);
             tokens->push_back(msg.substr(pos, newpos - pos));
-            if (pos != string::npos) pos++;
+            if (pos != std::string::npos) pos++;
         }
     }
 };

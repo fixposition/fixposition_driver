@@ -4,6 +4,7 @@ cmake_minimum_required (VERSION 2.8.1)
 PROJECT(fixposition_output)
 set(CMAKE_CXX_STANDARD 14)
 
+find_package(Boost 1.66.0 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   nav_msgs
@@ -18,7 +19,7 @@ catkin_package(
 )
 
 ######## Build and include settings ########
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")
@@ -30,9 +31,11 @@ add_executable(
 	fixposition_output
   src/fixposition_output_node.cpp
   src/fixposition_output.cpp
+  src/fp_msg_converter.cpp
+
 )
 
-target_link_libraries(fixposition_output ${catkin_LIBRARIES} pthread)
+target_link_libraries(fixposition_output ${catkin_LIBRARIES} ${Boost_LIBRARIES} pthread)
 
 install(DIRECTORY include/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
@@ -46,7 +49,6 @@ install(TARGETS fixposition_output
 
 install(DIRECTORY
   "launch"
-  "config"
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
