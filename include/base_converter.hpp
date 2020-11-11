@@ -14,11 +14,8 @@
 #ifndef ROS_OUTPUTCONVERTER
 #define ROS_OUTPUTCONVERTER
 
-#include <eigen_conversions/eigen_msg.h>
 #include <nav_msgs/Odometry.h>
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Geometry>
 #include <fp_common_datatypes/datatypes.hpp>
 #include <fp_common_io/format_utils.hpp>
 

@@ -18,7 +18,7 @@ catkin_package(
 )
 
 ######## Build and include settings ########
-include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
+include_directories(include ${catkin_INCLUDE_DIRS})
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")

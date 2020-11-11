@@ -17,14 +17,6 @@
 #include "base_converter.hpp"
 #include "time_conversions.hpp"
 
-// ros msgs
-#include <eigen_conversions/eigen_msg.h>
-#include <geometry_msgs/Vector3.h>
-#include <std_msgs/Bool.h>
-#include <std_msgs/Float64MultiArray.h>
-#include <std_msgs/Int32.h>
-#include <std_msgs/String.h>
-
 class FpMsgConverter : public BaseConverter {
    public:
     /**
