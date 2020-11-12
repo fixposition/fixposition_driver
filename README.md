@@ -6,7 +6,11 @@ It currently only supports parsing of messages in the following format:
 
 `$FP,GPS_WEEK,GPS_SEC,x,y,z,x_vel,y_vel,z_vel,w_quat,x_quat,y_quat,z_quat,STATUS,VERSION*CHK`
 
-To install the node, download this code to your catkin workspace's `src` folder and build it with catkin build. **Note** that this package depends on Boost 1.66 or higher.
+To install the node, download this code to your catkin workspace's `src` folder and build it with:
+
+`catkin build`
+
+ **Note** that this package depends on Boost 1.66 or higher.
 
 To launch the node (in serial mode, for instance), run:
 
