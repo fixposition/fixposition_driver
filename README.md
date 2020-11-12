@@ -1,10 +1,10 @@
 # FP Message Converter
 
-This converter operates as a ROS node, connecting to either TCP or serial stream of Fixposition output data and publishing the state messages as nav_msgs::Odometry messages.
+This converter operates as a ROS node, connecting to either a TCP or serial stream of Fixposition output data and publishing the state messages as nav_msgs::Odometry messages.
 
 It currently only supports parsing of messages in the following format:
 
-`$FP,GPS_WEEK,GPS_SEC,x,y,z,x_vel,y_vel,z_vel,w_quat,x_quat,y_quat,z_quat,STATUS,*CHK`
+`$FP,GPS_WEEK,GPS_SEC,x,y,z,x_vel,y_vel,z_vel,w_quat,x_quat,y_quat,z_quat,STATUS,VERSION*CHK`
 
 To install the node, download this code to your catkin workspace's `src` folder and build it with catkin build. **Note** that this package depends on Boost 1.66 or higher.
 
