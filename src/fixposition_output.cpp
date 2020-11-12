@@ -32,13 +32,13 @@ FixpositionOutput::FixpositionOutput(ros::NodeHandle *nh, const int rate) : nh_(
     }
     if (input_type_ == INPUT_TYPE::tcp) {
         if (!ros::param::get("~/tcp_ip", tcp_ip_)) tcp_ip_ = "192.168.49.1";
-        CreateTCPSocket(std::stoi(input_port_), tcp_ip_);
+        CreateTCPSocket();
         if (client_fd_ <= 0) {
             ROSFatalError("Could not open socket.");
         }
     } else if (input_type_ == INPUT_TYPE::serial) {
         if (!ros::param::get("~/serial_baudrate", serial_baudrate_)) serial_baudrate_ = 115200;
-        CreateSerialConnection(input_port_.c_str(), serial_baudrate_);
+        CreateSerialConnection();
         if (serial_fd_ <= 0) {
             ROSFatalError("Could not configure serial port.");
         }
@@ -83,45 +83,44 @@ bool FixpositionOutput::InitializeInputConverter() {
 void FixpositionOutput::Run() {
     ros::Rate rate(rate_);
     int res_counter = 0;
-    bool ret;
     while (ros::ok()) {
-        if (input_type_ == INPUT_TYPE::tcp) {
-            ret = TCPReadAndPublish();
-        } else if (input_type_ == INPUT_TYPE::serial) {
-            ret = SerialReadAndPublish();
-        }
-
-        if (!ret) {
-            if (res_counter > 10) {
-                ROS_FATAL("Too many connection or publishing failures. Exiting...");
-                ros::shutdown();
-            }
-            res_counter++;
-        }
+        bool ret = ReadAndPublish();
+        // if (!ret) {
+        //     if (res_counter > 10) {
+        //         ROS_FATAL("Too many connection or publishing failures. Exiting...");
+        //         ros::shutdown();
+        //     }
+        //     res_counter++;
+        // }
         ros::spinOnce();
         rate.sleep();
     }
 }
 
-bool FixpositionOutput::TCPReadAndPublish() {
+bool FixpositionOutput::ReadAndPublish() {
     size_t inbuf_remain = sizeof(inbuf_) - inbuf_used_;
     if (inbuf_remain == 0) {
-        fprintf(stderr, "Line exceeded buffer length!\n");
-        abort();
+        ROS_ERROR_STREAM("Line exceeded buffer length!");
+        return false;
     }
+    ssize_t rv;
+    if (input_type_ == INPUT_TYPE::tcp) {
+        rv = recv(client_fd_, (void *)&inbuf_[inbuf_used_], inbuf_remain, MSG_DONTWAIT);
 
-    ssize_t rv = recv(client_fd_, (void *)&inbuf_[inbuf_used_], inbuf_remain, MSG_DONTWAIT);
+    } else if (input_type_ == INPUT_TYPE::serial) {
+        rv = read(serial_fd_, (void *)&inbuf_[inbuf_used_], inbuf_remain);
+    }
     if (rv == 0) {
-        fprintf(stderr, "Connection closed.\n");
-        abort();
+        ROS_ERROR_STREAM("Connection closed.");
+        return false;
     }
     if (rv < 0 && errno == EAGAIN) {
         /* no data for now, call back when the socket is readable */
         return false;
     }
     if (rv < 0) {
-        perror("Connection error");
-        abort();
+        ROS_ERROR_STREAM("Connection error.");
+        return false;
     }
     inbuf_used_ += rv;
 
@@ -143,58 +142,41 @@ bool FixpositionOutput::TCPReadAndPublish() {
     return true;
 }
 
-bool FixpositionOutput::SerialReadAndPublish() {
-    if (serial_fd_ >= 0) {
-        ssize_t rd = read(serial_fd_, inbuf_, 113);
-        if (rd >= 0) {
-            ROS_DEBUG_STREAM("Read " << rd << " bytes from fd " << serial_fd_);
-            inbuf_[rd] = '\0';
-            std::string str_state = inbuf_;
-            nav_msgs::Odometry msg = converter_->convert(str_state);
-            odometry_pub_.publish(msg);
-            return true;
-        } else {
-            ROS_ERROR_STREAM("No data read from fd " << serial_fd_);
-            return false;
-        }
-    } else {
-        ROS_FATAL("Serial file descriptor is not open.");
-        return false;
-    }
-}
-
-bool FixpositionOutput::CreateTCPSocket(const int port, const std::string &ip) {
+bool FixpositionOutput::CreateTCPSocket() {
     const char *ip_address;
     int connection_status;
     struct sockaddr_in server_address;
     client_fd_ = socket(AF_INET, SOCK_STREAM, 0);
 
     if (client_fd_ < 0) {
-        std::cerr << "Error in client creation." << std::endl;
+        ROS_ERROR_STREAM("Error in client creation.");
         return false;
     } else
-        std::cout << "Client created." << std::endl;
+        ROS_INFO_STREAM("Client created.");
 
-    ip_address = ip.c_str();
+    ip_address = tcp_ip_.c_str();
 
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
-    server_address.sin_port = htons(port);
+    server_address.sin_port = htons(std::stoi(input_port_));
     server_address.sin_addr.s_addr = inet_addr(ip_address);
 
     connection_status = connect(client_fd_, (struct sockaddr *)&server_address, sizeof server_address);
 
-    if (connection_status != 0) return false;
+    if (connection_status != 0) {
+        ROS_ERROR_STREAM("Error on connection.");
+        return false;
+    }
     return true;
 }
 
-bool FixpositionOutput::CreateSerialConnection(const char *name, int baudrate = 115200, int read_timeout_s = 5) {
-    serial_fd_ = open(name, O_RDWR | O_NOCTTY);
+bool FixpositionOutput::CreateSerialConnection() {
+    serial_fd_ = open(input_port_.c_str(), O_RDWR | O_NOCTTY);
 
     struct termios options;
     speed_t speed;
 
-    switch (baudrate) {
+    switch (serial_baudrate_) {
         case 9600:
             speed = B9600;
             break;
@@ -233,7 +215,7 @@ bool FixpositionOutput::CreateSerialConnection(const char *name, int baudrate = 
 
         default:
             speed = B115200;
-            ROS_ERROR_STREAM("Unsupported baudrate: " << baudrate
+            ROS_ERROR_STREAM("Unsupported baudrate: " << serial_baudrate_
                                                       << "\n\tsupported examples:\n\t9600, "
                                                          "19200, "
                                                          "38400, "
@@ -256,7 +238,7 @@ bool FixpositionOutput::CreateSerialConnection(const char *name, int baudrate = 
         options.c_lflag &= ~(ISIG | ICANON | ECHO | ECHOE | ECHOK | ECHOCTL | ECHOKE | IEXTEN);
         options.c_cc[VEOL] = 0;
         options.c_cc[VMIN] = 0;
-        options.c_cc[VTIME] = read_timeout_s * 10;
+        options.c_cc[VTIME] = 50;
 
         cfsetospeed(&options, speed); /* baud rate */
         tcsetattr(serial_fd_, TCSANOW, &options);

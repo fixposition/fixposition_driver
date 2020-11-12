@@ -38,10 +38,9 @@ class FixpositionOutput {
     FixpositionOutput(ros::NodeHandle* nh, const int rate);
     ~FixpositionOutput();
     bool InitializeInputConverter();
-    bool TCPReadAndPublish();
-    bool SerialReadAndPublish();
-    bool CreateTCPSocket(const int port, const std::string& ip);
-    bool CreateSerialConnection(const char* name, int baudrate = 115200, int read_timeout_s = 5);
+    bool ReadAndPublish();
+    bool CreateTCPSocket();
+    bool CreateSerialConnection();
     void Run();
     static void ROSFatalError(const std::string& error);
 
@@ -56,7 +55,7 @@ class FixpositionOutput {
     int client_fd_ = -1;  //!< TCP/IP socket
     int serial_fd_ = -1;  //!< Serial file descriptor
     struct termios options_save_;
-    char inbuf_[113];
+    char inbuf_[FP_MSG_MAXLEN];
     size_t inbuf_used_ = 0;
 
     ros::Publisher odometry_pub_;

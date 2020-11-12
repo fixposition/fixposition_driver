@@ -16,6 +16,9 @@
 
 #include <nav_msgs/Odometry.h>
 
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
+
 #include "time_conversions.hpp"
 
 class BaseConverter {
@@ -42,23 +45,19 @@ class BaseConverter {
      * @return true or false if the checksums match
      */
     static bool verify_checksum(const std::string& value, unsigned int rec_checksum) {
+        ROS_DEBUG_STREAM(value << ": " << rec_checksum);
         int len = value.size();
         unsigned int checksum = 0x00;
         for (int i = 0; i < len; ++i) {
             checksum = checksum ^ (0xff & (unsigned int)value.at(i));
         }
+        ROS_DEBUG_STREAM("Computed checksum: " << checksum);
 
         return (rec_checksum == checksum);
     }
 
     static void split_message(const std::string& msg, const std::string& delim, std::vector<std::string>* tokens) {
-        size_t pos = 0;
-        size_t newpos;
-        while (pos != std::string::npos) {
-            newpos = msg.find_first_of(delim, pos);
-            tokens->push_back(msg.substr(pos, newpos - pos));
-            if (pos != std::string::npos) pos++;
-        }
+        boost::split(*tokens, msg, boost::is_any_of(delim));
     }
 };
 

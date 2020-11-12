@@ -1,12 +1,19 @@
 <launch>
     <node name="fp_output" pkg="fixposition_output" type="fixposition_output" output="screen" respawn="true" respawn_delay="5">
+        <!--Change input_type and input_port according to the type of input source:
+               tcp - data over TCP
+               serial - data over a serial port 
+            And according to the port used for reading. I.e.
+               21000 - TCP port
+               /dev/ttyUSB0 - serial port -->
+        <!-- The input_port is declared a string, but converted to int automatically in the case of TCP -->
         <param name="input_type" type="string" value="tcp" />
-        <param name="input_format" type="string" value="fp" />
-
-        <!--string type because it can also be used for serial (i.e. port /dev/ttyUSB0) -->
         <param name="input_port" type="string" value="21000" />
+
         <param name="tcp_ip" type="string" value="192.168.49.1" />
         <param name="serial_baudrate" type="int" value="115200" />
+        <param name="input_format" type="string" value="fp" />
+
     </node>
 </launch>
 

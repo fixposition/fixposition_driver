@@ -17,6 +17,8 @@
 #include "base_converter.hpp"
 #include "time_conversions.hpp"
 
+#define FP_MSG_MAXLEN 200
+
 class FpMsgConverter : public BaseConverter {
    public:
     /**
