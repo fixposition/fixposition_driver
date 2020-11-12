@@ -35,7 +35,7 @@ enum INPUT_TYPE { tcp = 1, serial = 2 };
 
 class FixpositionOutput {
    public:
-    FixpositionOutput(ros::NodeHandle* nh, const INPUT_TYPE& type, const int rate);
+    FixpositionOutput(ros::NodeHandle* nh, const int rate);
     ~FixpositionOutput();
     bool InitializeInputConverter();
     bool TCPReadAndPublish();
@@ -43,11 +43,12 @@ class FixpositionOutput {
     bool CreateTCPSocket(const int port, const std::string& ip);
     bool CreateSerialConnection(const char* name, int baudrate = 115200, int read_timeout_s = 5);
     void Run();
+    static void ROSFatalError(const std::string& error);
 
    private:
     ros::NodeHandle nh_;
     int rate_;
-    INPUT_TYPE type_;
+    INPUT_TYPE input_type_;
     std::string input_format_;
     std::string tcp_ip_;
     std::string input_port_;

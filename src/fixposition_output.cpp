@@ -11,48 +11,64 @@
 
 #include "fixposition_output.hpp"
 
-FixpositionOutput::FixpositionOutput(ros::NodeHandle *nh, const INPUT_TYPE &type, const int rate)
-    : nh_(*nh), type_(type), rate_(rate) {
-    nh_.param<std::string>("input_format", input_format_, "fp");
+FixpositionOutput::FixpositionOutput(ros::NodeHandle *nh, const int rate) : nh_(*nh), rate_(rate) {
+    std::string type;
+    if (!ros::param::get("~/input_type", type)) {
+        ROSFatalError("Missing parameter: input_type");
+    }
+    if (type == "tcp") {
+        input_type_ = INPUT_TYPE::tcp;
+    } else if (type == "serial") {
+        input_type_ = INPUT_TYPE::serial;
+    } else {
+        ROSFatalError("Unknown input type! Must be either tcp or serial.");
+    }
+
+    if (!ros::param::get("~/input_format", input_format_)) input_format_ = "fp";
 
     // Get parameters: port (required)
-    nh_.param<std::string>("tcp_ip", tcp_ip_, "192.168.49.1");
-    if (!nh_.getParam("input_port", input_port_)) {
-        throw "Missing parameter: input_port";
+    if (!ros::param::get("~/input_port", input_port_)) {
+        ROSFatalError("Missing parameter: input_port");
     }
-    if (type_ == INPUT_TYPE::tcp) {
+    if (input_type_ == INPUT_TYPE::tcp) {
+        if (!ros::param::get("~/tcp_ip", tcp_ip_)) tcp_ip_ = "192.168.49.1";
         CreateTCPSocket(std::stoi(input_port_), tcp_ip_);
         if (client_fd_ <= 0) {
-            throw "Could not open socket.";
+            ROSFatalError("Could not open socket.");
         }
-    } else if (type_ == INPUT_TYPE::serial) {
-        nh_.param<int>("serial_baudrate", serial_baudrate_, 115200);
+    } else if (input_type_ == INPUT_TYPE::serial) {
+        if (!ros::param::get("~/serial_baudrate", serial_baudrate_)) serial_baudrate_ = 115200;
         CreateSerialConnection(input_port_.c_str(), serial_baudrate_);
         if (serial_fd_ <= 0) {
-            throw "Could not configure serial port.";
+            ROSFatalError("Could not configure serial port.");
         }
     } else {
-        throw "Unknown output type.";
+        ROSFatalError("Unknown output type.");
     }
 
     if (!InitializeInputConverter()) {
-        throw "Could not initialize output converter!";
+        ROSFatalError("Could not initialize output converter!");
     }
     odometry_pub_ = nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry", 100);
 }
 
 FixpositionOutput::~FixpositionOutput() {
-    if (type_ == INPUT_TYPE::tcp) {
+    if (input_type_ == INPUT_TYPE::tcp) {
         if (client_fd_ != -1) {
             // Reset settings:
             tcsetattr(client_fd_, TCSANOW, &options_save_);
             close(client_fd_);
         }
-    } else if (type_ == INPUT_TYPE::serial) {
+    } else if (input_type_ == INPUT_TYPE::serial) {
         if (serial_fd_ != -1) {
             close(serial_fd_);
         }
     }
+}
+
+void FixpositionOutput::ROSFatalError(const std::string &error) {
+    ROS_ERROR_STREAM(error);
+    ros::shutdown();
 }
 
 bool FixpositionOutput::InitializeInputConverter() {
@@ -69,9 +85,9 @@ void FixpositionOutput::Run() {
     int res_counter = 0;
     bool ret;
     while (ros::ok()) {
-        if (type_ == INPUT_TYPE::tcp) {
+        if (input_type_ == INPUT_TYPE::tcp) {
             ret = TCPReadAndPublish();
-        } else if (type_ == INPUT_TYPE::serial) {
+        } else if (input_type_ == INPUT_TYPE::serial) {
             ret = SerialReadAndPublish();
         }
 
