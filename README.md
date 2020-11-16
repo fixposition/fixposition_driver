@@ -2,7 +2,7 @@
 
 This converter operates as a ROS node, connecting to either a TCP or serial stream of Fixposition output data and publishing the state messages as both nav_msgs::Odometry and fixpositon_output::VRTK messages.
 
-It currently only supports parsing of messages in the following format:
+It currently only supports parsing of input messages in the following format:
 
 `$FP,GPS_WEEK,GPS_SEC,x,y,z,x_vel,y_vel,z_vel,w_quat,x_quat,y_quat,z_quat,STATUS,VERSION*CHK`
 
@@ -35,7 +35,7 @@ uint16 gnss_status
 ```
 These can be interpreted as follows:
 
-| fusion_status | "Vision-Fusion Status" |
+| fusion_status | Vision-Fusion Status |
 | ------ | ------ |
 | 0 | Not Started |
 | 1 | Diverged |
