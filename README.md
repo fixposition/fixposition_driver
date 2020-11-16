@@ -1,6 +1,6 @@
 # FP Message Converter
 
-This converter operates as a ROS node, connecting to either a TCP or serial stream of Fixposition output data and publishing the state messages as nav_msgs::Odometry messages.
+This converter operates as a ROS node, connecting to either a TCP or serial stream of Fixposition output data and publishing the state messages as both nav_msgs::Odometry and fixpositon_output::VRTK messages.
 
 It currently only supports parsing of messages in the following format:
 
@@ -21,3 +21,41 @@ Or, in TCP mode:
 `roslaunch fixposition_output fp_output.launch input_type:=tcp input_port:=21000 tcp_ip:=192.168.49.1`
 
 All arguments are optional and have the default values specified in the previous examples. If no args are given, the node runs in TCP mode by default.
+
+The output is published on two topics:
+
+```
+/fixposition/odometry
+/fixposition/vrtk
+```
+For each message type, respectively. The VRTK message is a custom format that includes the odometry information plus two extra fields for the current Visions-Fusion and GNSS status flags:
+```
+uint16 fusion_status                        
+uint16 gnss_status
+```
+These can be interpreted as follows:
+
+| fusion_status | "Vision-Fusion Status" |
+| ------ | ------ |
+| 0 | Not Started |
+| 1 | Diverged |
+| 2 | Init |
+| 4 | "Dead-Reckoning" (No GNSS Measurement taken) | 
+| 5 | Initialized, pipeline running and giving output |
+
+
+| gnss_status | GNSS |
+| ------ | ------ |
+| 0 | Not Avail |
+| 1 | GNSS Single |
+| 2 | GNSS Float |
+| 3 | GNSS Fix |
+
+For Example:
+- **00** = nothing is running
+- **53** = best quality
+- **52** = Fusion quality is very good, GNSS is in Float
+- **42** = Fusion quality is very good, GNSS in Float, but rejected due to high covariance
+- **13** = GNSS is in Fix, but Fusion has diverged and is resetting
+
+If fusion_status <=3 then the output will be based on pure GNSS, else it's taking fused GNSS + other sensor measurements.
