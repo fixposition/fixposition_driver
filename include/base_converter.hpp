@@ -14,8 +14,6 @@
 #ifndef ROS_BASECONVERTER
 #define ROS_BASECONVERTER
 
-#include <nav_msgs/Odometry.h>
-
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
@@ -25,9 +23,8 @@ class BaseConverter {
    public:
     BaseConverter() {}
 
-    virtual nav_msgs::Odometry convert(const std::string& state) {
-        nav_msgs::Odometry empty;
-        return empty;
+    virtual void convertAndPublish(const std::string& state, ros::Publisher odometry_pub, ros::Publisher status_pub) {
+        return;
     }
 
     /**

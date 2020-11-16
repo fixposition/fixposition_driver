@@ -9,13 +9,27 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   nav_msgs
   std_msgs
+  geometry_msgs
+  message_generation
+)
+
+add_message_files(
+    FILES
+    VRTK.msg
+)
+
+generate_messages(
+    DEPENDENCIES
+    std_msgs
+    nav_msgs
+    geometry_msgs
 )
 
 catkin_package(
  INCLUDE_DIRS include
   CATKIN_DEPENDS 
-  roscpp 
-  nav_msgs std_msgs 
+  roscpp geometry_msgs
+  nav_msgs std_msgs message_runtime
 )
 
 ######## Build and include settings ########

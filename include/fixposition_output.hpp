@@ -15,6 +15,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <fixposition_output/VRTK.h>
 #include <nav_msgs/Odometry.h>
 #include <net/if.h>  //ifreq
 #include <netdb.h>
@@ -35,7 +36,7 @@ enum INPUT_TYPE { tcp = 1, serial = 2 };
 
 class FixpositionOutput {
    public:
-    FixpositionOutput(ros::NodeHandle* nh, const int rate);
+    FixpositionOutput(ros::NodeHandle* nh);
     ~FixpositionOutput();
     bool InitializeInputConverter();
     bool ReadAndPublish();
@@ -52,13 +53,13 @@ class FixpositionOutput {
     std::string tcp_ip_;
     std::string input_port_;
     int serial_baudrate_;
-    int client_fd_ = -1;  //!< TCP/IP socket
-    int serial_fd_ = -1;  //!< Serial file descriptor
+    int client_fd_ = -1;  //!< TCP or Serial file descriptor
     struct termios options_save_;
     char inbuf_[FP_MSG_MAXLEN];
     size_t inbuf_used_ = 0;
 
     ros::Publisher odometry_pub_;
+    ros::Publisher status_pub_;
 
     std::unique_ptr<BaseConverter> converter_;
 };

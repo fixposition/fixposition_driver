@@ -13,6 +13,8 @@
  */
 #ifndef FP_MSGCONVERTER
 #define FP_MSGCONVERTER
+#include <fixposition_output/VRTK.h>
+#include <nav_msgs/Odometry.h>
 
 #include "base_converter.hpp"
 #include "time_conversions.hpp"
@@ -35,7 +37,7 @@ class FpMsgConverter : public BaseConverter {
      * @param state state message as string
      * @return nav_msgs::Odometry message
      */
-    nav_msgs::Odometry convert(const std::string& state) override;
+    void convertAndPublish(const std::string& state, ros::Publisher odometry_pub, ros::Publisher status_pub) override;
 };
 
 #endif  // FP_MSGCONVERTER

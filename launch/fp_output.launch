@@ -11,6 +11,8 @@
     <arg name="input_format" default="fp"/>
     <arg name="tcp_ip" default="192.168.49.1"/>
     <arg name="serial_baudrate" default="115200"/>
+    <arg name="pub_rate" default="200"/>
+
 
     <node name="fp_output" pkg="fixposition_output" type="fixposition_output" output="screen" respawn="true" respawn_delay="5">
         <param name="input_type" type="string" value="$(arg input_type)" />
@@ -18,6 +20,8 @@
         <param name="input_format" type="string" value="$(arg input_format)" />
         <param name="tcp_ip" type="string" value="$(arg tcp_ip)" />
         <param name="serial_baudrate" type="int" value="$(arg serial_baudrate)" />
+        <param name="pub_rate" type="int" value="$(arg pub_rate)" />
+
 
     </node>
 </launch>
