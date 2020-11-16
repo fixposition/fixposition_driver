@@ -11,7 +11,9 @@
 
 #include "fixposition_output.hpp"
 
-FixpositionOutput::FixpositionOutput(ros::NodeHandle *nh, const int rate) : nh_(*nh), rate_(rate) {
+FixpositionOutput::FixpositionOutput(ros::NodeHandle *nh) : nh_(*nh) {
+    if (!ros::param::get("~/pub_rate", rate_)) rate_ = 200;
+
     std::string type;
     if (!ros::param::get("~/input_type", type)) {
         ROSFatalError("Missing parameter: input_type");
@@ -39,7 +41,7 @@ FixpositionOutput::FixpositionOutput(ros::NodeHandle *nh, const int rate) : nh_(
     } else if (input_type_ == INPUT_TYPE::serial) {
         if (!ros::param::get("~/serial_baudrate", serial_baudrate_)) serial_baudrate_ = 115200;
         CreateSerialConnection();
-        if (serial_fd_ <= 0) {
+        if (client_fd_ <= 0) {
             ROSFatalError("Could not configure serial port.");
         }
     } else {
@@ -50,19 +52,15 @@ FixpositionOutput::FixpositionOutput(ros::NodeHandle *nh, const int rate) : nh_(
         ROSFatalError("Could not initialize output converter!");
     }
     odometry_pub_ = nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry", 100);
+    status_pub_ = nh_.advertise<fixposition_output::VRTK>("/fixposition/vrtk", 100);
 }
 
 FixpositionOutput::~FixpositionOutput() {
-    if (input_type_ == INPUT_TYPE::tcp) {
-        if (client_fd_ != -1) {
-            // Reset settings:
+    if (client_fd_ != -1) {
+        if (input_type_ == INPUT_TYPE::serial) {
             tcsetattr(client_fd_, TCSANOW, &options_save_);
-            close(client_fd_);
         }
-    } else if (input_type_ == INPUT_TYPE::serial) {
-        if (serial_fd_ != -1) {
-            close(serial_fd_);
-        }
+        close(client_fd_);
     }
 }
 
@@ -84,14 +82,16 @@ void FixpositionOutput::Run() {
     ros::Rate rate(rate_);
     int res_counter = 0;
     while (ros::ok()) {
-        bool ret = ReadAndPublish();
-        // if (!ret) {
-        //     if (res_counter > 10) {
-        //         ROS_FATAL("Too many connection or publishing failures. Exiting...");
-        //         ros::shutdown();
-        //     }
-        //     res_counter++;
-        // }
+        if (client_fd_ > 0) {
+            bool ret = ReadAndPublish();
+            // if (!ret) {
+            //     if (res_counter > 10) {
+            //         ROS_FATAL("Too many connection or publishing failures. Exiting...");
+            //         ros::shutdown();
+            //     }
+            //     res_counter++;
+            // }
+        }
         ros::spinOnce();
         rate.sleep();
     }
@@ -108,7 +108,7 @@ bool FixpositionOutput::ReadAndPublish() {
         rv = recv(client_fd_, (void *)&inbuf_[inbuf_used_], inbuf_remain, MSG_DONTWAIT);
 
     } else if (input_type_ == INPUT_TYPE::serial) {
-        rv = read(serial_fd_, (void *)&inbuf_[inbuf_used_], inbuf_remain);
+        rv = read(client_fd_, (void *)&inbuf_[inbuf_used_], inbuf_remain);
     }
     if (rv == 0) {
         ROS_ERROR_STREAM("Connection closed.");
@@ -132,8 +132,7 @@ bool FixpositionOutput::ReadAndPublish() {
     while ((line_end = (char *)memchr((void *)line_start, '\n', inbuf_used_ - (line_start - inbuf_)))) {
         *line_end = 0;
         std::string str_state = line_start;
-        nav_msgs::Odometry msg = converter_->convert(str_state);
-        odometry_pub_.publish(msg);
+        converter_->convertAndPublish(str_state, odometry_pub_, status_pub_);
         line_start = line_end + 1;
     }
     /* Shift buffer down so the unprocessed data is at the start */
@@ -171,7 +170,7 @@ bool FixpositionOutput::CreateTCPSocket() {
 }
 
 bool FixpositionOutput::CreateSerialConnection() {
-    serial_fd_ = open(input_port_.c_str(), O_RDWR | O_NOCTTY);
+    client_fd_ = open(input_port_.c_str(), O_RDWR | O_NOCTTY);
 
     struct termios options;
     speed_t speed;
@@ -222,13 +221,13 @@ bool FixpositionOutput::CreateSerialConnection() {
                                                          "57600\t\n115200\n230400\n460800\n500000\n921600\n1000000");
     }
 
-    if (serial_fd_ == -1) {
+    if (client_fd_ == -1) {
         // Could not open the port.
         std::cerr << "Failed to open serial port " << strerror(errno) << std::endl;
         return false;
     } else {
         // Get current serial port options:
-        tcgetattr(serial_fd_, &options);
+        tcgetattr(client_fd_, &options);
         options_save_ = options;
         char speed_buf[10];
         snprintf(speed_buf, sizeof(speed_buf), "0%06o", (int)cfgetispeed(&options));
@@ -241,7 +240,7 @@ bool FixpositionOutput::CreateSerialConnection() {
         options.c_cc[VTIME] = 50;
 
         cfsetospeed(&options, speed); /* baud rate */
-        tcsetattr(serial_fd_, TCSANOW, &options);
+        tcsetattr(client_fd_, TCSANOW, &options);
     }
     return true;
 }

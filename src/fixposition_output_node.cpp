@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "fixposition_converter");
     ros::NodeHandle node_handle;
     ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
-    FixpositionOutput fixposition_out(&node_handle, 200);
+    FixpositionOutput fixposition_out(&node_handle);
     ROS_DEBUG("Starting node...");
     fixposition_out.Run();
     ros::waitForShutdown();

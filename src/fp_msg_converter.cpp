@@ -14,8 +14,10 @@
 #include "fp_msg_converter.hpp"
 
 FpMsgConverter::FpMsgConverter() : BaseConverter() {}
-nav_msgs::Odometry FpMsgConverter::convert(const std::string& state) {
-    nav_msgs::Odometry msg;
+void FpMsgConverter::convertAndPublish(const std::string& state, ros::Publisher odometry_pub,
+                                       ros::Publisher status_pub) {
+    nav_msgs::Odometry odom_msg;
+    fixposition_output::VRTK status_msg;
 
     if (!state.empty()) {
         std::size_t star = state.find_last_of("*");
@@ -26,7 +28,7 @@ nav_msgs::Odometry FpMsgConverter::convert(const std::string& state) {
         bool ret = verify_checksum(state_data, checksum);
         if (!ret) {
             ROS_DEBUG_STREAM("Checksum invalid! Odometry message will be empty.");
-            return msg;
+            return;
         } else {
             ROS_DEBUG_STREAM("Checksum valid.");
         }
@@ -39,31 +41,46 @@ nav_msgs::Odometry FpMsgConverter::convert(const std::string& state) {
 
         if (tokens.size() != 15) {
             ROS_DEBUG_STREAM("Error in parsing! Odometry message will be empty.");
-            return msg;
+            return;
         }
         if (!tokens[1].empty() && !tokens[2].empty()) {
             GPSWeekSec weeksec(std::stoi(tokens[1]), std::stod(tokens[2]));
-            msg.header.stamp = GPSWeekSec2RosTime(weeksec);
+            odom_msg.header.stamp = GPSWeekSec2RosTime(weeksec);
+            status_msg.header.stamp = GPSWeekSec2RosTime(weeksec);
+
         } else {
             ROS_DEBUG_STREAM("GPS time empty. Replacing with current ROS time.");
-            msg.header.stamp = ros::Time::now();
+            odom_msg.header.stamp = ros::Time::now();
+            status_msg.header.stamp = ros::Time::now();
         }
+        odom_msg.header.frame_id = status_msg.header.frame_id = "ECEF";
+        odom_msg.child_frame_id = status_msg.kin_frame = "ECEF";
 
-        msg.pose.pose.position.x = tokens[3].empty() ? 0 : std::stod(tokens[3]);
-        msg.pose.pose.position.y = tokens[4].empty() ? 0 : std::stod(tokens[4]);
-        msg.pose.pose.position.z = tokens[5].empty() ? 0 : std::stod(tokens[5]);
+        odom_msg.pose.pose.position.x = status_msg.pose.pose.position.x = tokens[3].empty() ? 0 : std::stod(tokens[3]);
+        odom_msg.pose.pose.position.y = status_msg.pose.pose.position.y = tokens[4].empty() ? 0 : std::stod(tokens[4]);
+        odom_msg.pose.pose.position.z = status_msg.pose.pose.position.z = tokens[5].empty() ? 0 : std::stod(tokens[5]);
 
-        msg.twist.twist.linear.x = tokens[6].empty() ? 0 : std::stod(tokens[6]);
-        msg.twist.twist.linear.y = tokens[7].empty() ? 0 : std::stod(tokens[7]);
-        msg.twist.twist.linear.z = tokens[8].empty() ? 0 : std::stod(tokens[8]);
+        odom_msg.twist.twist.linear.x = status_msg.velocity.twist.linear.x =
+            tokens[6].empty() ? 0 : std::stod(tokens[6]);
+        odom_msg.twist.twist.linear.y = status_msg.velocity.twist.linear.y =
+            tokens[7].empty() ? 0 : std::stod(tokens[7]);
+        odom_msg.twist.twist.linear.z = status_msg.velocity.twist.linear.z =
+            tokens[8].empty() ? 0 : std::stod(tokens[8]);
 
-        msg.pose.pose.orientation.w = tokens[9].empty() ? 0 : std::stod(tokens[9]);
-        msg.pose.pose.orientation.x = tokens[10].empty() ? 0 : std::stod(tokens[10]);
-        msg.pose.pose.orientation.y = tokens[11].empty() ? 0 : std::stod(tokens[11]);
-        msg.pose.pose.orientation.z = tokens[12].empty() ? 0 : std::stod(tokens[12]);
+        odom_msg.pose.pose.orientation.w = status_msg.pose.pose.orientation.w =
+            tokens[9].empty() ? 0 : std::stod(tokens[9]);
+        odom_msg.pose.pose.orientation.x = status_msg.pose.pose.orientation.x =
+            tokens[10].empty() ? 0 : std::stod(tokens[10]);
+        odom_msg.pose.pose.orientation.y = status_msg.pose.pose.orientation.y =
+            tokens[11].empty() ? 0 : std::stod(tokens[11]);
+        odom_msg.pose.pose.orientation.z = status_msg.pose.pose.orientation.z =
+            tokens[12].empty() ? 0 : std::stod(tokens[12]);
+        status_msg.fusion_status = tokens[13].size() == 2 ? tokens[13][0] - '0' : 0;
+        status_msg.gnss_status = tokens[13].size() == 2 ? tokens[13][1] - '0' : 0;
+        odometry_pub.publish(odom_msg);
+        status_pub.publish(status_msg);
+
     } else {
         ROS_ERROR_STREAM("State message empty! Not well parsed?");
     }
-
-    return msg;
 }
