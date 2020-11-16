@@ -40,7 +40,7 @@ These can be interpreted as follows:
 | 0 | Not Started |
 | 1 | Diverged |
 | 2 | Init |
-| 4 | "Dead-Reckoning" (No GNSS Measurement taken) | 
+| 4 | "Dead-Reckoning" (no GNSS measurement taken) | 
 | 5 | Initialized, pipeline running and giving output |
 
 
@@ -58,4 +58,4 @@ For Example:
 - **42** = Fusion quality is very good, GNSS in Float, but rejected due to high covariance
 - **13** = GNSS is in Fix, but Fusion has diverged and is resetting
 
-If fusion_status <=3 then the output will be based on pure GNSS, else it's taking fused GNSS + other sensor measurements.
+If fusion_status <=3 then the output will be based on pure GNSS, otherwise it relies on fused GNSS + other sensor measurements.
