@@ -46,7 +46,7 @@ These can be interpreted as follows:
 
 | gnss_status | GNSS |
 | ------ | ------ |
-| 0 | Not Avail |
+| 0 | N/A |
 | 1 | GNSS Single |
 | 2 | GNSS Float |
 | 3 | GNSS Fix |
