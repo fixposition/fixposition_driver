@@ -4,7 +4,7 @@
 
 **Dependencies:** Boost 1.66 or higher
 
-**Tested on:** Ubuntu 18.04, ROS Melodic
+**Tested on:** Ubuntu 18.04 with ROS Melodic
 
 This converter operates as a ROS node, connecting to either a TCP or serial stream of Fixposition output data and publishing the state messages as both nav_msgs::Odometry and fixpositon_output::VRTK messages.
 
@@ -15,6 +15,10 @@ It currently only supports parsing of input messages in the following format:
 To install the node, extract this code to your catkin workspace's `src` folder and build it with:
 
 `catkin build`
+
+Then source your development environment:
+
+`source devel/setup.bash`
 
 To launch the node (in serial mode, for instance), run:
 
