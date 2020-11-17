@@ -1,24 +1,26 @@
 # FP Message Converter
 
+**Version:** 1.0.0
+**Dependencies:** Boost 1.66 or higher
+**Tested on: ** Ubuntu 18.04, ROS Melodic
+
 This converter operates as a ROS node, connecting to either a TCP or serial stream of Fixposition output data and publishing the state messages as both nav_msgs::Odometry and fixpositon_output::VRTK messages.
 
 It currently only supports parsing of input messages in the following format:
 
 `$FP,GPS_WEEK,GPS_SEC,x,y,z,x_vel,y_vel,z_vel,w_quat,x_quat,y_quat,z_quat,STATUS,VERSION*CHK`
 
-To install the node, download this code to your catkin workspace's `src` folder and build it with:
+To install the node, extract this code to your catkin workspace's `src` folder and build it with:
 
 `catkin build`
 
- **Note** that this package depends on Boost 1.66 or higher.
-
 To launch the node (in serial mode, for instance), run:
 
-`roslaunch fixposition_output fp_output.launch input_type:=serial input_port:=/dev/ttyUSB0 serial_baudrate:=115200`
+`roslaunch fixposition_output fp_output.launch input_type:=serial input_port:=/dev/ttyUSB0 serial_baudrate:=115200 pub_rate:=200`
 
 Or, in TCP mode:
 
-`roslaunch fixposition_output fp_output.launch input_type:=tcp input_port:=21000 tcp_ip:=192.168.49.1`
+`roslaunch fixposition_output fp_output.launch input_type:=tcp input_port:=21000 tcp_ip:=192.168.49.1 pub_rate:=200`
 
 All arguments are optional and have the default values specified in the previous examples. If no args are given, the node runs in TCP mode by default.
 
@@ -39,7 +41,7 @@ These can be interpreted as follows:
 | ------ | ------ |
 | 0 | Not Started |
 | 1 | Diverged |
-| 2 | Init |
+| 2 | Initializing |
 | 4 | "Dead-Reckoning" (no GNSS measurement taken) | 
 | 5 | Initialized, pipeline running and giving output |
 
@@ -51,7 +53,7 @@ These can be interpreted as follows:
 | 2 | GNSS Float |
 | 3 | GNSS Fix |
 
-For Example:
+For example:
 - **00** = nothing is running
 - **53** = best quality
 - **52** = Fusion quality is very good, GNSS is in Float
