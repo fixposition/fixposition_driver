@@ -50,6 +50,7 @@ add_executable(
 )
 
 target_link_libraries(fixposition_output ${catkin_LIBRARIES} ${Boost_LIBRARIES} pthread)
+add_dependencies(fixposition_output fixposition_output_generate_messages_cpp)
 
 install(DIRECTORY include/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
