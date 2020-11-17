@@ -4,7 +4,7 @@
 
 **Dependencies:** Boost 1.66 or higher
 
-**Tested on: ** Ubuntu 18.04, ROS Melodic
+**Tested on:** Ubuntu 18.04, ROS Melodic
 
 This converter operates as a ROS node, connecting to either a TCP or serial stream of Fixposition output data and publishing the state messages as both nav_msgs::Odometry and fixpositon_output::VRTK messages.
 
