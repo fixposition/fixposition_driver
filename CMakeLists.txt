@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 2.8.1)
 PROJECT(fixposition_output)
 set(CMAKE_CXX_STANDARD 14)
 
-find_package(Boost 1.66.0 REQUIRED)
+find_package(Boost 1.65.0 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   nav_msgs
