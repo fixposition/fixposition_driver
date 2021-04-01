@@ -52,6 +52,8 @@ FixpositionOutput::FixpositionOutput(ros::NodeHandle *nh) : nh_(*nh) {
         ROSFatalError("Could not initialize output converter!");
     }
     odometry_pub_ = nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry", 100);
+    imu_pub_ = nh_.advertise<sensor_msgs::Imu>("/fixposition/imu", 100);
+    navsat_pub_ = nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/navsatfix", 100);
     status_pub_ = nh_.advertise<fixposition_output::VRTK>("/fixposition/vrtk", 100);
 }
 
@@ -132,7 +134,7 @@ bool FixpositionOutput::ReadAndPublish() {
     while ((line_end = (char *)memchr((void *)line_start, '\n', inbuf_used_ - (line_start - inbuf_)))) {
         *line_end = 0;
         std::string str_state = line_start;
-        converter_->convertAndPublish(str_state, odometry_pub_, status_pub_);
+        converter_->convertAndPublish(str_state, odometry_pub_, imu_pub_, navsat_pub_, status_pub_);
         line_start = line_end + 1;
     }
     /* Shift buffer down so the unprocessed data is at the start */

@@ -8,6 +8,7 @@ find_package(Boost 1.65.0 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   nav_msgs
+  sensor_msgs
   std_msgs
   geometry_msgs
   message_generation

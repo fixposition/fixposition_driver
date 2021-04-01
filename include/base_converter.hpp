@@ -23,7 +23,9 @@ class BaseConverter {
    public:
     BaseConverter() {}
 
-    virtual void convertAndPublish(const std::string& state, ros::Publisher odometry_pub, ros::Publisher status_pub) {
+    virtual void convertAndPublish(const std::string& state, const ros::Publisher& odometry_pub,
+                                   const ros::Publisher& imu_pub, const ros::Publisher& navsat_pub,
+                                   const ros::Publisher& status_pub) {
         return;
     }
 
