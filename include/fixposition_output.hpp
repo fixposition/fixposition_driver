@@ -22,6 +22,8 @@
 #include <netinet/in.h>
 #include <ros/console.h>
 #include <ros/ros.h>
+#include <sensor_msgs/Imu.h>
+#include <sensor_msgs/NavSatFix.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
@@ -58,8 +60,7 @@ class FixpositionOutput {
     char inbuf_[FP_MSG_MAXLEN];
     size_t inbuf_used_ = 0;
 
-    ros::Publisher odometry_pub_;
-    ros::Publisher status_pub_;
+    ros::Publisher odometry_pub_, imu_pub_, navsat_pub_, status_pub_;
 
     std::unique_ptr<BaseConverter> converter_;
 };
