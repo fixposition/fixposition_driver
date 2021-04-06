@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0
 
-**Dependencies:** Boost 1.66 or higher
+**Dependencies:** Boost 1.65 or higher
 
 **Tested on:** Ubuntu 18.04 with ROS Melodic
 
