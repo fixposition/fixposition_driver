@@ -33,10 +33,10 @@ All arguments are optional and have the default values specified in the previous
 The output is published on four topics:
 
 ```
-/fixposition/imu; type: sensor_msgs/Imu
-/fixposition/navsatfix; type: sensor_msgs/NavSatFix
-/fixposition/odometry; type: nav_msgs/Odometry
-/fixposition/vrtk; type: fixposition_output/VRTK
+/fixposition/imu (type: sensor_msgs/Imu)
+/fixposition/navsatfix (type: sensor_msgs/NavSatFix)
+/fixposition/odometry (type: nav_msgs/Odometry)
+/fixposition/vrtk (type: fixposition_output/VRTK)
 
 ```
 For each message type, respectively. The VRTK message is a custom format that includes the odometry information, plus IMU acceleration and the current Visions-Fusion and GNSS status flags:
