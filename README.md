@@ -68,7 +68,7 @@ These can be interpreted as follows:
 
 | imu_bias_status | IMU Bias Status |
 | ------ | ------ |
-| 0 | No Converged |
+| 0 | Not converged |
 | 1 | Converged |
 
 | gnss_status | GNSS |
