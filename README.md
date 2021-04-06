@@ -33,24 +33,43 @@ All arguments are optional and have the default values specified in the previous
 The output is published on two topics:
 
 ```
+/fixposition/imu
+/fixposition/navsatfix
 /fixposition/odometry
 /fixposition/vrtk
+
 ```
-For each message type, respectively. The VRTK message is a custom format that includes the odometry information plus two extra fields for the current Visions-Fusion and GNSS status flags:
+For each message type, respectively. The VRTK message is a custom format that includes the odometry information, plus IMU acceleration and the current Visions-Fusion and GNSS status flags:
 ```
-uint16 fusion_status                        
-uint16 gnss_status
+Header header
+string pose_frame                               # frame of the pose values [pose, quaternion]
+string kin_frame                                # frame of the kinematic values [linear/angular velocity, acceleration]
+geometry_msgs/PoseWithCovariance pose           # position, orientation
+geometry_msgs/TwistWithCovariance velocity      # linear, angular
+geometry_msgs/Vector3 acceleration              # linear acceleration
+
+uint16 fusion_status                            # field for the fusion status
+uint16 imu_bias_status                          # field for the IMU bias status
+uint16 gnss_status                              # field for the gnss status
+string version                                  # Fixposition software version
+
+
 ```
 These can be interpreted as follows:
 
 | fusion_status | Vision-Fusion Status |
 | ------ | ------ |
-| 0 | Not Started |
-| 1 | Diverged |
-| 2 | Initializing |
-| 4 | "Dead-Reckoning" (no GNSS measurement taken) | 
-| 5 | Initialized, pipeline running and giving output |
+| 0 | Not started, outputting position only based on pure gnss.
+| 1 | Reset triggered
+| 2 | Initializing
+| 3 | Single-side gnss initialization
+| 4 | Dead reckoning
+| 5 | GNSS fused, active
 
+| imu_bias_status | IMU Bias Status |
+| ------ | ------ |
+| 0 | No Converged |
+| 1 | Converged |
 
 | gnss_status | GNSS |
 | ------ | ------ |
@@ -59,11 +78,5 @@ These can be interpreted as follows:
 | 2 | GNSS Float |
 | 3 | GNSS Fix |
 
-For example:
-- **00** = nothing is running
-- **53** = best quality
-- **52** = Fusion quality is very good, GNSS is in Float
-- **42** = Fusion quality is very good, GNSS in Float, but rejected due to high covariance
-- **13** = GNSS is in Fix, but Fusion has diverged and is resetting
 
 If fusion_status <=3 then the output will be based on pure GNSS, otherwise it relies on fused GNSS + other sensor measurements.
