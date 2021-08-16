@@ -114,7 +114,7 @@ class GPSWeekSec {
         return res;
     }
 
-    bool operator==(const GPSWeekSec gws) { return abs(gps_sec - gws.gps_sec) < 1e-3 && gps_week == gws.gps_week; }
+    bool operator==(const GPSWeekSec gws) { return std::abs(gps_sec - gws.gps_sec) < 1e-3 && gps_week == gws.gps_week; }
 
     bool operator>(const GPSWeekSec gws) {
         if (gps_week == gws.gps_week) {
