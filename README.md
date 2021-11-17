@@ -1,6 +1,6 @@
 # FP Message Converter
 
-**Version:** 1.0.0
+**Version:** 2.0.0
 
 **Dependencies:** Boost 1.65 or higher
 
@@ -10,7 +10,7 @@ This converter operates as a ROS node, connecting to either a TCP or serial stre
 
 It currently only supports parsing of input messages in the following format:
 
-`$FP,GPS_WEEK,GPS_SEC,x,y,z,x_vel,y_vel,z_vel,w_quat,x_quat,y_quat,z_quat,STATUS,VERSION*CHK`
+`$FP,GPS_WEEK,GPS_SEC,x,y,z,w_quat,x_quat,y_quat,z_quat,x_lin_vel,y_lin_vel,z_lin_vel,x_ang_vel,y_ang_vel,z_ang_vel,x_acc,y_acc,z_acc,Flag1,Flag2,GNSS_Status,pos_cov_XX_YY_ZZ_XY_YZ_XZ,ang_cov_XX_YY_ZZ_XY_YZ_XZ,vel_cov_XX_YY_ZZ_XY_YZ_XZ,VERSION*CHK`
 
 To install the node, extract this code to your catkin workspace's `src` folder and build it with:
 
@@ -20,13 +20,17 @@ Then source your development environment:
 
 `source devel/setup.bash`
 
-To launch the node (in serial mode, for instance), run:
+To launch the node (in serial mode), run:
 
 `roslaunch fixposition_output fp_output.launch input_type:=serial input_port:=/dev/ttyUSB0 serial_baudrate:=115200 pub_rate:=200`
 
-Or, in TCP mode:
+In TCP mode (Wi-Fi):
 
-`roslaunch fixposition_output fp_output.launch input_type:=tcp input_port:=21000 tcp_ip:=192.168.49.1 pub_rate:=200`
+`roslaunch fixposition_output fp_output.launch input_type:=tcp input_port:=21000 tcp_ip:=10.0.1.1 pub_rate:=200`
+
+In TCP mode (Ethernet):
+
+`roslaunch fixposition_output fp_output.launch input_type:=tcp input_port:=21000 tcp_ip:=10.0.2.1 pub_rate:=200`
 
 All arguments are optional and have the default values specified in the previous examples. If no args are given, the node runs in TCP mode by default.
 
@@ -39,44 +43,34 @@ The output is published on four topics:
 /fixposition/vrtk (type: fixposition_output/VRTK)
 
 ```
-For each message type, respectively. The VRTK message is a custom format that includes the odometry information, plus IMU acceleration and the current Visions-Fusion and GNSS status flags:
-```
-Header header
-string pose_frame                               # frame of the pose values [pose, quaternion]
-string kin_frame                                # frame of the kinematic values [linear/angular velocity, acceleration]
-geometry_msgs/PoseWithCovariance pose           # position, orientation
-geometry_msgs/TwistWithCovariance velocity      # linear, angular
-geometry_msgs/Vector3 acceleration              # linear acceleration
-
-uint16 fusion_status                            # field for the fusion status
-uint16 imu_bias_status                          # field for the IMU bias status
-uint16 gnss_status                              # field for the gnss status
-string version                                  # Fixposition software version
 
 
-```
-These can be interpreted as follows:
+The flags can be interpreted as follows:
 
-| fusion_status | Vision-Fusion Status |
+| Flag 1 | Vision-Fusion Status |
 | ------ | ------ |
-| 0 | Not started, outputting position only based on pure gnss.
-| 1 | Reset triggered
-| 2 | Initializing
-| 3 | Single-side gnss initialization
-| 4 | Dead reckoning
-| 5 | GNSS fused, active
+| 0 | Not started |
+| 1 | Reserved |
+| 2 | Reserved |
+| 3 | Reserved |
+| 4 | VIO enabled |
 
-| imu_bias_status | IMU Bias Status |
+| Flag 2 | IMU Bias Status |
 | ------ | ------ |
 | 0 | Not converged |
 | 1 | Converged |
 
-| gnss_status | GNSS |
+| GNSS_Status | GNSS |
 | ------ | ------ |
-| 0 | N/A |
-| 1 | GNSS Single |
-| 2 | GNSS Float |
-| 3 | GNSS Fix |
+| 0 | Unknown fix |
+| 1 | No fix |
+| 2 | Dead-reckoning only fix |
+| 3 | Time only fix |
+| 4 | 2D fix |
+| 5 | 3D fix |
+| 6 | 3D + dead-reckoning fix |
+| 7 | RTK float fix |
+| 8 | RTK fixed fix |
 
 
 If fusion_status <=3 then the output will be based on pure GNSS, otherwise it relies on fused GNSS + other sensor measurements.
