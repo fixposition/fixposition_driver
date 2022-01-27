@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.8.1)
 
 ########+ Project settings ########
-PROJECT(fixposition_output)
+PROJECT(fixposition_driver)
 set(CMAKE_CXX_STANDARD 14)
 
 find_package(Boost 1.65.0 REQUIRED)
@@ -43,21 +43,23 @@ endforeach()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive") #-mfp16-format=ieee -pedantic
 
 add_executable(
-	fixposition_output
-  src/fixposition_output_node.cpp
-  src/fixposition_output.cpp
-  src/fp_msg_converter.cpp
-
+	${PROJECT_NAME}
+  src/fixposition_node.cpp
+  src/fixposition_driver.cpp
+  src/base_converter.cpp
+  src/fp_converter.cpp
+  src/llh_converter.cpp
+  src/helper.cpp
 )
 
-target_link_libraries(fixposition_output ${catkin_LIBRARIES} ${Boost_LIBRARIES} pthread)
-add_dependencies(fixposition_output fixposition_output_generate_messages_cpp)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} pthread)
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_generate_messages_cpp)
 
 install(DIRECTORY include/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 ## Mark executables and/or libraries for installation
-install(TARGETS fixposition_output
+install(TARGETS ${PROJECT_NAME}
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

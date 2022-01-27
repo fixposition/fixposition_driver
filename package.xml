@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package format="2">
-    <name>fixposition_output</name>
+    <name>fixposition_driver</name>
     <version>1.2.0</version>
-    <description>Fixposition Message Streaming via ROS</description>
+    <description>Fixposition ROS Driver</description>
 
-    <maintainer email="andreea.lutac@fixposition.ch">Andreea Lutac</maintainer>
+    <maintainer email="kailin.huang@fixposition.com">Kailin Huang</maintainer>
 
     <license>MIT</license>
 
@@ -16,7 +16,4 @@
     <depend>geometry_msgs</depend>
     <depend>message_generation</depend>
     <depend>message_runtime</depend>
-
-
-
 </package>

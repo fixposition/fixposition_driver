@@ -1,0 +1,4 @@
+input_formats: ["FP", "LLH"]
+input_type: serial
+rate: 200
+serial_baudrate: 115200

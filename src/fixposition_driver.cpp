@@ -1,44 +1,59 @@
 /**
- * @file fixposition_output.cpp
- * @author Andreea Lutac (andreea.lutac@fixposition.ch)
- * @brief
- * version 0.1
- * @date 2020-11-09
+ *  ___    ___
+ *  \  \  /  /
+ *   \  \/  /
+ *   /  /\  \
+ *  /__/  \__\  Fixposition AG
  *
- * @copyright Copyright (c) 2020
+ * @file fixposition_driver.cpp
+ * @author Kailin Huang (kailin.huang@fixposition.com)
+ * @brief
+ * @date 2022-01-26
  *
  */
 
-#include "fixposition_output.hpp"
+/* SYSTEM / STL */
 
-FixpositionOutput::FixpositionOutput(ros::NodeHandle *nh) : nh_(*nh) {
-    if (!ros::param::get("~/pub_rate", rate_)) rate_ = 200;
+/* EXTERNAL */
+
+/* ROS */
+
+/* PACKAGE */
+#include <fixposition_driver/converter/fp_converter.hpp>
+#include <fixposition_driver/converter/llh_converter.hpp>
+#include <fixposition_driver/fixposition_driver.hpp>
+#include <fixposition_driver/helper.hpp>
+
+namespace fixposition {
+FixpositionDriver::FixpositionDriver(ros::NodeHandle *nh) : nh_(*nh) {
+    // read parameters
+    if (!ros::param::get("~/rate", rate_)) rate_ = 100;
 
     std::string type;
     if (!ros::param::get("~/input_type", type)) {
         ROSFatalError("Missing parameter: input_type");
     }
     if (type == "tcp") {
-        input_type_ = INPUT_TYPE::tcp;
+        input_type_ = INPUT_TYPE::TCP;
     } else if (type == "serial") {
-        input_type_ = INPUT_TYPE::serial;
+        input_type_ = INPUT_TYPE::SERIAL;
     } else {
         ROSFatalError("Unknown input type! Must be either tcp or serial.");
     }
 
-    if (!ros::param::get("~/input_format", input_format_)) input_format_ = "fp";
+    if (!ros::param::get("~/input_formats", input_formats_)) input_formats_ = {"FP", "LLH"};
 
     // Get parameters: port (required)
     if (!ros::param::get("~/input_port", input_port_)) {
         ROSFatalError("Missing parameter: input_port");
     }
-    if (input_type_ == INPUT_TYPE::tcp) {
-        if (!ros::param::get("~/tcp_ip", tcp_ip_)) tcp_ip_ = "192.168.49.1";
+    if (input_type_ == INPUT_TYPE::TCP) {
+        if (!ros::param::get("~/tcp_ip", tcp_ip_)) tcp_ip_ = "10.0.1.1";
         CreateTCPSocket();
         if (client_fd_ <= 0) {
             ROSFatalError("Could not open socket.");
         }
-    } else if (input_type_ == INPUT_TYPE::serial) {
+    } else if (input_type_ == INPUT_TYPE::SERIAL) {
         if (!ros::param::get("~/serial_baudrate", serial_baudrate_)) serial_baudrate_ = 115200;
         CreateSerialConnection();
         if (client_fd_ <= 0) {
@@ -48,69 +63,57 @@ FixpositionOutput::FixpositionOutput(ros::NodeHandle *nh) : nh_(*nh) {
         ROSFatalError("Unknown output type.");
     }
 
-    if (!InitializeInputConverter()) {
+    // initialize converters
+    if (!InitializeConverters()) {
         ROSFatalError("Could not initialize output converter!");
     }
-    odometry_pub_ = nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry", 100);
-    imu_pub_ = nh_.advertise<sensor_msgs::Imu>("/fixposition/imu", 100);
-    navsat_pub_ = nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/navsatfix", 100);
-    status_pub_ = nh_.advertise<fixposition_output::VRTK>("/fixposition/vrtk", 100);
 }
 
-FixpositionOutput::~FixpositionOutput() {
+FixpositionDriver::~FixpositionDriver() {
     if (client_fd_ != -1) {
-        if (input_type_ == INPUT_TYPE::serial) {
+        if (input_type_ == INPUT_TYPE::SERIAL) {
             tcsetattr(client_fd_, TCSANOW, &options_save_);
         }
         close(client_fd_);
     }
 }
 
-void FixpositionOutput::ROSFatalError(const std::string &error) {
+void FixpositionDriver::ROSFatalError(const std::string &error) {
     ROS_ERROR_STREAM(error);
     ros::shutdown();
 }
 
-bool FixpositionOutput::InitializeInputConverter() {
-    if (input_format_ == "fp") {
-        converter_ = std::unique_ptr<FpMsgConverter>(new FpMsgConverter());
-    } else {
-        ROS_ERROR_STREAM("Unknown input format: " << input_format_);
-        return false;
+bool FixpositionDriver::InitializeConverters() {
+    for (const auto format : input_formats_) {
+        if (format == "FP") {
+            converters_["FP"] = std::unique_ptr<FpConverter>(new FpConverter(nh_));
+        } else if (format == "LLH") {
+            converters_["LLH"] = std::unique_ptr<LlhConverter>(new LlhConverter(nh_));
+        } else {
+            ROS_ERROR_STREAM("Unknown input format: " << format);
+        }
     }
-    return true;
+    return !converters_.empty();
 }
-void FixpositionOutput::Run() {
+void FixpositionDriver::Run() {
     ros::Rate rate(rate_);
     int res_counter = 0;
     while (ros::ok()) {
         if (client_fd_ > 0) {
             bool ret = ReadAndPublish();
-            // if (!ret) {
-            //     if (res_counter > 10) {
-            //         ROS_FATAL("Too many connection or publishing failures. Exiting...");
-            //         ros::shutdown();
-            //     }
-            //     res_counter++;
-            // }
         }
         ros::spinOnce();
         rate.sleep();
     }
 }
 
-bool FixpositionOutput::ReadAndPublish() {
-    size_t inbuf_remain = sizeof(inbuf_) - inbuf_used_;
-    if (inbuf_remain == 0) {
-        ROS_ERROR_STREAM("Line exceeded buffer length!");
-        return false;
-    }
+bool FixpositionDriver::ReadAndPublish() {
+    char readBuf[8192];
     ssize_t rv;
-    if (input_type_ == INPUT_TYPE::tcp) {
-        rv = recv(client_fd_, (void *)&inbuf_[inbuf_used_], inbuf_remain, MSG_DONTWAIT);
-
-    } else if (input_type_ == INPUT_TYPE::serial) {
-        rv = read(client_fd_, (void *)&inbuf_[inbuf_used_], inbuf_remain);
+    if (input_type_ == INPUT_TYPE::TCP) {
+        rv = recv(client_fd_, (void *)&readBuf, sizeof(readBuf), MSG_DONTWAIT);
+    } else if (input_type_ == INPUT_TYPE::SERIAL) {
+        rv = read(client_fd_, (void *)&readBuf, sizeof(readBuf));
     }
     if (rv == 0) {
         ROS_ERROR_STREAM("Connection closed.");
@@ -124,28 +127,44 @@ bool FixpositionOutput::ReadAndPublish() {
         ROS_ERROR_STREAM("Connection error.");
         return false;
     }
-    inbuf_used_ += rv;
 
-    /* Scan for newlines in the line buffer; we're careful here to deal with embedded \0s
-     * an evil server may send, as well as only processing lines that are complete.
-     */
-    char *line_start = inbuf_;
-    char *line_end;
-    while ((line_end = (char *)memchr((void *)line_start, '\n', inbuf_used_ - (line_start - inbuf_)))) {
-        *line_end = 0;
-        std::string str_state = line_start;
-        converter_->convertAndPublish(str_state, odometry_pub_, imu_pub_, navsat_pub_, status_pub_);
-        line_start = line_end + 1;
+    // find start of a NMEA style message
+    char *start = (char *)memchr(readBuf, '$', rv);
+    while (start != NULL) {
+        // check if it is NMEA with correct checksum
+        auto nmea_size = IsNmeaMessage(start, rv - (start - readBuf));
+
+        // convert the message into ros messages
+        if (nmea_size > 0) {
+            std::string msg(start, nmea_size);
+            ConvertAndPublish(msg);
+
+            // move to next $ for next message
+            start = (char *)memchr(start + 1, '$', rv);
+        } else {
+            break;
+        }
     }
-    /* Shift buffer down so the unprocessed data is at the start */
-    inbuf_used_ -= (line_start - inbuf_);
-    memmove(inbuf_, line_start, inbuf_used_);
+
     return true;
 }
 
-bool FixpositionOutput::CreateTCPSocket() {
-    const char *ip_address;
-    int connection_status;
+void FixpositionDriver::ConvertAndPublish(const std::string &msg) {
+    // split the msg into tokens, removing the *XX checksum
+    std::vector<std::string> tokens;
+    std::size_t star_pos = msg.find_last_of("*");
+    split_message(tokens, msg.substr(1, star_pos - 1), ",");
+
+    // Get the header of the sentence
+    const std::string header = tokens.at(0);
+
+    // If we have a converter available, convert to ros. Currently supported are "FP" and "LLH"
+    if (converters_[header] != nullptr) {
+        converters_[header]->ConvertTokensAndPublish(tokens);
+    }
+}
+
+bool FixpositionDriver::CreateTCPSocket() {
     struct sockaddr_in server_address;
     client_fd_ = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -155,14 +174,12 @@ bool FixpositionOutput::CreateTCPSocket() {
     } else
         ROS_INFO_STREAM("Client created.");
 
-    ip_address = tcp_ip_.c_str();
-
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
     server_address.sin_port = htons(std::stoi(input_port_));
-    server_address.sin_addr.s_addr = inet_addr(ip_address);
+    server_address.sin_addr.s_addr = inet_addr(tcp_ip_.c_str());
 
-    connection_status = connect(client_fd_, (struct sockaddr *)&server_address, sizeof server_address);
+    int connection_status = connect(client_fd_, (struct sockaddr *)&server_address, sizeof server_address);
 
     if (connection_status != 0) {
         ROS_ERROR_STREAM("Error on connection.");
@@ -171,7 +188,7 @@ bool FixpositionOutput::CreateTCPSocket() {
     return true;
 }
 
-bool FixpositionOutput::CreateSerialConnection() {
+bool FixpositionDriver::CreateSerialConnection() {
     client_fd_ = open(input_port_.c_str(), O_RDWR | O_NOCTTY);
 
     struct termios options;
@@ -246,3 +263,4 @@ bool FixpositionOutput::CreateSerialConnection() {
     }
     return true;
 }
+}  // namespace fixposition
