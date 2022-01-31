@@ -30,7 +30,7 @@ Then source your development environment:
 
     `roslaunch fixposition_driver tcp.launch`
 
-To Adapt the TCP or Serial connections, check the `launch/tcp.yaml` and `launch/serial.yaml`.
+To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections, check the `launch/tcp.yaml` and `launch/serial.yaml`.
 
 The output is published on four topics:
 

@@ -1,4 +1,5 @@
 input_formats: ["FP", "LLH"]
 input_type: serial
-rate: 200
+input_port: "/dev/ttyUSB0"
 serial_baudrate: 115200
+rate: 200
