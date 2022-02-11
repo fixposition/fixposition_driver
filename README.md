@@ -1,10 +1,10 @@
 # Fixposition Driver
 
-- **Version:** 2.1.0
+- **Version:** 2.1.1
 - **Dependencies:** Boost 1.65 or higher
 - **Tested on:** Ubuntu 18.04 with ROS Melodic
 
-This converter operates as a ROS node, connecting to either a TCP or serial stream of Fixposition Vision-RTK output data.
+This drvier operates as a ROS node, connecting to either a TCP or serial stream of Fixposition Vision-RTK output data.
 
 
 
