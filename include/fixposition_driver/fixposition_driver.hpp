@@ -1,34 +1,22 @@
 /**
+ *  @file
+ *  @brief Declaration of FixpositionDriver class
+ *
  *  ___    ___
  *  \  \  /  /
- *   \  \/  /
- *   /  /\  \
- *  /__/  \__\  Fixposition AG
- *
- * @file fixposition_driver.hpp
- * @author Kailin Huang (kailin.huang@fixposition.com)
- * @brief
- * @date 2022-01-26
+ *   \  \/  /   Fixposition AG
+ *   /  /\  \   All right reserved.
+ *  /__/  \__\
  *
  */
-#ifndef __FIXPOSITION_DRIVER_FIXPOSITION_DRIVER_HPP__
-#define __FIXPOSITION_DRIVER_FIXPOSITION_DRIVER_HPP__
+
+#ifndef __FIXPOSITION_DRIVER_FIXPOSITION_DRIVER__
+#define __FIXPOSITION_DRIVER_FIXPOSITION_DRIVER__
 
 /* SYSTEM / STL */
-#include <arpa/inet.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <net/if.h>  //ifreq
-#include <netdb.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
 #include <termios.h>
-#include <unistd.h>
-
 #include <unordered_map>
+
 /* EXTERNAL */
 
 /* ROS */
@@ -129,4 +117,4 @@ class FixpositionDriver {
     struct termios options_save_;
 };
 }  // namespace fixposition
-#endif
+#endif  //__FIXPOSITION_DRIVER_FIXPOSITION_DRIVER__

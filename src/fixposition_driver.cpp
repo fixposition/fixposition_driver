@@ -1,26 +1,25 @@
 /**
+ *  @file
+ *  @brief Implementation of FixpositionDriver class
+ *
  *  ___    ___
  *  \  \  /  /
- *   \  \/  /
- *   /  /\  \
- *  /__/  \__\  Fixposition AG
- *
- * @file fixposition_driver.cpp
- * @author Kailin Huang (kailin.huang@fixposition.com)
- * @brief
- * @date 2022-01-26
+ *   \  \/  /   Fixposition AG
+ *   /  /\  \   All right reserved.
+ *  /__/  \__\
  *
  */
 
 /* SYSTEM / STL */
-
-/* EXTERNAL */
-
-/* ROS */
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
 
 /* PACKAGE */
-#include <fixposition_driver/converter/fp_converter.hpp>
-#include <fixposition_driver/converter/llh_converter.hpp>
+#include <fixposition_driver/converter/imu.hpp>
+#include <fixposition_driver/converter/llh.hpp>
+#include <fixposition_driver/converter/odometry.hpp>
+#include <fixposition_driver/converter/tf.hpp>
 #include <fixposition_driver/fixposition_driver.hpp>
 #include <fixposition_driver/helper.hpp>
 
@@ -41,7 +40,8 @@ FixpositionDriver::FixpositionDriver(ros::NodeHandle *nh) : nh_(*nh) {
         ROSFatalError("Unknown input type! Must be either tcp or serial.");
     }
 
-    if (!ros::param::get("~/input_formats", input_formats_)) input_formats_ = {"FP", "LLH"};
+    if (!ros::param::get("~/input_formats", input_formats_))
+        input_formats_ = {"ODOMETRY", "LLH", "RAWIMU", "CORRIMU", "TF"};
 
     // Get parameters: port (required)
     if (!ros::param::get("~/input_port", input_port_)) {
@@ -85,22 +85,27 @@ void FixpositionDriver::ROSFatalError(const std::string &error) {
 
 bool FixpositionDriver::InitializeConverters() {
     for (const auto format : input_formats_) {
-        if (format == "FP") {
-            converters_["FP"] = std::unique_ptr<FpConverter>(new FpConverter(nh_));
+        if (format == "ODOMETRY") {
+            converters_["ODOMETRY"] = std::unique_ptr<OdometryConverter>(new OdometryConverter(nh_));
         } else if (format == "LLH") {
             converters_["LLH"] = std::unique_ptr<LlhConverter>(new LlhConverter(nh_));
+        } else if (format == "RAWIMU") {
+            converters_["RAWIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(nh_, false));
+        } else if (format == "CORRIMU") {
+            converters_["CORRIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(nh_, true));
+        } else if (format == "TF") {
+            converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter(nh_));
         } else {
-            ROS_ERROR_STREAM("Unknown input format: " << format);
+            ROS_INFO_STREAM("Unknown input format: " << format);
         }
     }
     return !converters_.empty();
 }
 void FixpositionDriver::Run() {
     ros::Rate rate(rate_);
-    int res_counter = 0;
     while (ros::ok()) {
         if (client_fd_ > 0) {
-            bool ret = ReadAndPublish();
+            ReadAndPublish();
         }
         ros::spinOnce();
         rate.sleep();
@@ -114,11 +119,15 @@ bool FixpositionDriver::ReadAndPublish() {
         rv = recv(client_fd_, (void *)&readBuf, sizeof(readBuf), MSG_DONTWAIT);
     } else if (input_type_ == INPUT_TYPE::SERIAL) {
         rv = read(client_fd_, (void *)&readBuf, sizeof(readBuf));
+    } else {
+        rv = 0;
     }
+
     if (rv == 0) {
         ROS_ERROR_STREAM("Connection closed.");
         return false;
     }
+
     if (rv < 0 && errno == EAGAIN) {
         /* no data for now, call back when the socket is readable */
         return false;
@@ -153,10 +162,15 @@ void FixpositionDriver::ConvertAndPublish(const std::string &msg) {
     // split the msg into tokens, removing the *XX checksum
     std::vector<std::string> tokens;
     std::size_t star_pos = msg.find_last_of("*");
-    split_message(tokens, msg.substr(1, star_pos - 1), ",");
+    SplitMessage(tokens, msg.substr(1, star_pos - 1), ",");
+
+    // if it doesn't start with FP then do nothing
+    if (tokens.at(0) != "FP") {
+        return;
+    }
 
     // Get the header of the sentence
-    const std::string header = tokens.at(0);
+    const std::string header = tokens.at(1);
 
     // If we have a converter available, convert to ros. Currently supported are "FP" and "LLH"
     if (converters_[header] != nullptr) {
@@ -171,8 +185,9 @@ bool FixpositionDriver::CreateTCPSocket() {
     if (client_fd_ < 0) {
         ROS_ERROR_STREAM("Error in client creation.");
         return false;
-    } else
+    } else {
         ROS_INFO_STREAM("Client created.");
+    }
 
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;

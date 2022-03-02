@@ -12,8 +12,8 @@
  *
  */
 
-#ifndef __FIXPOSITION_DRIVER_TIME_CONVERSIONS_HPP__
-#define __FIXPOSITION_DRIVER_TIME_CONVERSIONS_HPP__
+#ifndef __FIXPOSITION_DRIVER_TIME_CONVERSIONS__
+#define __FIXPOSITION_DRIVER_TIME_CONVERSIONS__
 
 #include <ros/duration.h>
 #include <ros/ros.h>
@@ -68,8 +68,8 @@ class GpsTime {
     /**
      * @brief Construct a new GpsTime object
      *
-     * @param week wno
-     * @param sec tow
+     * @param[in] week wno
+     * @param[in] sec tow
      */
     GpsTime(int week, double sec) : wno(week), tow(sec) {
         int delta_week = std::floor(tow / Constants::sec_per_week);
@@ -161,8 +161,8 @@ class GpsTime {
      * hard coded week size as 4 and second precision length according to class
      * member
      *
-     * @param stream
-     * @param gps_time
+     * @param[in] stream
+     * @param[in] gps_time
      * @return std::ostream&
      */
     friend std::ostream &operator<<(std::ostream &stream, const GpsTime &gps_time) {
@@ -187,7 +187,7 @@ class GpsTime {
  * @brief
  * Only work after 2017.1.1
  *
- * @param gps_time
+ * @param[in] gps_time
  * @return BOOST_POSIX::ptime
  */
 inline BOOST_POSIX::ptime GpsTimeToPtime(const GpsTime &gps_time) {
@@ -198,4 +198,4 @@ inline BOOST_POSIX::ptime GpsTimeToPtime(const GpsTime &gps_time) {
 inline ros::Time GpsTimeToRosTime(GpsTime input) { return ros::Time::fromBoost(GpsTimeToPtime(input)); }
 }  // namespace times
 }  // namespace fixposition
-#endif
+#endif // __FIXPOSITION_DRIVER_TIME_CONVERSIONS__

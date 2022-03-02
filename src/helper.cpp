@@ -1,28 +1,30 @@
 /**
+ *  @file
+ *  @brief Helper functions
+ * 
  *  ___    ___
  *  \  \  /  /
- *   \  \/  /
- *   /  /\  \
- *  /__/  \__\  Fixposition AG
- *
- * @file helper.cpp
- * @author Kailin Huang (kailin.huang@fixposition.com)
- * @brief
- * @date 2022-01-27
- *
+ *   \  \/  /   Fixposition AG
+ *   /  /\  \   All right reserved.
+ *  /__/  \__\
+ * 
  */
 
+/* PACKAGE */
 #include <fixposition_driver/helper.hpp>
 
 namespace fixposition {
 
-void split_message(std::vector<std::string>& tokens, const std::string& msg, const std::string& delim) {
+static constexpr const char kNmeaPreamble = '$';
+static constexpr const int kLibParserMaxNmeaSize = 400;
+
+void SplitMessage(std::vector<std::string>& tokens, const std::string& msg, const std::string& delim) {
     boost::split(tokens, msg, boost::is_any_of(delim));
 }
 
 int IsNmeaMessage(const char* buf, const int size) {
     // Start of sentence
-    if (buf[0] != NMEA_PREAMBLE) {
+    if (buf[0] != kNmeaPreamble) {
         return 0;
     }
 
@@ -30,7 +32,7 @@ int IsNmeaMessage(const char* buf, const int size) {
     int len = 1;  // Length of sentence excl. "$"
     char ck = 0;  // checksum
     while (true) {
-        if (len > LIB_PARSER_MAX_NMEA_SIZE) {
+        if (len > kLibParserMaxNmeaSize) {
             return 0;
         }
         if (len >= size)  // len doesn't include '$'
