@@ -1,19 +1,18 @@
 /**
+ *  @file
+ *  @brief Helper functions
+ * 
  *  ___    ___
  *  \  \  /  /
- *   \  \/  /
- *   /  /\  \
- *  /__/  \__\  Fixposition AG
- *
- * @file fixposition_driver.hpp
- * @author Kailin Huang (kailin.huang@fixposition.com)
- * @brief
- * @date 2022-01-26
- *
+ *   \  \/  /   Fixposition AG
+ *   /  /\  \   All right reserved.
+ *  /__/  \__\
+ * 
  */
 
-#ifndef __FIXPOSITION_DRIVER_HELPER_HPP__
-#define __FIXPOSITION_DRIVER_HELPER_HPP__
+#ifndef __FIXPOSITION_DRIVER_HELPER__
+#define __FIXPOSITION_DRIVER_HELPER__
+
 /* SYSTEM / STL */
 #include <string>
 #include <vector>
@@ -31,10 +30,7 @@ namespace fixposition {
  * @param[in] delim
  * @param[out] tokens
  */
-void split_message(std::vector<std::string>& tokens, const std::string& msg, const std::string& delim);
-
-static constexpr const char NMEA_PREAMBLE = '$';
-static constexpr const int LIB_PARSER_MAX_NMEA_SIZE = 400;
+void SplitMessage(std::vector<std::string>& tokens, const std::string& msg, const std::string& delim);
 
 /**
  * @brief Check If msg is NMEA
@@ -46,4 +42,4 @@ static constexpr const int LIB_PARSER_MAX_NMEA_SIZE = 400;
 int IsNmeaMessage(const char* buf, const int size);
 
 }  // namespace fixposition
-#endif
+#endif  // __FIXPOSITION_DRIVER_HELPER__
