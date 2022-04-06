@@ -1,13 +1,13 @@
 /**
  *  @file
  *  @brief Helper functions
- * 
+ *
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
- * 
+ *
  */
 
 #ifndef __FIXPOSITION_DRIVER_HELPER__
@@ -40,6 +40,13 @@ void SplitMessage(std::vector<std::string>& tokens, const std::string& msg, cons
  * @return int the length of the NMEA message found. If no NMEA found then 0. If size argument is too small then -1
  */
 int IsNmeaMessage(const char* buf, const int size);
+
+/**
+ * @brief Send ROS Fatal error and exit
+ *
+ * @param[in] error Error msg to be sent
+ */
+void ROSFatalError(const std::string& error);
 
 }  // namespace fixposition
 #endif  // __FIXPOSITION_DRIVER_HELPER__

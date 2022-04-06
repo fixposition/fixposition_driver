@@ -1,14 +1,18 @@
 /**
  *  @file
  *  @brief Helper functions
- * 
+ *
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
- * 
+ *
  */
+
+/* ROS */
+#include <ros/console.h>
+#include <ros/ros.h>
 
 /* PACKAGE */
 #include <fixposition_driver/helper.hpp>
@@ -17,6 +21,11 @@ namespace fixposition {
 
 static constexpr const char kNmeaPreamble = '$';
 static constexpr const int kLibParserMaxNmeaSize = 400;
+
+void ROSFatalError(const std::string& error) {
+    ROS_ERROR_STREAM(error);
+    ros::shutdown();
+}
 
 void SplitMessage(std::vector<std::string>& tokens, const std::string& msg, const std::string& delim) {
     boost::split(tokens, msg, boost::is_any_of(delim));

@@ -195,7 +195,36 @@ inline BOOST_POSIX::ptime GpsTimeToPtime(const GpsTime &gps_time) {
     return Constants::gps_epoch_begin + BOOST_POSIX::microseconds(micro_s);
 }
 
+/**
+ * @brief 
+ *  Only work after 2017.1.1
+ * 
+ * @param[in] boost_ptime 
+ * @return GpsTime 
+ */
+inline GpsTime PtimeToGpsTime(const BOOST_POSIX::ptime &boost_ptime) {
+    BOOST_POSIX::time_duration gps_duration = boost_ptime - Constants::gps_epoch_begin;
+    int weekcount = gps_duration.total_seconds() / Constants::sec_per_week;
+    double sec_in_week =
+        gps_duration.total_microseconds() / 1e6 - weekcount * Constants::sec_per_week + Constants::gps_leap_time_s;
+    return GpsTime(weekcount, sec_in_week);
+}
+
+/**
+ * @brief Convert GpsTime to ROS Time
+ *
+ * @param[in] input
+ * @return ros::Time
+ */
 inline ros::Time GpsTimeToRosTime(GpsTime input) { return ros::Time::fromBoost(GpsTimeToPtime(input)); }
+
+/**
+ * @brief Convert ROS Time to GpsTime
+ *
+ * @param[in] ros_time
+ * @return GpsTime
+ */
+inline GpsTime RosTimeToGpsTime(const ros::Time &ros_time) { return PtimeToGpsTime(ros_time.toBoost()); }
 }  // namespace times
 }  // namespace fixposition
-#endif // __FIXPOSITION_DRIVER_TIME_CONVERSIONS__
+#endif  // __FIXPOSITION_DRIVER_TIME_CONVERSIONS__

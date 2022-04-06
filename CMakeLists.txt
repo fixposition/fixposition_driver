@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
     FILES
     VRTK.msg
+    Speed.msg
 )
 
 generate_messages(
@@ -55,6 +56,8 @@ add_executable(
   src/imu.cpp
   src/tf.cpp
   src/helper.cpp
+  src/params.cpp
+  
 )
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} pthread)

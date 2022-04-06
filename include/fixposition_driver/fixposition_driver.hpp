@@ -15,25 +15,26 @@
 
 /* SYSTEM / STL */
 #include <termios.h>
+
 #include <unordered_map>
 
 /* EXTERNAL */
 
 /* ROS */
 #include <nav_msgs/Odometry.h>
-#include <ros/console.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/NavSatFix.h>
 
 /* PACKAGE */
+#include <fixposition_driver/Speed.h>
 #include <fixposition_driver/VRTK.h>
 
 #include <fixposition_driver/converter/base_converter.hpp>
+#include <fixposition_driver/params.hpp>
+#include <fixposition_driver/rawdmi.hpp>
 
 namespace fixposition {
-
-enum class INPUT_TYPE { TCP = 1, SERIAL = 2 };
 
 class FixpositionDriver {
    public:
@@ -56,14 +57,14 @@ class FixpositionDriver {
      */
     void Run();
 
-    /**
-     * @brief Send ROS Fatal error and exit
-     *
-     * @param[in] error Error msg to be sent
-     */
-    static void ROSFatalError(const std::string& error);
-
    private:
+    /**
+     * @brief
+     *
+     * @param[in] msg
+     */
+    void WsCallback(fixposition_driver::Speed msg);
+
     /**
      * @brief Convert the string using correct converter
      *
@@ -104,16 +105,16 @@ class FixpositionDriver {
     bool CreateSerialConnection();
 
     ros::NodeHandle nh_;
-    int rate_;                                //!< loop rate of the main read loop
-    INPUT_TYPE input_type_;                   //!< TCP or SERIAL
-    std::vector<std::string> input_formats_;  //!< data formats to convert, support "FP" and "LLH" for now
+    ros::Subscriber ws_sub_;  //!< wheelspeed message subscriber
+
+    RAWDMI rawdmi_;  //!< RAWDMI msg struct
+
+    FixpositionDriverParams params_;
 
     std::unordered_map<std::string, std::unique_ptr<BaseConverter>>
-        converters_;          //!< converters corresponding to the input formats
-    std::string tcp_ip_;      //!< IP address for TCP connection
-    std::string input_port_;  //! Port for TCP connection
-    int serial_baudrate_;     //!< baudrate of serial connection
-    int client_fd_ = -1;      //!< TCP or Serial file descriptor
+        converters_;  //!< converters corresponding to the input formats
+
+    int client_fd_ = -1;  //!< TCP or Serial file descriptor
     struct termios options_save_;
 };
 }  // namespace fixposition
