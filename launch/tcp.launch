@@ -8,7 +8,7 @@
     <env name="ROSCONSOLE_CONFIG_FILE" value="$(find fixposition_driver)/launch/rosconsole.conf"/>
 
 
-    <node name="fp_output" pkg="fixposition_driver" type="fixposition_driver" output="screen" respawn="true" respawn_delay="5">
+    <node name="fixposition_driver" pkg="fixposition_driver" type="fixposition_driver" output="screen" respawn="true" respawn_delay="5">
         <rosparam command="load" file="$(find fixposition_driver)/launch/tcp.yaml" />
 
 

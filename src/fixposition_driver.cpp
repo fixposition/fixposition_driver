@@ -26,42 +26,37 @@
 namespace fixposition {
 FixpositionDriver::FixpositionDriver(ros::NodeHandle *nh) : nh_(*nh) {
     // read parameters
-    if (!ros::param::get("~/rate", rate_)) rate_ = 100;
+    params_.LoadFromRos();
 
-    std::string type;
-    if (!ros::param::get("~/input_type", type)) {
-        ROSFatalError("Missing parameter: input_type");
-    }
-    if (type == "tcp") {
-        input_type_ = INPUT_TYPE::TCP;
-    } else if (type == "serial") {
-        input_type_ = INPUT_TYPE::SERIAL;
-    } else {
-        ROSFatalError("Unknown input type! Must be either tcp or serial.");
+    switch (params_.fp_output.type) {
+        case INPUT_TYPE::TCP:
+            CreateTCPSocket();
+            break;
+        case INPUT_TYPE::SERIAL:
+            CreateSerialConnection();
+            break;
+        default:
+            ROSFatalError("Unknown output type.");
     }
 
-    if (!ros::param::get("~/input_formats", input_formats_))
-        input_formats_ = {"ODOMETRY", "LLH", "RAWIMU", "CORRIMU", "TF"};
+    ws_sub_ = nh_.subscribe<fixposition_driver::Speed>(params_.customer_input.speed_topic, 100,
+                                                       &FixpositionDriver::WsCallback, this,
+                                                       ros::TransportHints().tcpNoDelay());
 
-    // Get parameters: port (required)
-    if (!ros::param::get("~/input_port", input_port_)) {
-        ROSFatalError("Missing parameter: input_port");
-    }
-    if (input_type_ == INPUT_TYPE::TCP) {
-        if (!ros::param::get("~/tcp_ip", tcp_ip_)) tcp_ip_ = "10.0.1.1";
-        CreateTCPSocket();
-        if (client_fd_ <= 0) {
-            ROSFatalError("Could not open socket.");
-        }
-    } else if (input_type_ == INPUT_TYPE::SERIAL) {
-        if (!ros::param::get("~/serial_baudrate", serial_baudrate_)) serial_baudrate_ = 115200;
-        CreateSerialConnection();
-        if (client_fd_ <= 0) {
-            ROSFatalError("Could not configure serial port.");
-        }
-    } else {
-        ROSFatalError("Unknown output type.");
-    }
+    // static headers
+    rawdmi_.head1 = 0xaa;
+    rawdmi_.head2 = 0x44;
+    rawdmi_.head3 = 0x13;
+    rawdmi_.payloadLen = 20;
+    rawdmi_.msgId = 2269;
+    // these to be filled by each rosmsg
+    rawdmi_.wno = 0;
+    rawdmi_.tow = 0;
+    rawdmi_.dmi1 = 0;
+    rawdmi_.dmi2 = 0;
+    rawdmi_.dmi3 = 0;
+    rawdmi_.dmi4 = 0;
+    rawdmi_.mask = 0;
 
     // initialize converters
     if (!InitializeConverters()) {
@@ -71,20 +66,42 @@ FixpositionDriver::FixpositionDriver(ros::NodeHandle *nh) : nh_(*nh) {
 
 FixpositionDriver::~FixpositionDriver() {
     if (client_fd_ != -1) {
-        if (input_type_ == INPUT_TYPE::SERIAL) {
+        if (params_.fp_output.type == INPUT_TYPE::SERIAL) {
             tcsetattr(client_fd_, TCSANOW, &options_save_);
         }
         close(client_fd_);
     }
 }
 
-void FixpositionDriver::ROSFatalError(const std::string &error) {
-    ROS_ERROR_STREAM(error);
-    ros::shutdown();
+void FixpositionDriver::WsCallback(fixposition_driver::Speed msg) {
+    if (msg.speeds.size() == 1) {
+        rawdmi_.dmi1 = msg.speeds[0];
+        rawdmi_.mask = (1 << 0) | (0 << 1) | (0 << 2) | (0 << 3);
+    } else if (msg.speeds.size() == 4) {
+        rawdmi_.dmi1 = msg.speeds[0];
+        rawdmi_.dmi2 = msg.speeds[1];
+        rawdmi_.dmi3 = msg.speeds[2];
+        rawdmi_.dmi4 = msg.speeds[3];
+        rawdmi_.mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
+    } else {
+        ROS_WARN_THROTTLE(1, "Invalid speed message with size %lu, the size should be either 1 or 4!",
+                          msg.speeds.size());
+        return;
+    }
+
+    // Calculate CRC
+    const uint32_t checksum = crc32((const uint8_t *)&rawdmi_, sizeof(rawdmi_));
+
+    // Compose entire message
+    uint8_t message[sizeof(rawdmi_) + sizeof(checksum)];
+    memcpy(&message[0], &rawdmi_, sizeof(rawdmi_));
+    memcpy(&message[sizeof(rawdmi_)], &checksum, sizeof(checksum));
+
+    send(this->client_fd_, &message[0], sizeof(message), MSG_DONTWAIT);
 }
 
 bool FixpositionDriver::InitializeConverters() {
-    for (const auto format : input_formats_) {
+    for (const auto format : params_.fp_output.formats) {
         if (format == "ODOMETRY") {
             converters_["ODOMETRY"] = std::unique_ptr<OdometryConverter>(new OdometryConverter(nh_));
         } else if (format == "LLH") {
@@ -102,7 +119,7 @@ bool FixpositionDriver::InitializeConverters() {
     return !converters_.empty();
 }
 void FixpositionDriver::Run() {
-    ros::Rate rate(rate_);
+    ros::Rate rate(params_.fp_output.rate);
     while (ros::ok()) {
         if (client_fd_ > 0) {
             ReadAndPublish();
@@ -114,10 +131,13 @@ void FixpositionDriver::Run() {
 
 bool FixpositionDriver::ReadAndPublish() {
     char readBuf[8192];
+    // send works like this:
+    // std::string test_str("Testtest\r\n");
+    // send(client_fd_, (void *)&test_str, sizeof(test_str), MSG_DONTWAIT);
     ssize_t rv;
-    if (input_type_ == INPUT_TYPE::TCP) {
+    if (params_.fp_output.type == INPUT_TYPE::TCP) {
         rv = recv(client_fd_, (void *)&readBuf, sizeof(readBuf), MSG_DONTWAIT);
-    } else if (input_type_ == INPUT_TYPE::SERIAL) {
+    } else if (params_.fp_output.type == INPUT_TYPE::SERIAL) {
         rv = read(client_fd_, (void *)&readBuf, sizeof(readBuf));
     } else {
         rv = 0;
@@ -191,8 +211,8 @@ bool FixpositionDriver::CreateTCPSocket() {
 
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
-    server_address.sin_port = htons(std::stoi(input_port_));
-    server_address.sin_addr.s_addr = inet_addr(tcp_ip_.c_str());
+    server_address.sin_port = htons(std::stoi(params_.fp_output.port));
+    server_address.sin_addr.s_addr = inet_addr(params_.fp_output.ip.c_str());
 
     int connection_status = connect(client_fd_, (struct sockaddr *)&server_address, sizeof server_address);
 
@@ -204,12 +224,12 @@ bool FixpositionDriver::CreateTCPSocket() {
 }
 
 bool FixpositionDriver::CreateSerialConnection() {
-    client_fd_ = open(input_port_.c_str(), O_RDWR | O_NOCTTY);
+    client_fd_ = open(params_.fp_output.port.c_str(), O_RDWR | O_NOCTTY);
 
     struct termios options;
     speed_t speed;
 
-    switch (serial_baudrate_) {
+    switch (params_.fp_output.baudrate) {
         case 9600:
             speed = B9600;
             break;
@@ -248,7 +268,7 @@ bool FixpositionDriver::CreateSerialConnection() {
 
         default:
             speed = B115200;
-            ROS_ERROR_STREAM("Unsupported baudrate: " << serial_baudrate_
+            ROS_ERROR_STREAM("Unsupported baudrate: " << params_.fp_output.baudrate
                                                       << "\n\tsupported examples:\n\t9600, "
                                                          "19200, "
                                                          "38400, "

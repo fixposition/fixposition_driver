@@ -1,5 +1,9 @@
-input_formats: ["ODOMETRY", "LLH", "RAWIMU", "CORRIMU", "TF"]
-input_type: tcp
-input_port: "21000"
-tcp_ip: "127.0.0.1"
-rate: 200
+fp_output:
+    formats: ["ODOMETRY", "LLH", "RAWIMU", "CORRIMU", "TF"]
+    type: tcp
+    port: "21000"
+    ip: "10.0.2.1" # change to VRTK2's IP address in the network
+    rate: 200
+
+customer_input:
+    speed_topic: "/fixposition/speed"
