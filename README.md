@@ -47,9 +47,22 @@ Then source your development environment:
 
 To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections, check the `launch/tcp.yaml` and `launch/serial.yaml`.
 
-## Output of the Driver
+## Input Wheelspeed through the driver
 
-### Messages and TF Tree
+The fp_ros_driver support inputing a Speed msg (`msg/Speed.msg`) through the `/fixposition/speed` topic.
+
+The input velocity values should be in [mm/s] as integer 32bit. There are 2 Options:
+
+-   Option 1: only one vehicle speed, then only fill a single value as the vehicle speed
+-   Option 2: Fill in 4 Values of 4 wheels, in the order of FR, FL, RR, RL
+
+The input values will be converted into a RAWDMI message and sent via the TCP interface to the Vision-RTK2, where it will be further processed and added into the positioning engine.
+
+Note: _Currently the wheelspeed input through the ROS doriver is only supported in the TCP mode_
+
+## Output of the driver
+
+### Messages and TF tree
 
 The output is published on the following:
 
@@ -101,6 +114,7 @@ The output is published on the following:
 Run `doxygen Doxyfile` to generate Doxygen code documentation.
 
 ## Fixposition ASCII messages
+
 _This is an exerpt from the Integration Manual_
 
 ### Message structure
