@@ -1,3 +1,15 @@
+/**
+ *  @file
+ *  @brief Declaration of RAWDMI message struct
+ * 
+ *  ___    ___
+ *  \  \  /  /
+ *   \  \/  /   Fixposition AG
+ *   /  /\  \   All right reserved.
+ *  /__/  \__\
+ * 
+ */
+
 #ifndef __FIXPOSITION_DRIVER_RAWDMI__
 #define __FIXPOSITION_DRIVER_RAWDMI__
 

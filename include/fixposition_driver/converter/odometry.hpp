@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @brief Implementation of OdometryConverter
+ *  @brief Declaration of OdometryConverter
  *
  *  ___    ___
  *  \  \  /  /
