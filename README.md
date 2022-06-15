@@ -1,5 +1,7 @@
 # Fixposition Driver
 
+[ROS](https://www.ros.org/) Driver for [Fixposition Vision-RTK 2](https://www.fixposition.com/product)
+
 ## Dependencies
 
 -  [Eigen3](https://eigen.tuxfamily.org/index.php?title=Main_Page), tested with version [3.3.7](https://gitlab.com/libeigen/eigen/-/releases/3.3.7)
@@ -7,7 +9,7 @@
 -  [CMake](https://cmake.org/)
 -  [Catkin](http://wiki.ros.org/catkin)
 
--  **fixposition_gnss_tf**: Fixposition GNSS Transformation Lib, minimum version **2.0.0**
+- **[fixposition_gnss_tf](https://github.com/fixposition/fixposition_gnss_tf)**: Fixposition GNSS Transformation Lib, minimum version **2.0.0**
 
 This drvier operates as a ROS node, connecting to either a TCP or serial stream of Fixposition Vision-RTK output data, see [Fixposition ASCII messages](#fixposition-ascii-messages) and the **Integration Manual**.
 
@@ -66,48 +68,57 @@ Note: _Currently the wheelspeed input through the ROS doriver is only supported 
 
 The output is published on the following:
 
-    -   From ODOMETRY, at the configured frequency
-        ```
-        /fixposition/odometry (type: nav_msgs/Odometry)
-        /fixposition/vrtk (type: fixposition_driver/VRTK)
-        /fixposition/poiimu (type: sensor_msgs/Imu)
-        ```
-        TFs:
-        `ECEF-->FP_POI` and `ECEF-->FP_ENU`
-    -   From LLH, at the configured frequency
-        ```
-        /fixposition/navsatfix (type: sensor_msgs/NavSatFix)
-        ```
-    -   From RAWIMU, at 200Hz
-        ```
-        /fixposition/rawimu (type: sensor_msgs/Imu)
-        ```
-    -   From CORRIMU, at 200Hz
-        ```
-        /fixposition/corrimu (type: sensor_msgs/Imu)
-        ```
-    -   From TF_POI_VRTK: static_tf `FP_POI-->FP_VRTK`
-    -   From TF_VRTK_CAM: static_tf `FP_VRTK-->FP_CAM`
+-  From ODOMETRY, at the configured frequency
 
+   ```
+   /fixposition/odometry (type: nav_msgs/Odometry)
+   /fixposition/vrtk (type: fixposition_driver/VRTK)
+   /fixposition/poiimu (type: sensor_msgs/Imu)
+   ```
 
-    -   ROS TF Tree:
-        ```mermaid
-        graph TD;
-        ECEF-->FP_POI-->FP_VRTK-->FP_CAM
-        ECEF-->FP_ENU
-        ```
+   TFs:
+   `ECEF-->FP_POI` and `ECEF-->FP_ENU`
+
+-  From LLH, at the configured frequency
+
+   ```
+   /fixposition/navsatfix (type: sensor_msgs/NavSatFix)
+   ```
+
+-  From RAWIMU, at 200Hz
+
+   ```
+   /fixposition/rawimu (type: sensor_msgs/Imu)
+   ```
+
+-  From CORRIMU, at 200Hz
+
+   ```
+   /fixposition/corrimu (type: sensor_msgs/Imu)
+   ```
+
+-  From TF_POI_VRTK: static_tf `FP_POI-->FP_VRTK`
+-  From TF_VRTK_CAM: static_tf `FP_VRTK-->FP_CAM`
+
+-  ROS TF Tree:
+
+   ```mermaid
+   graph TD;
+   ECEF-->FP_POI-->FP_VRTK-->FP_CAM
+   ECEF-->FP_ENU
+   ```
 
 _Please note that the corresponding messages also has to be selected on the Fixposition V-RTK's configuration interface._
 
 ### Explaination of frame ids
 
-| Frame ID    | Explaination                                                                                                                     |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **ECEF**    | Earth-Center-Earth-Fixed frame                                                                                                   |
-| **FP_VRTK** | The coordinate frame on the V-RTK's housing on the Fixposition-Logo "X"                                                          |
+| Frame ID    | Explaination                                                                                                                      |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **ECEF**    | Earth-Center-Earth-Fixed frame                                                                                                    |
+| **FP_VRTK** | The coordinate frame on the V-RTK's housing on the Fixposition-Logo "X"                                                           |
 | **FP_POI**  | Point-Of-Interest, configured from V-RTK's web-interface with respect to the FP_VRTK frame. By default it is the same as FP_VRTK. |
-| **FP_ENU**  | The local East-North-Up coordinate frame with the origin ar the same location as FP_POI                                          |
-| **FP_CAM**  | The camera coordinate frame of the V-RTK.                                                                                        |
+| **FP_ENU**  | The local East-North-Up coordinate frame with the origin ar the same location as FP_POI                                           |
+| **FP_CAM**  | The camera coordinate frame of the V-RTK.                                                                                         |
 
 ## Code Documentation
 
@@ -377,3 +388,6 @@ Message fields:
 |   9 | `orientation_x` | Float (.6) | -    | `-0.508955` | Quaternion with respect to ECEF, X component                           |
 |  10 | `orientation_y` | Float (.6) | -    | `0.511098`  | Quaternion with respect to ECEF, Y component                           |
 |  11 | `orientation_z` | Float (.6) | -    | `-0.494440` | Quaternion with respect to ECEF, Z component                           |
+
+# License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
