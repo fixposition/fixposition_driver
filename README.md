@@ -2,18 +2,18 @@
 
 ## Dependencies
 
--   [Eigen3](https://eigen.tuxfamily.org/index.php?title=Main_Page), tested with version [3.3.7](https://gitlab.com/libeigen/eigen/-/releases/3.3.7)
--   [Boost](https://www.boost.org/), tested with version [1.65.0](https://www.boost.org/users/history/version_1_65_0.html)
--   [CMake](https://cmake.org/)
--   [Catkin](http://wiki.ros.org/catkin)
+-  [Eigen3](https://eigen.tuxfamily.org/index.php?title=Main_Page), tested with version [3.3.7](https://gitlab.com/libeigen/eigen/-/releases/3.3.7)
+-  [Boost](https://www.boost.org/), tested with version [1.65.0](https://www.boost.org/users/history/version_1_65_0.html)
+-  [CMake](https://cmake.org/)
+-  [Catkin](http://wiki.ros.org/catkin)
 
--   **fixposition_gnss_tf**: Fixposition GNSS Transformation Lib, minimum version **2.0.0**
+-  **fixposition_gnss_tf**: Fixposition GNSS Transformation Lib, minimum version **2.0.0**
 
 This drvier operates as a ROS node, connecting to either a TCP or serial stream of Fixposition Vision-RTK output data, see [Fixposition ASCII messages](#fixposition-ascii-messages) and the **Integration Manual**.
 
 ## Installation
 
-To install the node, extract this code and `fixposition_gnss_tf` to your catkin workspace's `src` folder:
+To install the node, extract / clone the code and `fixposition_gnss_tf` to your catkin workspace's `src` folder:
 
 ```bash
 # The folder structure should look like this
@@ -33,19 +33,19 @@ Then source your development environment:
 
 ## Launch the Driver
 
--   To launch the node in serial mode, run:
+-  To launch the node in serial mode, run:
 
-    `roslaunch fixposition_driver serial.launch`
+   `roslaunch fixposition_driver serial.launch`
 
--   In TCP mode (Wi-Fi):
+-  In TCP mode (Wi-Fi):
 
-    `roslaunch fixposition_driver tcp.launch`
+   `roslaunch fixposition_driver tcp.launch`
 
--   In TCP mode (Ethernet):
+-  In TCP mode (Ethernet):
 
-    `roslaunch fixposition_driver tcp.launch`
+   `roslaunch fixposition_driver tcp.launch`
 
-To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections, check the `launch/tcp.yaml` and `launch/serial.yaml`.
+To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections, check the `launch/tcp.yaml` and `launch/serial.yaml` files.
 
 ## Input Wheelspeed through the driver
 
@@ -53,8 +53,8 @@ The fp_ros_driver support inputing a Speed msg (`msg/Speed.msg`) through the `/f
 
 The input velocity values should be in [mm/s] as integer 32bit. There are 2 Options:
 
--   Option 1: only one vehicle speed, then only fill a single value as the vehicle speed
--   Option 2: Fill in 4 Values of 4 wheels, in the order of FR, FL, RR, RL
+-  Option 1: only one vehicle speed, then only fill a single value as the vehicle speed
+-  Option 2: Fill in 4 Values of 4 wheels, in the order of FR, FL, RR, RL
 
 The input values will be converted into a RAWDMI message and sent via the TCP interface to the Vision-RTK2, where it will be further processed and added into the positioning engine.
 
@@ -97,7 +97,7 @@ The output is published on the following:
         ECEF-->FP_ENU
         ```
 
-    Please note that the corresponding messages has to be selected on the Fixposition V-RTK's configuration interface.
+_Please note that the corresponding messages also has to be selected on the Fixposition V-RTK's configuration interface._
 
 ### Explaination of frame ids
 
@@ -105,7 +105,7 @@ The output is published on the following:
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | **ECEF**    | Earth-Center-Earth-Fixed frame                                                                                                   |
 | **FP_VRTK** | The coordinate frame on the V-RTK's housing on the Fixposition-Logo "X"                                                          |
-| **FP_POI**  | Point-of-Interest, configured from V-RTK's web-interface with respect to the FP_VRTK frame. By default it is the same as FP_POI. |
+| **FP_POI**  | Point-Of-Interest, configured from V-RTK's web-interface with respect to the FP_VRTK frame. By default it is the same as FP_VRTK. |
 | **FP_ENU**  | The local East-North-Up coordinate frame with the origin ar the same location as FP_POI                                          |
 | **FP_CAM**  | The camera coordinate frame of the V-RTK.                                                                                        |
 
@@ -125,48 +125,48 @@ NMEA style framing is used. Frames (messages) are in this form:
 
 Where:
 
--   The NMEA style framing:
-    -   <code><b style="color: red;">\$</b></code>
-        -- Start character ("$", ASCII 36)
-    -   <code><b style="color: red;">\*CC</b></code>
-        -- Checksum: "\*" (ASCII 42) and two digit XOR value of all payload
-        characters in captial hexadecimal notation, for example:
-        "FPX" = `'F' ^ 'P' ^ 'X' = 70 ^ 80 ^ 88 = 78 = 0x4e` = checksum `4E`
-    -   <code><b style="color: red;">\r\n</b></code>
-        -- Sentence termination characters (CR + LF, ASCII 13 + 10)
--   A Fixposition identifier:
-    -   <code><b style="color: green;">FP</b></code>
-        -- Fixposition ASCII message identifier, "FP" (ASCII 70 + 80)
--   Fixposition message type and version:
-    -   <code><b style="color: blue;">msg_type</b></code> (= <code><em>field<sub>1</sub></em></code>)
-        -- Message type, all captial letters (ASCII 65--90)
-    -   <code><b style="color: blue;">msg_version</b></code> (= <code><em>field<sub>2</sub></em></code>)
-        -- Message version, decimal number (letters 0--9, ASCII 48--57), range 1--...
--   Data fields (payload)
-    -   <code><em>field<sub>3</sub></em>,<em>field<sub>4</sub></em>,...,<em>field<sub>N</sub></em></code>
-        -- The structure of the message data is defined by the <code><b style="color: blue;">msg_type</b></code>
-        and <code><b style="color: blue;">version</b></code>.
-        Each field can contain all printable 7-bit ASCII characters (ASCII 32–126), excluding the
-        reserved characters `!` (ASCII 33), `$` (ASCII 36), `*` (ASCII 42), `,` (ASCII 44),
-        `\` (ASCII 92), `~` (ASCII 126).
--   Field separators
-    -   All fields (identifier, message type, message version, data fields) are separated by a comma (`,`, ASCII 44)
--   Null fields
-    -   Data fields can be _null_, meaning their value is absent to indicate that no data is
-        available. The data for null fields is the empty string. For example:
-        -   Definition: <code>...,<em>field<sub>i</sub></em>,<em>field<sub>i+1</sub></em>,<em>field<sub>i+2</sub></em>,...</code>
-        -   Values: <code><em>field<sub>i</sub></em></code> = 123, <code><em>field<sub>i+1</sub></em></code> = _null_,
-            <code><em>field<sub>i+2</sub></em></code> = 456
-        -   Payload string: <code>...,123,,456,...</code>
--   Data field types:
-    -   _Numeric_: Decimal integer number, one or more digits (0-9) and optional leading "-" sign
-    -   _Float (.x)_: Decimal floating point number, one or more digits (0-9) and optional leading "-" sign, with
-        _x_ digits fractional part separated by a dot (".")
-    -   _Float (x)_: Decimal floating point number with _x_ significant digits, optional leading "-", optional fractional
-        part separated by a dot (".")
-    -   _String_: String of allowed payload characters (but not the `,` field separator)
-    -   ...
-    -   ...
+-  The NMEA style framing:
+   -  <code><b style="color: red;">\$</b></code>
+      -- Start character ("$", ASCII 36)
+   -  <code><b style="color: red;">\*CC</b></code>
+      -- Checksum: "\*" (ASCII 42) and two digit XOR value of all payload
+      characters in captial hexadecimal notation, for example:
+      "FPX" = `'F' ^ 'P' ^ 'X' = 70 ^ 80 ^ 88 = 78 = 0x4e` = checksum `4E`
+   -  <code><b style="color: red;">\r\n</b></code>
+      -- Sentence termination characters (CR + LF, ASCII 13 + 10)
+-  A Fixposition identifier:
+   -  <code><b style="color: green;">FP</b></code>
+      -- Fixposition ASCII message identifier, "FP" (ASCII 70 + 80)
+-  Fixposition message type and version:
+   -  <code><b style="color: blue;">msg_type</b></code> (= <code><em>field<sub>1</sub></em></code>)
+      -- Message type, all captial letters (ASCII 65--90)
+   -  <code><b style="color: blue;">msg_version</b></code> (= <code><em>field<sub>2</sub></em></code>)
+      -- Message version, decimal number (letters 0--9, ASCII 48--57), range 1--...
+-  Data fields (payload)
+   -  <code><em>field<sub>3</sub></em>,<em>field<sub>4</sub></em>,...,<em>field<sub>N</sub></em></code>
+      -- The structure of the message data is defined by the <code><b style="color: blue;">msg_type</b></code>
+      and <code><b style="color: blue;">version</b></code>.
+      Each field can contain all printable 7-bit ASCII characters (ASCII 32–126), excluding the
+      reserved characters `!` (ASCII 33), `$` (ASCII 36), `*` (ASCII 42), `,` (ASCII 44),
+      `\` (ASCII 92), `~` (ASCII 126).
+-  Field separators
+   -  All fields (identifier, message type, message version, data fields) are separated by a comma (`,`, ASCII 44)
+-  Null fields
+   -  Data fields can be _null_, meaning their value is absent to indicate that no data is
+      available. The data for null fields is the empty string. For example:
+      -  Definition: <code>...,<em>field<sub>i</sub></em>,<em>field<sub>i+1</sub></em>,<em>field<sub>i+2</sub></em>,...</code>
+      -  Values: <code><em>field<sub>i</sub></em></code> = 123, <code><em>field<sub>i+1</sub></em></code> = _null_,
+         <code><em>field<sub>i+2</sub></em></code> = 456
+      -  Payload string: <code>...,123,,456,...</code>
+-  Data field types:
+   -  _Numeric_: Decimal integer number, one or more digits (0-9) and optional leading "-" sign
+   -  _Float (.x)_: Decimal floating point number, one or more digits (0-9) and optional leading "-" sign, with
+      _x_ digits fractional part separated by a dot (".")
+   -  _Float (x)_: Decimal floating point number with _x_ significant digits, optional leading "-", optional fractional
+      part separated by a dot (".")
+   -  _String_: String of allowed payload characters (but not the `,` field separator)
+   -  ...
+   -  ...
 
 ### ODOMETRY message
 
@@ -269,7 +269,7 @@ GNSS fix type (`gnss_fix_type`):
 
 Remarks:
 
--   The output frame is the frame configured on the web-interface.
+-  The output frame is the frame configured on the web-interface.
 
 ### LLH message
 
@@ -350,8 +350,8 @@ Example message:
 
 Remarks:
 
--   The output frame of the IMU messages is the X on VRTK sensor, NOT the frame configured from the
-    webinterface (They are of course the same when on webinterface the configs are 0s).
+-  The output frame of the IMU messages is the X on VRTK sensor, NOT the frame configured from the
+   webinterface (They are of course the same when on webinterface the configs are 0s).
 
 ### TF message
 

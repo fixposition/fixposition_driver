@@ -26,7 +26,9 @@
 namespace fixposition {
 FixpositionDriver::FixpositionDriver(ros::NodeHandle *nh) : nh_(*nh) {
     // read parameters
-    params_.LoadFromRos();
+    if (!params_.LoadFromRos()) {
+        ROSFatalError("Parameter Loading failed, shutting down...");
+    }
 
     switch (params_.fp_output.type) {
         case INPUT_TYPE::TCP:
@@ -36,7 +38,7 @@ FixpositionDriver::FixpositionDriver(ros::NodeHandle *nh) : nh_(*nh) {
             CreateSerialConnection();
             break;
         default:
-            ROSFatalError("Unknown output type.");
+            ROSFatalError("Unknown connection type.");
     }
 
     ws_sub_ = nh_.subscribe<fixposition_driver::Speed>(params_.customer_input.speed_topic, 100,
@@ -131,9 +133,7 @@ void FixpositionDriver::Run() {
 
 bool FixpositionDriver::ReadAndPublish() {
     char readBuf[8192];
-    // send works like this:
-    // std::string test_str("Testtest\r\n");
-    // send(client_fd_, (void *)&test_str, sizeof(test_str), MSG_DONTWAIT);
+
     ssize_t rv;
     if (params_.fp_output.type == INPUT_TYPE::TCP) {
         rv = recv(client_fd_, (void *)&readBuf, sizeof(readBuf), MSG_DONTWAIT);
