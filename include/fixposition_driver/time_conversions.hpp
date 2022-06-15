@@ -1,15 +1,13 @@
 /**
+ *  @file
+ *  @brief Declaration of time conversion functions
+ * 
  *  ___    ___
  *  \  \  /  /
- *   \  \/  /
- *   /  /\  \
- *  /__/  \__\  Fixposition AG
- *
- * @file time_conversions.hpp
- * @author Kailin Huang (kailin.huang@fixposition.com)
- * @brief
- * @date 2022-01-26
- *
+ *   \  \/  /   Fixposition AG
+ *   /  /\  \   All right reserved.
+ *  /__/  \__\
+ * 
  */
 
 #ifndef __FIXPOSITION_DRIVER_TIME_CONVERSIONS__
