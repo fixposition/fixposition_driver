@@ -167,5 +167,4 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string>& 
         br_.sendTransform(tf_ecef_enu);
     }
 }
-
 }  // namespace fixposition

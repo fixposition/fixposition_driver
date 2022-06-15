@@ -1,13 +1,13 @@
 /**
  *  @file
  *  @brief Declaration of time conversion functions
- * 
+ *
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
- * 
+ *
  */
 
 #ifndef __FIXPOSITION_DRIVER_TIME_CONVERSIONS__
@@ -194,11 +194,11 @@ inline BOOST_POSIX::ptime GpsTimeToPtime(const GpsTime &gps_time) {
 }
 
 /**
- * @brief 
+ * @brief
  *  Only work after 2017.1.1
- * 
- * @param[in] boost_ptime 
- * @return GpsTime 
+ *
+ * @param[in] boost_ptime
+ * @return GpsTime
  */
 inline GpsTime PtimeToGpsTime(const BOOST_POSIX::ptime &boost_ptime) {
     BOOST_POSIX::time_duration gps_duration = boost_ptime - Constants::gps_epoch_begin;

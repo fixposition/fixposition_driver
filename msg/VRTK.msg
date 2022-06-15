@@ -1,3 +1,18 @@
+####################################################################################################
+#
+#    Copyright (c) 2022  ___     ___
+#                       \\  \\  /  /
+#                        \\  \\/  /
+#                         /  /\\  \\
+#                        /__/  \\__\\  Fixposition AG
+#
+####################################################################################################
+#
+# Fixposition VRTK Message
+#
+#
+####################################################################################################
+
 Header header
 string pose_frame                               # frame of the pose values [pose, quaternion]
 string kin_frame                                # frame of the kinematic values [linear/angular velocity, acceleration]
