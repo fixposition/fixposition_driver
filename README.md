@@ -11,7 +11,7 @@
 
 - **[fixposition_gnss_tf](https://github.com/fixposition/fixposition_gnss_tf)**: Fixposition GNSS Transformation Lib, minimum version **2.0.0**
 
-This drvier operates as a ROS node, connecting to either a TCP or serial stream of Fixposition Vision-RTK output data, see [Fixposition ASCII messages](#fixposition-ascii-messages) and the **Integration Manual**.
+This driver operates as a ROS node, connecting to either a TCP or serial stream of Fixposition Vision-RTK output data, see [Fixposition ASCII messages](#fixposition-ascii-messages) and the **Integration Manual**.
 
 ## Installation
 
@@ -60,7 +60,7 @@ The input velocity values should be in [mm/s] as integer 32bit. There are 2 Opti
 
 The input values will be converted into a RAWDMI message and sent via the TCP interface to the Vision-RTK2, where it will be further processed and added into the positioning engine.
 
-Note: _Currently the wheelspeed input through the ROS doriver is only supported in the TCP mode_
+Note: _Currently the wheelspeed input through the ROS driver is only supported in the TCP mode_
 
 ## Output of the driver
 
