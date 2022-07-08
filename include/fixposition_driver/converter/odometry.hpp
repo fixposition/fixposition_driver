@@ -20,6 +20,7 @@
 /* ROS */
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
+#include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2_ros/transform_broadcaster.h>
 
 /* PACKAGE */
@@ -40,7 +41,11 @@ class OdometryConverter : public BaseConverter {
         : BaseConverter(),
           odometry_pub_(nh.advertise<nav_msgs::Odometry>("/fixposition/odometry", 100)),
           imu_pub_(nh.advertise<sensor_msgs::Imu>("/fixposition/poiimu", 100)),
-          vrtk_pub_(nh.advertise<fixposition_driver::VRTK>("/fixposition/vrtk", 100)) {}
+          vrtk_pub_(nh.advertise<fixposition_driver::VRTK>("/fixposition/vrtk", 100)),
+          tf_ecef_enu0_set_(false) {
+        tf_ecef_enu0_.header.frame_id = "ECEF";
+        tf_ecef_enu0_.child_frame_id = "FP_ENU0";
+    }
 
     ~OdometryConverter() = default;
 
@@ -61,10 +66,18 @@ class OdometryConverter : public BaseConverter {
    private:
     const std::string header_ = "ODOMETRY";
     static constexpr const int kVersion_ = 1;
-    tf2_ros::TransformBroadcaster br_;
+
     ros::Publisher odometry_pub_;
     ros::Publisher imu_pub_;
     ros::Publisher vrtk_pub_;
+
+    //! transform between ECEF and ENU0
+    bool tf_ecef_enu0_set_;                         //!< flag to indicate if the tf is already set
+    geometry_msgs::TransformStamped tf_ecef_enu0_;  //!< tf from ECEF to ENU0
+
+    tf2_ros::TransformBroadcaster br_;               //!< tf broadcaster
+    tf2_ros::StaticTransformBroadcaster static_br_;  //!< tf_static broadcaster, for the ENU0 frame which is the ENU
+                                                     //!< frame at the first received position
 };
 
 /**
