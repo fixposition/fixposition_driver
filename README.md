@@ -9,7 +9,7 @@
 -  [CMake](https://cmake.org/)
 -  [Catkin](http://wiki.ros.org/catkin)
 
-- **[fixposition_gnss_tf](https://github.com/fixposition/fixposition_gnss_tf)**: Fixposition GNSS Transformation Lib, minimum version **2.0.0**
+-  **[fixposition_gnss_tf](https://github.com/fixposition/fixposition_gnss_tf)**: Fixposition GNSS Transformation Lib, minimum version **2.0.0**
 
 This driver operates as a ROS node, connecting to either a TCP or serial stream of Fixposition Vision-RTK output data, see [Fixposition ASCII messages](#fixposition-ascii-messages) and the **Integration Manual**.
 
@@ -77,7 +77,7 @@ The output is published on the following:
    ```
 
    TFs:
-   `ECEF-->FP_POI` and `ECEF-->FP_ENU`
+   `ECEF-->FP_POI`, `ECEF-->FP_ENU` and `ECEF-->FP_ENU0`
 
 -  From LLH, at the configured frequency
 
@@ -106,19 +106,21 @@ The output is published on the following:
    graph TD;
    ECEF-->FP_POI-->FP_VRTK-->FP_CAM
    ECEF-->FP_ENU
+   ECEF-->FP_ENU0
    ```
 
 _Please note that the corresponding messages also has to be selected on the Fixposition V-RTK's configuration interface._
 
 ### Explaination of frame ids
 
-| Frame ID    | Explaination                                                                                                                      |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| **ECEF**    | Earth-Center-Earth-Fixed frame                                                                                                    |
-| **FP_VRTK** | The coordinate frame on the V-RTK's housing on the Fixposition-Logo "X"                                                           |
-| **FP_POI**  | Point-Of-Interest, configured from V-RTK's web-interface with respect to the FP_VRTK frame. By default it is the same as FP_VRTK. |
-| **FP_ENU**  | The local East-North-Up coordinate frame with the origin ar the same location as FP_POI                                           |
-| **FP_CAM**  | The camera coordinate frame of the V-RTK.                                                                                         |
+| Frame ID    | Explaination                                                                                                                                   |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ECEF**    | Earth-Center-Earth-Fixed frame                                                                                                                 |
+| **FP_VRTK** | The coordinate frame on the V-RTK's housing on the Fixposition-Logo "X"                                                                        |
+| **FP_POI**  | Point-Of-Interest, configured from V-RTK's web-interface with respect to the FP_VRTK frame. By default it is the same as FP_VRTK.              |
+| **FP_ENU**  | The **local** East-North-Up coordinate frame with the origin at the same location as FP_POI                                                    |
+| **FP_ENU0**  | The **global fixed** East-North-Up coordinate frame with the origin at the first received ODOMETRY position. Needed for visualization in Rviz |
+| **FP_CAM**  | The camera coordinate frame of the V-RTK.                                                                                                      |
 
 ## Code Documentation
 
@@ -390,4 +392,5 @@ Message fields:
 |  11 | `orientation_z` | Float (.6) | -    | `-0.494440` | Quaternion with respect to ECEF, Z component                           |
 
 # License
+
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details

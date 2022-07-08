@@ -148,6 +148,16 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string>& 
     PointToVector3(tf_ecef_enu.transform.translation, odom_msg.pose.pose.position);
     QuatToMsg(tf_ecef_enu.transform.rotation, q_enu_ecef);
 
+    // static TF ECEF ENU0
+    if (!tf_ecef_enu0_set_ && tf_ecef_enu0_.transform.translation.x == 0 &&
+        tf_ecef_enu0_.transform.translation.y == 0 && tf_ecef_enu0_.transform.translation.z == 0) {
+        // ENU0 frame is not yet set, set the same ENU tf to ENU0
+
+        PointToVector3(tf_ecef_enu0_.transform.translation, odom_msg.pose.pose.position);
+        QuatToMsg(tf_ecef_enu0_.transform.rotation, q_enu_ecef);
+        tf_ecef_enu0_set_ = true;
+    }
+
     // Send Ros msgs
     if (odometry_pub_.getNumSubscribers() > 0) {
         odometry_pub_.publish(odom_msg);
@@ -165,6 +175,11 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string>& 
     }
     if (CheckQuat(tf_ecef_enu.transform.rotation)) {
         br_.sendTransform(tf_ecef_enu);
+    }
+    
+    // Send Static TF ECEF ENU0
+    if (tf_ecef_enu0_set_ && CheckQuat(tf_ecef_enu0_.transform.rotation)) {
+        static_br_.sendTransform(tf_ecef_enu0_);
     }
 }
 }  // namespace fixposition
