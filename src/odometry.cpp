@@ -71,53 +71,103 @@ static constexpr const int vel_cov_yz_idx = 41;
 static constexpr const int vel_cov_xz_idx = 42;
 static constexpr const int sw_version_idx = 43;
 
-void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string>& tokens) {
-    nav_msgs::Odometry odom_msg;
-    sensor_msgs::Imu imu_msg;
-    fixposition_driver::VRTK vrtk_msg;
+void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string> &tokens) {
     if (tokens.size() != 44) {
         ROS_INFO("Error in parsing Odometry string with %lu fields! odometry and status messages will be empty.",
                  tokens.size());
         return;
     }
-    // Header & Stamps
-    odom_msg.header.stamp = imu_msg.header.stamp = vrtk_msg.header.stamp =
-        ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
 
-    odom_msg.header.frame_id = vrtk_msg.header.frame_id = "ECEF";
-    odom_msg.child_frame_id = vrtk_msg.pose_frame = "POI";
-    imu_msg.header.frame_id = vrtk_msg.kin_frame = "POI";
+    const bool odom_sub_avl = odometry_pub_.getNumSubscribers() > 0;
+    const bool vrtk_sub_avl = vrtk_pub_.getNumSubscribers() > 0;
+    const bool imu_sub_avl = imu_pub_.getNumSubscribers() > 0;
+    const bool eul_sub_avl = eul_pub_.getNumSubscribers() > 0;
+    const bool odom_enu0_sub_avl = odometry_enu0_pub_.getNumSubscribers() > 0;
+
+    // common data
+    const auto stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
+    const Eigen::Vector3d t_ecef_body =
+        Vector3ToEigen(tokens.at(pos_x_idx), tokens.at(pos_y_idx), tokens.at(pos_z_idx));
+    const Eigen::Quaterniond q_ecef_body = Vector4ToEigen(tokens.at(orientation_w_idx), tokens.at(orientation_x_idx),
+                                                          tokens.at(orientation_y_idx), tokens.at(orientation_z_idx));
+
+    //  TFs
+    geometry_msgs::TransformStamped tf_ecef_poi, tf_ecef_enu;
+    tf_ecef_enu.header.stamp = stamp;
+    tf_ecef_poi.header.stamp = stamp;
+    tf_ecef_enu.header.frame_id = "ECEF";
+    tf_ecef_poi.header.frame_id = "ECEF";
+    tf_ecef_poi.child_frame_id = "FP_POI";
+    tf_ecef_enu.child_frame_id = "FP_ENU";  // The ENU frame at the position of FP_POI
+
+    // static TF ECEF ENU0
+    if (!tf_ecef_enu0_set_ && tf_ecef_enu0_.transform.translation.x == 0 &&
+        tf_ecef_enu0_.transform.translation.y == 0 && tf_ecef_enu0_.transform.translation.z == 0) {
+        // ENU0 frame is not yet set, set the same ENU tf to ENU0
+        t_ecef_enu0_ = t_ecef_body;
+        q_ecef_enu0_ = Eigen::Quaterniond(gnss_tf::RotEnuEcef(t_ecef_body).transpose());
+        tf_ecef_enu0_.transform.translation = EigenToVector3Msg(t_ecef_enu0_);
+        tf_ecef_enu0_.transform.rotation = EigenToQuatMsg(q_ecef_enu0_);
+        tf_ecef_enu0_set_ = true;
+    }
+
+    // TF ECEF POI is basically the same as the odometry, containing the Pose of the POI in the ECEF Frame
+    tf_ecef_poi.transform.translation = EigenToVector3Msg(t_ecef_body);
+    tf_ecef_poi.transform.rotation = EigenToQuatMsg(q_ecef_body);
+
+    // Quaternion from ECEF to Local ENU at POI
+    const Eigen::Quaterniond q_ecef_enu = Eigen::Quaterniond(gnss_tf::RotEnuEcef(t_ecef_body).transpose());
+    // TF ECEF ENU
+    tf_ecef_enu.transform.translation = EigenToVector3Msg(t_ecef_body);
+    tf_ecef_enu.transform.rotation = EigenToQuatMsg(q_ecef_enu);
+
+    // Send TFs
+    if (CheckQuat(tf_ecef_poi.transform.rotation)) {
+        br_.sendTransform(tf_ecef_poi);
+    }
+    if (CheckQuat(tf_ecef_enu.transform.rotation)) {
+        br_.sendTransform(tf_ecef_enu);
+    }
+    // Send Static TF ECEF ENU0
+    if (tf_ecef_enu0_set_ && CheckQuat(tf_ecef_enu0_.transform.rotation)) {
+        static_br_.sendTransform(tf_ecef_enu0_);
+    }
+
+    // Msgs
+    nav_msgs::Odometry odom_msg;  //!<  Odmetry msg ECEF - FP_POI
+    fixposition_driver::VRTK vrtk_msg;
+
+    odom_msg.header.stamp = stamp;
+    odom_msg.header.frame_id = "ECEF";
+    odom_msg.child_frame_id = "FP_POI";
+
+    vrtk_msg.header.stamp = stamp;
+    vrtk_msg.header.frame_id = "ECEF";
+    vrtk_msg.pose_frame = "FP_POI";
+    vrtk_msg.kin_frame = "FP_POI";
 
     // Pose & Cov
-    Vector3ToMsg(odom_msg.pose.pose.position, tokens.at(pos_x_idx), tokens.at(pos_y_idx), tokens.at(pos_z_idx));
-    Vector4ToMsg(odom_msg.pose.pose.orientation, tokens.at(orientation_w_idx), tokens.at(orientation_x_idx),
-                 tokens.at(orientation_y_idx), tokens.at(orientation_z_idx));
-    BuildCovMat6D(odom_msg.pose.covariance, StringToDouble(tokens.at(pos_cov_xx_idx)),
-                  StringToDouble(tokens.at(pos_cov_yy_idx)), StringToDouble(tokens.at(pos_cov_zz_idx)),
-                  StringToDouble(tokens.at(pos_cov_xy_idx)), StringToDouble(tokens.at(pos_cov_yz_idx)),
-                  StringToDouble(tokens.at(pos_cov_xz_idx)), StringToDouble(tokens.at(orientation_cov_xx_idx)),
-                  StringToDouble(tokens.at(orientation_cov_yy_idx)), StringToDouble(tokens.at(orientation_cov_zz_idx)),
-                  StringToDouble(tokens.at(orientation_cov_xy_idx)), StringToDouble(tokens.at(orientation_cov_yz_idx)),
-                  StringToDouble(tokens.at(orientation_cov_xz_idx)));
+    odom_msg.pose.pose.position = EigenToPointMsg(t_ecef_body);
+    odom_msg.pose.pose.orientation = EigenToQuatMsg(q_ecef_body);
+    odom_msg.pose.covariance = BuildCovMat6D(
+        StringToDouble(tokens.at(pos_cov_xx_idx)), StringToDouble(tokens.at(pos_cov_yy_idx)),
+        StringToDouble(tokens.at(pos_cov_zz_idx)), StringToDouble(tokens.at(pos_cov_xy_idx)),
+        StringToDouble(tokens.at(pos_cov_yz_idx)), StringToDouble(tokens.at(pos_cov_xz_idx)),
+        StringToDouble(tokens.at(orientation_cov_xx_idx)), StringToDouble(tokens.at(orientation_cov_yy_idx)),
+        StringToDouble(tokens.at(orientation_cov_zz_idx)), StringToDouble(tokens.at(orientation_cov_xy_idx)),
+        StringToDouble(tokens.at(orientation_cov_yz_idx)), StringToDouble(tokens.at(orientation_cov_xz_idx)));
     vrtk_msg.pose = odom_msg.pose;
 
     // Twist & Cov
     // Linear
-    Vector3ToMsg(odom_msg.twist.twist.linear, tokens.at(vel_x_idx), tokens.at(vel_y_idx), tokens.at(vel_z_idx));
+    odom_msg.twist.twist.linear = Vector3ToMsg(tokens.at(vel_x_idx), tokens.at(vel_y_idx), tokens.at(vel_z_idx));
     // Angular
-    Vector3ToMsg(odom_msg.twist.twist.angular, tokens.at(rot_x_idx), tokens.at(rot_y_idx), tokens.at(rot_z_idx));
-
-    BuildCovMat6D(odom_msg.twist.covariance, StringToDouble(tokens.at(vel_cov_xx_idx)),
-                  StringToDouble(tokens.at(vel_cov_yy_idx)), StringToDouble(tokens.at(vel_cov_zz_idx)),
-                  StringToDouble(tokens.at(vel_cov_xy_idx)), StringToDouble(tokens.at(vel_cov_yz_idx)),
-                  StringToDouble(tokens.at(vel_cov_xz_idx)), 0, 0, 0, 0, 0, 0);
+    odom_msg.twist.twist.angular = Vector3ToMsg(tokens.at(rot_x_idx), tokens.at(rot_y_idx), tokens.at(rot_z_idx));
+    odom_msg.twist.covariance = BuildCovMat6D(
+        StringToDouble(tokens.at(vel_cov_xx_idx)), StringToDouble(tokens.at(vel_cov_yy_idx)),
+        StringToDouble(tokens.at(vel_cov_zz_idx)), StringToDouble(tokens.at(vel_cov_xy_idx)),
+        StringToDouble(tokens.at(vel_cov_yz_idx)), StringToDouble(tokens.at(vel_cov_xz_idx)), 0, 0, 0, 0, 0, 0);
     vrtk_msg.velocity = odom_msg.twist;
-
-    // POI IMU Message
-    // Omega
-    imu_msg.angular_velocity = odom_msg.twist.twist.angular;
-    // Acceleration
-    Vector3ToMsg(imu_msg.linear_acceleration, tokens.at(acc_x_idx), tokens.at(acc_y_idx), tokens.at(acc_z_idx));
 
     // Status
     vrtk_msg.fusion_status = tokens.at(fusion_status_idx).empty() ? 0 : tokens.at(fusion_status_idx)[0] - '0';
@@ -128,58 +178,53 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string>& 
 
     vrtk_msg.version = tokens.at(sw_version_idx).empty() ? "UNKNOWN" : tokens.at(sw_version_idx);
 
-    //  TFs
-    geometry_msgs::TransformStamped tf_ecef_poi, tf_ecef_enu;
-    tf_ecef_enu.header.stamp = tf_ecef_poi.header.stamp = odom_msg.header.stamp;
-    tf_ecef_enu.header.frame_id = tf_ecef_poi.header.frame_id = "ECEF";
-    tf_ecef_poi.child_frame_id = "FP_POI";
-    tf_ecef_enu.child_frame_id = "FP_ENU";  // The ENU frame at the position of FP_POI
-
-    // TF ECEF POI is basically the same as the odometry, containing the Pose of the POI in the ECEF Frame
-    PointToVector3(tf_ecef_poi.transform.translation, odom_msg.pose.pose.position);
-    tf_ecef_poi.transform.rotation = odom_msg.pose.pose.orientation;
-
-    // Quaternion from ECEF to Local ENU at POI
-    const Eigen::Quaterniond q_enu_ecef = Eigen::Quaterniond(
-        gnss_tf::RotEnuEcef(Eigen::Vector3d(odom_msg.pose.pose.position.x, odom_msg.pose.pose.position.y,
-                                            odom_msg.pose.pose.position.z))
-            .transpose());
-    // TF ECEF ENU
-    PointToVector3(tf_ecef_enu.transform.translation, odom_msg.pose.pose.position);
-    QuatToMsg(tf_ecef_enu.transform.rotation, q_enu_ecef);
-
-    // static TF ECEF ENU0
-    if (!tf_ecef_enu0_set_ && tf_ecef_enu0_.transform.translation.x == 0 &&
-        tf_ecef_enu0_.transform.translation.y == 0 && tf_ecef_enu0_.transform.translation.z == 0) {
-        // ENU0 frame is not yet set, set the same ENU tf to ENU0
-
-        PointToVector3(tf_ecef_enu0_.transform.translation, odom_msg.pose.pose.position);
-        QuatToMsg(tf_ecef_enu0_.transform.rotation, q_enu_ecef);
-        tf_ecef_enu0_set_ = true;
-    }
-
     // Send Ros msgs
-    if (odometry_pub_.getNumSubscribers() > 0) {
+    if (odom_sub_avl) {
         odometry_pub_.publish(odom_msg);
     }
-    if (imu_pub_.getNumSubscribers() > 0) {
-        imu_pub_.publish(imu_msg);
-    }
-    if (vrtk_pub_.getNumSubscribers() > 0) {
+    if (vrtk_sub_avl) {
         vrtk_pub_.publish(vrtk_msg);
     }
+    if (imu_sub_avl) {
+        // POI IMU Message
+        sensor_msgs::Imu imu_msg;
+        imu_msg.header.stamp = stamp;
+        imu_msg.header.frame_id = "FP_POI";
+        // Omega
+        imu_msg.angular_velocity = odom_msg.twist.twist.angular;
+        // Acceleration
+        imu_msg.linear_acceleration = Vector3ToMsg(tokens.at(acc_x_idx), tokens.at(acc_y_idx), tokens.at(acc_z_idx));
+        imu_pub_.publish(imu_msg);
+    }
+    if (eul_sub_avl) {
+        // Euler angle wrt. ENU frame in the order of Yaw Pitch Roll
+        const Eigen::Vector3d ypr = gnss_tf::EcefPoseToEnuEul(t_ecef_body, q_ecef_body.toRotationMatrix());
+        eul_pub_.publish(EigenToVector3Msg(ypr));
+    }
+    if (odom_enu0_sub_avl) {
+        // Odmetry msg ENU0 - FP_POI
+        nav_msgs::Odometry odom_enu0_msg;
+        odom_enu0_msg.header.stamp = stamp;
+        odom_enu0_msg.header.frame_id = "ENU0";
+        odom_enu0_msg.child_frame_id = "FP_POI";
+        // Pose
+        // convert position in ECEF into position in ENU0
+        const Eigen::Vector3d t_enu0_body = gnss_tf::TfEnuEcef(t_ecef_body, gnss_tf::TfWgs84LlhEcef(t_ecef_enu0_));
+        const Eigen::Quaterniond q_enu0_body = q_ecef_enu0_.inverse() * q_ecef_body;
+        odom_enu0_msg.pose.pose.position = EigenToPointMsg(t_enu0_body);
+        odom_enu0_msg.pose.pose.orientation = EigenToQuatMsg(q_enu0_body);
+        // Cov
+        Eigen::Matrix<double, 6, 6> cov_ecef(odom_msg.pose.covariance.data());
+        const Eigen::Matrix3d rot_ecef_enu0 = q_ecef_enu0_.toRotationMatrix();
+        Eigen::Map<Eigen::Matrix<double, 6, 6>> cov_enu0(odom_enu0_msg.pose.covariance.data());
+        cov_enu0.topLeftCorner(3, 3) = rot_ecef_enu0 * cov_ecef.topLeftCorner(3, 3) * rot_ecef_enu0.transpose();
+        cov_enu0.bottomRightCorner(3, 3) = rot_ecef_enu0 * cov_ecef.bottomRightCorner(3, 3) * rot_ecef_enu0.transpose();
 
-    // Send TFs
-    if (CheckQuat(tf_ecef_poi.transform.rotation)) {
-        br_.sendTransform(tf_ecef_poi);
-    }
-    if (CheckQuat(tf_ecef_enu.transform.rotation)) {
-        br_.sendTransform(tf_ecef_enu);
-    }
-    
-    // Send Static TF ECEF ENU0
-    if (tf_ecef_enu0_set_ && CheckQuat(tf_ecef_enu0_.transform.rotation)) {
-        static_br_.sendTransform(tf_ecef_enu0_);
+        // Twist is the same as it is in the FP_POI frame
+        odom_enu0_msg.twist = odom_msg.twist;
+
+        // Publish
+        odometry_enu0_pub_.publish(odom_enu0_msg);
     }
 }
 }  // namespace fixposition
