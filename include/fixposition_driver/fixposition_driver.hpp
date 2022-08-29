@@ -43,7 +43,7 @@ class FixpositionDriver {
      *
      * @param[in] nh node handle
      */
-    FixpositionDriver(ros::NodeHandle* nh);
+    FixpositionDriver(ros::NodeHandle *nh);
 
     /**
      * @brief Destroy the Fixposition Driver object, close all open connections
@@ -70,7 +70,7 @@ class FixpositionDriver {
      *
      * @param[in] msg NMEA like string to be converted. $HEADER,,,,,,,*CHECKSUM
      */
-    void ConvertAndPublish(const std::string& msg);
+    void ConvertAndPublish(const std::string &msg);
 
     /**
      * @brief Initialize convertes based on config
@@ -83,10 +83,18 @@ class FixpositionDriver {
     /**
      * @brief Read data and publish to ros if possible
      *
-     * @return true data read success
-     * @return false no data read or connection problems
+     * @return true data read success or no data
+     * @return false connection problems, restart the connection
      */
     bool ReadAndPublish();
+
+    /**
+     * @brief Connect the defined TCP or Serial socket
+     *
+     * @return true success
+     * @return false cannot connect
+     */
+    bool Connect();
 
     /**
      * @brief Initialize TCP connection
@@ -114,7 +122,8 @@ class FixpositionDriver {
     std::unordered_map<std::string, std::unique_ptr<BaseConverter>>
         converters_;  //!< converters corresponding to the input formats
 
-    int client_fd_ = -1;  //!< TCP or Serial file descriptor
+    int client_fd_ = -1;          //!< TCP or Serial file descriptor
+    int connection_status_ = -1;  //!<
     struct termios options_save_;
 };
 }  // namespace fixposition

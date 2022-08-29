@@ -27,6 +27,7 @@ enum class INPUT_TYPE { TCP = 1, SERIAL = 2 };
 
 struct FpOutputParams {
     int rate;                          //!< loop rate of the main read loop
+    double reconnect_delay;            //!< wait time in [s] until retry connection
     INPUT_TYPE type;                   //!< TCP or SERIAL
     std::vector<std::string> formats;  //!< data formats to convert, support "FP" and "LLH" for now
 
