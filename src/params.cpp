@@ -23,6 +23,8 @@ bool FpOutputParams::LoadFromRos(const std::string &ns) {
     // read parameters
     if (!ros::param::get(ns + "/rate", rate)) rate = 100;
 
+    if (!ros::param::get(ns + "/reconnect_delay", reconnect_delay)) reconnect_delay = 5.0;
+
     std::string type_str;
     if (!ros::param::get(ns + "/type", type_str)) {
         return false;

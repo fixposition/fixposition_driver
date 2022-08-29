@@ -30,16 +30,7 @@ FixpositionDriver::FixpositionDriver(ros::NodeHandle *nh) : nh_(*nh) {
         ROSFatalError("Parameter Loading failed, shutting down...");
     }
 
-    switch (params_.fp_output.type) {
-        case INPUT_TYPE::TCP:
-            CreateTCPSocket();
-            break;
-        case INPUT_TYPE::SERIAL:
-            CreateSerialConnection();
-            break;
-        default:
-            ROSFatalError("Unknown connection type.");
-    }
+    Connect();
 
     ws_sub_ = nh_.subscribe<fixposition_driver::Speed>(params_.customer_input.speed_topic, 100,
                                                        &FixpositionDriver::WsCallback, this,
@@ -72,6 +63,20 @@ FixpositionDriver::~FixpositionDriver() {
             tcsetattr(client_fd_, TCSANOW, &options_save_);
         }
         close(client_fd_);
+    }
+}
+
+bool FixpositionDriver::Connect() {
+    switch (params_.fp_output.type) {
+        case INPUT_TYPE::TCP:
+            return CreateTCPSocket();
+            break;
+        case INPUT_TYPE::SERIAL:
+            return CreateSerialConnection();
+            break;
+        default:
+            ROSFatalError("Unknown connection type.");
+            return false;
     }
 }
 
@@ -123,11 +128,19 @@ bool FixpositionDriver::InitializeConverters() {
 void FixpositionDriver::Run() {
     ros::Rate rate(params_.fp_output.rate);
     while (ros::ok()) {
-        if (client_fd_ > 0) {
-            ReadAndPublish();
+        if ((client_fd_ > 0) && (connection_status_ == 0) && ReadAndPublish()) {
+            ros::spinOnce();
+            rate.sleep();
+        } else {
+            ROS_INFO("Reconnecting in %.1f seconds ...", params_.fp_output.reconnect_delay);
+            close(client_fd_);
+            client_fd_ = -1;
+
+            ros::spinOnce();
+            ros::Duration(params_.fp_output.reconnect_delay).sleep();
+
+            Connect();
         }
-        ros::spinOnce();
-        rate.sleep();
     }
 }
 
@@ -150,7 +163,7 @@ bool FixpositionDriver::ReadAndPublish() {
 
     if (rv < 0 && errno == EAGAIN) {
         /* no data for now, call back when the socket is readable */
-        return false;
+        return true;
     }
     if (rv < 0) {
         ROS_ERROR_STREAM("Connection error.");
@@ -203,7 +216,7 @@ bool FixpositionDriver::CreateTCPSocket() {
     client_fd_ = socket(AF_INET, SOCK_STREAM, 0);
 
     if (client_fd_ < 0) {
-        ROS_ERROR_STREAM("Error in client creation.");
+        ROS_ERROR_STREAM_THROTTLE(5, "Error in client creation.");
         return false;
     } else {
         ROS_INFO_STREAM("Client created.");
@@ -214,10 +227,10 @@ bool FixpositionDriver::CreateTCPSocket() {
     server_address.sin_port = htons(std::stoi(params_.fp_output.port));
     server_address.sin_addr.s_addr = inet_addr(params_.fp_output.ip.c_str());
 
-    int connection_status = connect(client_fd_, (struct sockaddr *)&server_address, sizeof server_address);
+    connection_status_ = connect(client_fd_, (struct sockaddr *)&server_address, sizeof server_address);
 
-    if (connection_status != 0) {
-        ROS_ERROR_STREAM("Error on connection.");
+    if (connection_status_ != 0) {
+        ROS_ERROR_STREAM("Error on connection of TCP socket: " << strerror(errno));
         return false;
     }
     return true;
@@ -277,7 +290,7 @@ bool FixpositionDriver::CreateSerialConnection() {
 
     if (client_fd_ == -1) {
         // Could not open the port.
-        std::cerr << "Failed to open serial port " << strerror(errno) << std::endl;
+        ROS_ERROR_STREAM_THROTTLE(5, "Failed to open serial port " << strerror(errno));
         return false;
     } else {
         // Get current serial port options:
@@ -295,7 +308,8 @@ bool FixpositionDriver::CreateSerialConnection() {
 
         cfsetospeed(&options, speed); /* baud rate */
         tcsetattr(client_fd_, TCSANOW, &options);
+        connection_status_ = 0;  // not used for serial, set to 0 (success)
+        return true;
     }
-    return true;
 }
 }  // namespace fixposition
