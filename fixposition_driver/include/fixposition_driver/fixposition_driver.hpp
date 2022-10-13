@@ -63,7 +63,7 @@ class FixpositionDriver {
      *
      * @param[in] msg
      */
-    void WsCallback(fixposition_driver::Speed msg);
+    void WsCallback(const fixposition_driver::SpeedConstPtr& msg);
 
     /**
      * @brief Convert the string using correct converter
