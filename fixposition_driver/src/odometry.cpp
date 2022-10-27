@@ -71,7 +71,7 @@ static constexpr const int vel_cov_yz_idx = 41;
 static constexpr const int vel_cov_xz_idx = 42;
 static constexpr const int sw_version_idx = 43;
 
-void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string> &tokens) {
+void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string>& tokens) {
     if (tokens.size() != 44) {
         ROS_INFO("Error in parsing Odometry string with %lu fields! odometry and status messages will be empty.",
                  tokens.size());
@@ -85,6 +85,7 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string> &
     const bool vrtk_sub_avl = vrtk_pub_.getNumSubscribers() > 0;
     const bool imu_sub_avl = imu_pub_.getNumSubscribers() > 0;
     const bool eul_sub_avl = eul_pub_.getNumSubscribers() > 0;
+    const bool eul_imu_sub_avl = eul_imu_pub_.getNumSubscribers() > 0;
     const bool odom_enu0_sub_avl = odometry_enu0_pub_.getNumSubscribers() > 0;
 
     // common data
@@ -204,6 +205,21 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string> &
         // Euler angle wrt. ENU frame in the order of Yaw Pitch Roll
         const Eigen::Vector3d ypr = gnss_tf::EcefPoseToEnuEul(t_ecef_body, q_ecef_body.toRotationMatrix());
         eul_pub_.publish(EigenToVector3Msg(ypr));
+    }
+    if (eul_imu_sub_avl) {
+        bool valid = true;
+        geometry_msgs::TransformStamped imu_pose;
+        try {
+            // Check if the transform is being correctly published
+            imu_pose = tf_buffer_.lookupTransform("FP_IMU_HORIZONTAL", "FP_POI", ros::Time(0));
+        } catch (tf2::TransformException &ex) {
+            valid = false;
+        } if (valid) {
+            const Eigen::Quaterniond quat_pose = QuatMsgToEigen(imu_pose.transform.rotation);
+            Eigen::Vector3d imu_ypr = gnss_tf::QuatToEul(quat_pose);
+            imu_ypr.x() = 0.0; // the yaw value is not observable using IMU alone
+            eul_imu_pub_.publish(EigenToVector3Msg(imu_ypr));
+        }
     }
     if (odom_enu0_sub_avl && fusion_init) {
         // Odmetry msg ENU0 - FP_POI

@@ -80,19 +80,19 @@ bool FixpositionDriver::Connect() {
     }
 }
 
-void FixpositionDriver::WsCallback(fixposition_driver::Speed msg) {
-    if (msg.speeds.size() == 1) {
-        rawdmi_.dmi1 = msg.speeds[0];
+void FixpositionDriver::WsCallback(const fixposition_driver::SpeedConstPtr& msg) {
+    if (msg->speeds.size() == 1) {
+        rawdmi_.dmi1 = msg->speeds[0];
         rawdmi_.mask = (1 << 0) | (0 << 1) | (0 << 2) | (0 << 3);
-    } else if (msg.speeds.size() == 4) {
-        rawdmi_.dmi1 = msg.speeds[0];
-        rawdmi_.dmi2 = msg.speeds[1];
-        rawdmi_.dmi3 = msg.speeds[2];
-        rawdmi_.dmi4 = msg.speeds[3];
+    } else if (msg->speeds.size() == 4) {
+        rawdmi_.dmi1 = msg->speeds[0];
+        rawdmi_.dmi2 = msg->speeds[1];
+        rawdmi_.dmi3 = msg->speeds[2];
+        rawdmi_.dmi4 = msg->speeds[3];
         rawdmi_.mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
     } else {
         ROS_WARN_THROTTLE(1, "Invalid speed message with size %lu, the size should be either 1 or 4!",
-                          msg.speeds.size());
+                          msg->speeds.size());
         return;
     }
 
@@ -111,6 +111,7 @@ bool FixpositionDriver::InitializeConverters() {
     for (const auto format : params_.fp_output.formats) {
         if (format == "ODOMETRY") {
             converters_["ODOMETRY"] = std::unique_ptr<OdometryConverter>(new OdometryConverter(nh_));
+            converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter(nh_));
         } else if (format == "LLH") {
             converters_["LLH"] = std::unique_ptr<LlhConverter>(new LlhConverter(nh_));
         } else if (format == "RAWIMU") {
@@ -118,7 +119,9 @@ bool FixpositionDriver::InitializeConverters() {
         } else if (format == "CORRIMU") {
             converters_["CORRIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(nh_, true));
         } else if (format == "TF") {
-            converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter(nh_));
+            if (converters_.find("TF") != converters_.end()) {
+                converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter(nh_));
+            }
         } else {
             ROS_INFO_STREAM("Unknown input format: " << format);
         }

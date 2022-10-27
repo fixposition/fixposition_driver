@@ -75,7 +75,8 @@ The output is published on the following:
    | --------------------------- | ------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------- |
    | `/fixposition/odometry`     | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POI, Velocity and Angular Velocity in FP_POI                    |
    | `/fixposition/odometry_enu` | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to ENU0, Velocity and Angular Velocity in FP_POI                      |
-   | `/fixposition/ypr`          | `geometry_msgs/Vector3`   | as configured on web-interface | x = Yaw, y = Pitch, z = Roll in radian. Euler angles representation of rotation between ENU and P_POI |
+   | `/fixposition/ypr`          | `geometry_msgs/Vector3`   | as configured on web-interface | x = Yaw, y = Pitch, z = Roll in radian. Euler angles representation of rotation between ENU and P_POI. Only available after fusion initialization.       |
+   | `/fixposition/imu_ypr`      | `geometry_msgs/Vector3`   | 200Hz                          | x = 0.0, y = Pitch, z = Roll in radian. Euler angles representation of rotation between a local horizontal frame and P_POI. Rough estimation using IMU alone. |
    | `/fixposition/vrtk`         | `fixposition_driver/VRTK` | as configured on web-interface | Custom Message containing same Odometry information as well as status flags                           |
    | `/fixposition/poiimu`       | `sensor_msgs/Imu`         | as configured on web-interface | Bias Corrected acceleration and rotation rate in FP_POI                                               |
 
@@ -101,13 +102,14 @@ The output is published on the following:
    | `/fixposition/corrimu` | `sensor_msgs/Imu` | 200Hz     | Bias Corrected IMU acceleration and angular velocity data in FP_VRTK frame |
 
 -  TFs:
-    | Frames             | Topic        | Message needed to be selected on web-interface | Frequency                      |
-    | ------------------ | ------------ | ---------------------------------------------- | ------------------------------ |
-    | `ECEF-->FP_POI`    | `/tf`        | `ODOMETRY`                                     | as configured on web-interface |
-    | `ECEF-->FP_ENU`    | `/tf`        | `ODOMETRY`                                     | as configured on web-interface |
-    | `ECEF-->FP_ENU0`   | `/tf`        | `ODOMETRY`                                     | as configured on web-interface |
-    | `FP_POI-->FP_VRTK` | `/tf_static` | `TF_POI_VRTK`                                  | 1Hz                            |
-    | `FP_VRTK-->FP_CAM` | `/tf_static` | `TF_VRTK_CAM`                                  | 1Hz                            |
+    | Frames                       | Topic        | Message needed to be selected on web-interface | Frequency                      |
+    | ------------------           | ------------ | ---------------------------------------------- | ------------------------------ |
+    | `ECEF-->FP_POI`              | `/tf`        | `ODOMETRY`                                     | as configured on web-interface |
+    | `ECEF-->FP_ENU`              | `/tf`        | `ODOMETRY`                                     | as configured on web-interface |
+    | `ECEF-->FP_ENU0`             | `/tf`        | `ODOMETRY`                                     | as configured on web-interface |
+    | `FP_POI-->FP_IMU_HORIZONTAL` | `/tf`        | `ODOMETRY`                                     | 200Hz                          |
+    | `FP_POI-->FP_VRTK`           | `/tf_static` | `TF_POI_VRTK`                                  | 1Hz                            |
+    | `FP_VRTK-->FP_CAM`           | `/tf_static` | `TF_VRTK_CAM`                                  | 1Hz                            |
 
 
 -  ROS TF Tree:
@@ -115,6 +117,7 @@ The output is published on the following:
    ```mermaid
    graph TD;
    ECEF-->FP_POI-->FP_VRTK-->FP_CAM
+   FP_POI-->FP_IMU_HORIZONTAL
    ECEF-->FP_ENU
    ECEF-->FP_ENU0
    ```
@@ -123,14 +126,15 @@ _Please note that the corresponding messages also has to be selected on the Fixp
 
 ### Explaination of frame ids
 
-| Frame ID    | Explaination                                                                                                                                  |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ECEF**    | Earth-Center-Earth-Fixed frame                                                                                                                |
-| **FP_VRTK** | The coordinate frame on the V-RTK's housing on the Fixposition-Logo "X"                                                                       |
-| **FP_POI**  | Point-Of-Interest, configured from V-RTK's web-interface with respect to the FP_VRTK frame. By default it is the same as FP_VRTK.             |
-| **FP_ENU**  | The **local** East-North-Up coordinate frame with the origin at the same location as FP_POI                                                   |
-| **FP_ENU0** | The **global fixed** East-North-Up coordinate frame with the origin at the first received ODOMETRY position. Needed for visualization in Rviz |
-| **FP_CAM**  | The camera coordinate frame of the V-RTK.                                                                                                     |
+| Frame ID    | Explaination                                                                                                                                    |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ECEF**    | Earth-Center-Earth-Fixed frame.                                                                                                                 |
+| **FP_VRTK** | The coordinate frame on the V-RTK's housing on the Fixposition-Logo "X".                                                                        |
+| **FP_POI**  | Point-Of-Interest, configured from V-RTK's web-interface with respect to the FP_VRTK frame. By default it is the same as FP_VRTK.               |
+| **FP_ENU**  | The **local** East-North-Up coordinate frame with the origin at the same location as FP_POI.                                                    |
+| **FP_ENU0** | The **global fixed** East-North-Up coordinate frame with the origin at the first received ODOMETRY position. Needed for visualization in Rviz.  |
+| **FP_CAM**  | The camera coordinate frame of the V-RTK.                                                                                                       |
+| **FP_IMU_HORIZONTAL**  | A local horizontal frame with the origin at the same location as FP_POI. This frame is a rough estimate determined by the IMU alone. |
 
 ## Code Documentation
 
@@ -400,6 +404,22 @@ Message fields:
 |    9 | `orientation_x` | Float (.6) | -    | `-0.508955` | Quaternion with respect to ECEF, X component                           |
 |   10 | `orientation_y` | Float (.6) | -    | `0.511098`  | Quaternion with respect to ECEF, Y component                           |
 |   11 | `orientation_z` | Float (.6) | -    | `-0.494440` | Quaternion with respect to ECEF, Z component                           |
+
+# Fixposition Odometry Converter
+
+An extra node is provided to help with the integration of the wheel odometry on your vehicle. This node is intended to be used as a middleware if you already have a topic with the wheel odometry values running on your system. At the moment, messages of the type `Twist`, `TwistWithCov` and `Odometry` are accepted. The x component of the velocity in the input messages is then extracted, converted, and republished to the `/fixposition/speed` topic, where they will be consumed by the VRTK2.
+
+_Please note that currently, the odometry converter only works for situations where the desired input odometry has just one value, i.e. the total vehicle speed. It also assumes that the x axis of the odometry output and the VRTK2 axis are aligned. For situations where all 4 inputs are desired, a custom converter is necessary._
+
+## Input Parameters
+
+The `odom_converter.yaml` file exposes the necessary parameters for the correct operation of the node. The parameter that may cause the most doubt is the `multiplicative_factor`. This should be chosen such that the inputed float velocity value is transformed into milimeters per second, e.g. 1000 for an input that is expressed in meters per second.
+
+## Launch
+
+After the configuration is set, to launch the node simply run:
+
+   `roslaunch fixposition_odometry_converter odom_converter.launch`
 
 # License
 

@@ -14,6 +14,7 @@
 #define __FIXPOSITION_DRIVER_CONVERTER_TF__
 
 /* ROS */
+#include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 
 /* PACKAGE */
@@ -37,14 +38,13 @@ class TfConverter : public BaseConverter {
     /**
      * @brief TODO
      *
-     *
-     *
      * @param[in] state state message as string
      * @return nav_msgs::Odometry message
      */
     void ConvertTokensAndPublish(const std::vector<std::string>& tokens) final;
 
    private:
+    tf2_ros::TransformBroadcaster br_;
     tf2_ros::StaticTransformBroadcaster static_br_;
     const std::string header_ = "TF";
 

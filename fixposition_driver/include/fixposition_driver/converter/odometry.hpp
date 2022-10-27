@@ -22,6 +22,7 @@
 #include <sensor_msgs/Imu.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
 
 /* PACKAGE */
 #include <fixposition_driver/VRTK.h>
@@ -46,7 +47,9 @@ class OdometryConverter : public BaseConverter {
           vrtk_pub_(nh.advertise<fixposition_driver::VRTK>("/fixposition/vrtk", 100)),
           odometry_enu0_pub_(nh.advertise<nav_msgs::Odometry>("/fixposition/odometry_enu", 100)),
           eul_pub_(nh.advertise<geometry_msgs::Vector3>("/fixposition/ypr", 100)),
-          tf_ecef_enu0_set_(false) {
+          eul_imu_pub_(nh.advertise<geometry_msgs::Vector3>("/fixposition/imu_ypr", 100)),
+          tf_ecef_enu0_set_(false),
+          lt_(tf_buffer_) {
         tf_ecef_enu0_.header.frame_id = "ECEF";
         tf_ecef_enu0_.child_frame_id = "FP_ENU0";
     }
@@ -76,6 +79,7 @@ class OdometryConverter : public BaseConverter {
     ros::Publisher vrtk_pub_;           //!< VRTK message
     ros::Publisher odometry_enu0_pub_;  //!< ENU0 Odometry
     ros::Publisher eul_pub_;            //!< Euler angles Yaw-Pitch-Roll in local ENU
+    ros::Publisher eul_imu_pub_;        //!< Euler angles Pitch-Roll as estimated from the IMU in local horizontal frame
 
     //! transform between ECEF and ENU0
     bool tf_ecef_enu0_set_;  //!< flag to indicate if the tf is already set
@@ -83,6 +87,8 @@ class OdometryConverter : public BaseConverter {
     Eigen::Quaterniond q_ecef_enu0_;
     geometry_msgs::TransformStamped tf_ecef_enu0_;  //!< tf from ECEF to ENU0
 
+    tf2_ros::Buffer tf_buffer_;                      //!< tf buffer
+    tf2_ros::TransformListener lt_;                  //!< tf listener
     tf2_ros::TransformBroadcaster br_;               //!< tf broadcaster
     tf2_ros::StaticTransformBroadcaster static_br_;  //!< tf_static broadcaster, for the ENU0 frame which is the ENU
                                                      //!< frame at the first received position

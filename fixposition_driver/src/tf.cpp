@@ -50,9 +50,13 @@ void TfConverter::ConvertTokensAndPublish(const std::vector<std::string>& tokens
     tf.transform.rotation.x = StringToDouble(tokens.at(orientation_x_idx));
     tf.transform.rotation.y = StringToDouble(tokens.at(orientation_y_idx));
     tf.transform.rotation.z = StringToDouble(tokens.at(orientation_z_idx));
-    
+
     if (CheckQuat(tf.transform.rotation)) {
-        static_br_.sendTransform(tf);
+        if (tf.child_frame_id == "FP_IMU_HORIZONTAL") {
+            br_.sendTransform(tf);
+        } else {
+            static_br_.sendTransform(tf);
+        }
     }
 }
 
