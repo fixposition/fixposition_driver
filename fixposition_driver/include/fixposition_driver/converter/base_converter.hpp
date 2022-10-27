@@ -145,6 +145,21 @@ inline geometry_msgs::Quaternion EigenToQuatMsg(const Eigen::Quaterniond &quat) 
 }
 
 /**
+ * @brief convert Eigen::Quaterniond into a geometry_msgs::Quaternion
+ *
+ * @param[in] quat
+ * @return geometry_msgs::Quaternion
+ */
+inline Eigen::Quaterniond QuatMsgToEigen(const geometry_msgs::Quaternion &msg) {
+    Eigen::Quaterniond quat;
+    quat.w() = msg.w;
+    quat.x() = msg.x;
+    quat.y() = msg.y;
+    quat.z() = msg.z;
+    return quat;
+}
+
+/**
  * @brief Convert 3 string values into a Eigen::Vector3d
  *
  * @param[in] x

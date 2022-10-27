@@ -111,6 +111,7 @@ bool FixpositionDriver::InitializeConverters() {
     for (const auto format : params_.fp_output.formats) {
         if (format == "ODOMETRY") {
             converters_["ODOMETRY"] = std::unique_ptr<OdometryConverter>(new OdometryConverter(nh_));
+            converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter(nh_));
         } else if (format == "LLH") {
             converters_["LLH"] = std::unique_ptr<LlhConverter>(new LlhConverter(nh_));
         } else if (format == "RAWIMU") {
@@ -118,7 +119,9 @@ bool FixpositionDriver::InitializeConverters() {
         } else if (format == "CORRIMU") {
             converters_["CORRIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(nh_, true));
         } else if (format == "TF") {
-            converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter(nh_));
+            if (converters_.find("TF") != converters_.end()) {
+                converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter(nh_));
+            }
         } else {
             ROS_INFO_STREAM("Unknown input format: " << format);
         }
