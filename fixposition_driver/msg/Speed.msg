@@ -13,8 +13,9 @@
 #
 ####################################################################################################
 
-# Velocity values in [mm/s] as integer 32bit
+# Velocity values in [mm/s] (or [mrad/s]) as integer 32bit
 # 2 Options:
-# Option 1: only one vehicle speed, then only fill a single value as the vehicle speed
-# Option 2: Fill in 4 Values of 4 wheels, in the order of FR, FL, RR, RL
+# Option 1: One vehicle speed, of sensor RC
+# Option 2: One vehicle speed, of sensor RC and the yaw rate of the vehicle
+# Option 3: Fill in 4 Values of 4 wheels, in the order of FR, FL, RR, RL
 int32[] speeds

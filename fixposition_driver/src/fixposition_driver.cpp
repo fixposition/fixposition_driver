@@ -84,6 +84,10 @@ void FixpositionDriver::WsCallback(const fixposition_driver::SpeedConstPtr& msg)
     if (msg->speeds.size() == 1) {
         rawdmi_.dmi1 = msg->speeds[0];
         rawdmi_.mask = (1 << 0) | (0 << 1) | (0 << 2) | (0 << 3);
+    } else if (msg->speeds.size() == 2) {
+        rawdmi_.dmi1 = msg->speeds[0];
+        rawdmi_.dmi2 = msg->speeds[1];
+        rawdmi_.mask = (1 << 0) | (1 << 1) | (0 << 2) | (0 << 3) | (1 << 11);    
     } else if (msg->speeds.size() == 4) {
         rawdmi_.dmi1 = msg->speeds[0];
         rawdmi_.dmi2 = msg->speeds[1];
@@ -91,7 +95,7 @@ void FixpositionDriver::WsCallback(const fixposition_driver::SpeedConstPtr& msg)
         rawdmi_.dmi4 = msg->speeds[3];
         rawdmi_.mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
     } else {
-        ROS_WARN_THROTTLE(1, "Invalid speed message with size %lu, the size should be either 1 or 4!",
+        ROS_WARN_THROTTLE(1, "Invalid speed message with size %lu, the size should be either 1, 2 or 4!",
                           msg->speeds.size());
         return;
     }

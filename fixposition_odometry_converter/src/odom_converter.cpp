@@ -43,25 +43,29 @@ void OdomConverter::Subscribe() {
     }
 }
 
-void OdomConverter::ConvertAndPublish(const double speed) {
+void OdomConverter::ConvertAndPublish(const double speed, const double angular, bool use_angular) {
     if (ws_pub_.getNumSubscribers() > 0) {
         const int int_speed = round(speed * params_.multiplicative_factor);
+        const int angular_speed = round(angular * params_.multiplicative_factor);
         fixposition_driver::Speed msg;
         msg.speeds.push_back(int_speed);
+        if (params_.use_angular) {
+            msg.speeds.push_back(angular_speed);
+        }
         ws_pub_.publish(msg);
     }
 }
 
 void OdomConverter::TwistWithCovCallback(const geometry_msgs::TwistWithCovarianceConstPtr& msg) {
-    ConvertAndPublish(msg->twist.linear.x);
+    ConvertAndPublish(msg->twist.linear.x, msg->twist.angular.z, params_.use_angular);
 }
 
 void OdomConverter::OdometryCallback(const nav_msgs::OdometryConstPtr& msg) {
-    ConvertAndPublish(msg->twist.twist.linear.x);
+    ConvertAndPublish(msg->twist.twist.linear.x, msg->twist.twist.angular.z, params_.use_angular);
 }
 
 void OdomConverter::TwistCallback(const geometry_msgs::TwistConstPtr& msg) {
-    ConvertAndPublish(msg->linear.x);
+    ConvertAndPublish(msg->linear.x, msg->angular.z, params_.use_angular);
 }
 
 }  // namespace fixposition

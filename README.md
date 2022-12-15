@@ -53,12 +53,37 @@ To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections,
 
 The fp_ros_driver support inputing a Speed msg (`msg/Speed.msg`) through the `/fixposition/speed` topic.
 
-The input velocity values should be in [mm/s] as integer 32bit. There are 2 Options:
+The input velocity values should be in [mm/s], respectively [mrad/s], as integer 32bit. There are 2 Options:
 
--  Option 1: only one vehicle speed, then only fill a single value as the vehicle speed
--  Option 2: Fill in 4 Values of 4 wheels, in the order of FR, FL, RR, RL
+-  Option 1: Only one vehicle speed, then only fill a single value as the vehicle speed
+-  Option 2: One vehicle speed and the rotation around the vehicle's rotation center
+-  Option 3: Fill in 4 Values of 4 wheels, in the order of FR, FL, RR, RL
 
-The input values will be converted into a RAWDMI message and sent via the TCP interface to the Vision-RTK2, where it will be further processed and added into the positioning engine.
+The input values will be converted into a RAWDMI message and sent via the TCP interface to the Vision-RTK2, where it will be further processed and added into the positioning engine. The following protocol is used when filling the DMI messages, as per the documentation:
+
+| Offset                               | Type      | Value       | Description |
+|-------------------------------------:|-----------|-------------|-------------|
+|     0  | uint8_t      | `0xaa`      | (header) Sync byte 1 |
+|     1  | uint8_t      | `0x44`      | (header) Sync byte 2 |
+|     2  | uint8_t      | `0x13`      | (header) Sync byte 3 |
+|     3  | uint8_t      | `20`        | (header) Payload length |
+|     4  | uint16_t     | `2269`      | (header) Message ID |
+|     6  | uint16_t     | `0`         | (header) Week number, ignored by VRTK2 |
+|     8  | int32_t      | `0`         | (header) Time of week [ms], ignored by VRTK2 |
+|    12  | int32_t      | *dmi1*      | (payload) Speed value 1, for RC or FR wheel |
+|    16  | int32_t      | *dmi2*      | (payload) Speed value 2, for FL wheel or YW sensor |
+|    20  | int32_t      | *dmi3*      | (payload) Speed value 3, for RR wheel |
+|    24  | int32_t      | *dmi4*      | (payload) Speed value 4, for RL wheel |
+|    28  | uint32_t     | *mask*      | (payload) Bitfield Speed value mask |
+|        | bit 0        | *dmi1_mask* | (payload) Validity bit for *dmi1* value |
+|        | bit 1        | *dmi2_mask* | (payload) Validity bit for *dmi2* value |
+|        | bit 2        | *dmi3_mask* | (payload) Validity bit for *dmi3* value |
+|        | bit 3        | *dmi4_mask* | (payload) Validity bit for *dmi4* value |
+|        | bits 10…4    | *dmi1_type* | (payload) Type of measurement present in *dmi1* value |
+|        | bits 17…11   | *dmi2_type* | (payload) Type of measurement present in *dmi2* value |
+|        | bits 24…18   | *dmi3_type* | (payload) Type of measurement present in *dmi3* value |
+|        | bits 31…25   | *dmi3_type* | (payload) Type of measurement present in *dmi3* value |
+|    32  | uint32_t     | *cksum*     | (checksum) CRC2 checksum (seed 0x00000000, polynomial 0xEDB88320) |
 
 Note: _Currently the wheelspeed input through the ROS driver is only supported in the TCP mode_
 
@@ -407,9 +432,9 @@ Message fields:
 
 # Fixposition Odometry Converter
 
-An extra node is provided to help with the integration of the wheel odometry on your vehicle. This node is intended to be used as a middleware if you already have a topic with the wheel odometry values running on your system. At the moment, messages of the type `Twist`, `TwistWithCov` and `Odometry` are accepted. The x component of the velocity in the input messages is then extracted, converted, and republished to the `/fixposition/speed` topic, where they will be consumed by the VRTK2.
+An extra node is provided to help with the integration of the wheel odometry on your vehicle. This node is intended to be used as a middleware if you already have a topic with the wheel odometry values running on your system. At the moment, messages of the type `Twist`, `TwistWithCov` and `Odometry` are accepted. The x component of the velocity in the input messages is then extracted, converted, and republished to the `/fixposition/speed` topic, where they will be consumed by the VRTK2. If the param `use_angular` is selected, the z component of the angular velocity (yaw rate) of the input messages is also extracted and placed in the speed vector.
 
-_Please note that currently, the odometry converter only works for situations where the desired input odometry has just one value, i.e. the total vehicle speed. It also assumes that the x axis of the odometry output and the VRTK2 axis are aligned. For situations where all 4 inputs are desired, a custom converter is necessary._
+_Please note that currently, the odometry converter only works for situations where the desired input odometry has just one or two values, i.e. the total vehicle speed or the total vehicle speed and yaw rate. It also assumes that the x axis of the odometry output and the VRTK2 axis are aligned. For situations where all 4 inputs are desired, a custom converter is necessary._
 
 ## Input Parameters
 

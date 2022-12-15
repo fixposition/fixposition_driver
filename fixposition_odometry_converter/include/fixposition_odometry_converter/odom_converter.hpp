@@ -57,7 +57,7 @@ class OdomConverter {
      * 
      * @param speed 
      */
-    void ConvertAndPublish(const double speed);
+    void ConvertAndPublish(const double speed, const double angular, bool use_angular = false);
 
    private:
     /**
