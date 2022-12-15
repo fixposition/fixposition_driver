@@ -23,6 +23,7 @@ bool OdomInputParams::LoadFromRos(const std::string &ns) {
 
     if (!ros::param::get(ns + "/fixposition_speed_topic", fixposition_speed_topic)) fixposition_speed_topic = "/fixposition/speed";
     if (!ros::param::get(ns + "/multiplicative_factor", multiplicative_factor)) multiplicative_factor = 1000;
+    if (!ros::param::get(ns + "/use_angular", use_angular)) use_angular = false;
     if (!ros::param::get(ns + "/input_topic", input_topic)) {
         ROS_ERROR("Couldn't read the input topic name.");
         return false;
@@ -40,6 +41,7 @@ bool OdomInputParams::LoadFromRos(const std::string &ns) {
         topic_type = VelTopicType::Odometry;
     } else {
         ROS_ERROR("Topic type is not supported.");
+        return false;
     }
     
     return true;
