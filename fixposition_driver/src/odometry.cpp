@@ -71,14 +71,29 @@ static constexpr const int vel_cov_yz_idx = 41;
 static constexpr const int vel_cov_xz_idx = 42;
 static constexpr const int sw_version_idx = 43;
 
-void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string>& tokens) {
+/**
+ * @brief Parse status flag field
+ * 
+ * @param[in] tokens list of tokens
+ * @param[in] idx status flag index
+ * @return int 
+ */
+int ParseStatusFlag(const std::vector<std::string> &tokens, const int idx) {
+    if (tokens.at(idx).empty()) {
+        return -1;
+    } else {
+        return std::stoi(tokens.at(idx));
+    }
+}
+
+void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string> &tokens) {
     if (tokens.size() != 44) {
         ROS_INFO("Error in parsing Odometry string with %lu fields! odometry and status messages will be empty.",
                  tokens.size());
         return;
     }
+    const int fusion_status = ParseStatusFlag(tokens, fusion_status_idx);
 
-    const int fusion_status = tokens.at(fusion_status_idx).empty() ? 0 : tokens.at(fusion_status_idx)[0] - '0';
     const bool fusion_init = fusion_status >= 3;
 
     const bool odom_sub_avl = odometry_pub_.getNumSubscribers() > 0;
@@ -175,11 +190,10 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string>& 
     }
 
     // Status, regardless of fusion_init
-    vrtk_msg.fusion_status = tokens.at(fusion_status_idx).empty() ? 0 : tokens.at(fusion_status_idx)[0] - '0';
-    vrtk_msg.imu_bias_status = tokens.at(imu_bias_status_idx).empty() ? 0 : tokens.at(imu_bias_status_idx)[0] - '0';
-    vrtk_msg.gnss_status = tokens.at(gnss_fix_type_idx).empty() ? 0 : tokens.at(gnss_fix_type_idx)[0] - '0';
-    vrtk_msg.wheelspeed_status =
-        tokens.at(wheelspeed_status_idx).empty() ? 0 : tokens.at(wheelspeed_status_idx)[0] - '0';
+    vrtk_msg.fusion_status = fusion_status;
+    vrtk_msg.imu_bias_status = ParseStatusFlag(tokens, imu_bias_status_idx);
+    vrtk_msg.gnss_status = ParseStatusFlag(tokens, gnss_fix_type_idx);
+    vrtk_msg.wheelspeed_status = ParseStatusFlag(tokens, wheelspeed_status_idx);
 
     vrtk_msg.version = tokens.at(sw_version_idx).empty() ? "UNKNOWN" : tokens.at(sw_version_idx);
 
@@ -214,10 +228,11 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string>& 
             imu_pose = tf_buffer_.lookupTransform("FP_IMU_HORIZONTAL", "FP_POI", ros::Time(0));
         } catch (tf2::TransformException &ex) {
             valid = false;
-        } if (valid) {
+        }
+        if (valid) {
             const Eigen::Quaterniond quat_pose = QuatMsgToEigen(imu_pose.transform.rotation);
             Eigen::Vector3d imu_ypr = gnss_tf::QuatToEul(quat_pose);
-            imu_ypr.x() = 0.0; // the yaw value is not observable using IMU alone
+            imu_ypr.x() = 0.0;  // the yaw value is not observable using IMU alone
             eul_imu_pub_.publish(EigenToVector3Msg(imu_ypr));
         }
     }
