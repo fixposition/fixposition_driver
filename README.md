@@ -8,10 +8,25 @@
 -  [Boost](https://www.boost.org/), tested with version [1.65.0](https://www.boost.org/users/history/version_1_65_0.html)
 -  [CMake](https://cmake.org/)
 -  [Catkin](http://wiki.ros.org/catkin)
+-  [Trransforms] (http://wiki.ros.org/tf)
 
 -  **[fixposition_gnss_tf](https://github.com/fixposition/fixposition_gnss_tf)**: Fixposition GNSS Transformation Lib, minimum version **2.0.0**
 
 This driver operates as a ROS node, connecting to either a TCP or serial stream of Fixposition Vision-RTK output data, see [Fixposition ASCII messages](#fixposition-ascii-messages) and the **Integration Manual**.
+
+## Installing dependencies on Ubuntu system
+
+```
+ sudo apt update
+ sudo apt install -y wget
+ wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+ sudo apt-get update
+ sudo apt-get install -y python3-catkin-tools
+ sudo apt install -y build-essential cmake
+ sudo apt install -y libeigen3-dev
+ sudo apt install -y ros-melodic-ros-tutorials ros-melodic-geometry-tutorials ros-melodic-rviz ros-melodic-rosbash ros-melodic-rqt-tf-tree
+```
+
 
 ## Installation
 
