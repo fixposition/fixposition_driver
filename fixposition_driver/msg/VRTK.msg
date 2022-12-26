@@ -1,10 +1,7 @@
 ####################################################################################################
 #
-#    Copyright (c) 2022  ___     ___
-#                       \\  \\  /  /
-#                        \\  \\/  /
-#                         /  /\\  \\
-#                        /__/  \\__\\  Fixposition AG
+#    Copyright (c) 2022
+#    Fixposition AG
 #
 ####################################################################################################
 #
@@ -13,7 +10,7 @@
 #
 ####################################################################################################
 
-Header header
+std_msgs/Header header
 string pose_frame                               # frame of the pose values [pose, quaternion]
 string kin_frame                                # frame of the kinematic values [linear/angular velocity, acceleration]
 geometry_msgs/PoseWithCovariance pose           # position, orientation
