@@ -18,10 +18,10 @@
 /* EXTERNAL */
 
 /* ROS */
-#include <sensor_msgs/NavSatFix.h>
+#include <sensor_msgs/msg/nav_sat_fix.hpp>
 
 /* PACKAGE */
-#include <fixposition_driver/VRTK.h>
+#include <fixposition_driver/msg/vrtk.hpp>
 
 #include <fixposition_driver/converter/base_converter.hpp>
 #include <fixposition_driver/time_conversions.hpp>
@@ -34,8 +34,8 @@ class LlhConverter : public BaseConverter {
      * @brief Construct a new LlhConverter
      *
      */
-    LlhConverter(ros::NodeHandle& nh)
-        : navsatfix_pub_(nh.advertise<sensor_msgs::NavSatFix>("/fixposition/navsatfix", 100)) {}
+    LlhConverter(std::shared_ptr<rclcpp::Node> node) : node_(node)
+        , navsatfix_pub_(node->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/navsatfix", 100)) {}
 
     ~LlhConverter() = default;
 
@@ -52,7 +52,8 @@ class LlhConverter : public BaseConverter {
     void ConvertTokensAndPublish(const std::vector<std::string>& tokens) final;
 
    private:
-    ros::Publisher navsatfix_pub_;
+    std::shared_ptr<rclcpp::Node> node_;
+    rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr navsatfix_pub_;
     const std::string header_ = "LLH";
     static constexpr const int kVersion_ = 1;
 };

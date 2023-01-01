@@ -10,9 +10,6 @@
  *
  */
 
-/* ROS */
-#include <ros/console.h>
-#include <ros/ros.h>
 
 /* PACKAGE */
 #include <fixposition_driver/helper.hpp>
@@ -22,9 +19,9 @@ namespace fixposition {
 static constexpr const char kNmeaPreamble = '$';
 static constexpr const int kLibParserMaxNmeaSize = 400;
 
-void ROSFatalError(const std::string& error) {
-    ROS_ERROR_STREAM(error);
-    ros::shutdown();
+void ROSFatalError(std::shared_ptr<rclcpp::Node> node, const std::string& error) {
+    RCLCPP_ERROR_STREAM(node->get_logger(), error);
+    rclcpp::shutdown();
 }
 
 void SplitMessage(std::vector<std::string>& tokens, const std::string& msg, const std::string& delim) {

@@ -17,18 +17,19 @@
 #include <termios.h>
 
 #include <unordered_map>
+#include <memory>
 
 /* EXTERNAL */
 
 /* ROS */
-#include <nav_msgs/Odometry.h>
-#include <ros/ros.h>
-#include <sensor_msgs/Imu.h>
-#include <sensor_msgs/NavSatFix.h>
+#include <nav_msgs/msg/odometry.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/nav_sat_fix.hpp>
 
 /* PACKAGE */
-#include <fixposition_driver/Speed.h>
-#include <fixposition_driver/VRTK.h>
+#include <fixposition_driver/msg/speed.hpp>
+#include <fixposition_driver/msg/vrtk.hpp>
 
 #include <fixposition_driver/converter/base_converter.hpp>
 #include <fixposition_driver/params.hpp>
@@ -43,7 +44,7 @@ class FixpositionDriver {
      *
      * @param[in] nh node handle
      */
-    FixpositionDriver(ros::NodeHandle *nh);
+    FixpositionDriver(std::shared_ptr<rclcpp::Node> node);
 
     /**
      * @brief Destroy the Fixposition Driver object, close all open connections
@@ -63,7 +64,7 @@ class FixpositionDriver {
      *
      * @param[in] msg
      */
-    void WsCallback(const fixposition_driver::SpeedConstPtr& msg);
+    void WsCallback(fixposition_driver::msg::Speed::ConstSharedPtr msg);
 
     /**
      * @brief Convert the string using correct converter
@@ -112,8 +113,8 @@ class FixpositionDriver {
      */
     bool CreateSerialConnection();
 
-    ros::NodeHandle nh_;
-    ros::Subscriber ws_sub_;  //!< wheelspeed message subscriber
+    std::shared_ptr<rclcpp::Node> node_;
+    rclcpp::Subscription<fixposition_driver::msg::Speed>::SharedPtr ws_sub_;  //!< wheelspeed message subscriber
 
     RAWDMI rawdmi_;  //!< RAWDMI msg struct
 

@@ -13,9 +13,7 @@
 #ifndef __FIXPOSITION_DRIVER_TIME_CONVERSIONS__
 #define __FIXPOSITION_DRIVER_TIME_CONVERSIONS__
 
-#include <ros/duration.h>
-#include <ros/ros.h>
-#include <ros/time.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -214,7 +212,11 @@ inline GpsTime PtimeToGpsTime(const BOOST_POSIX::ptime &boost_ptime) {
  * @param[in] input
  * @return ros::Time
  */
-inline ros::Time GpsTimeToRosTime(GpsTime input) { return ros::Time::fromBoost(GpsTimeToPtime(input)); }
+inline rclcpp::Time GpsTimeToRosTime(GpsTime input) {
+        BOOST_POSIX::ptime gps_ptime = GpsTimeToPtime(input);
+	BOOST_POSIX::time_duration td = gps_ptime - Constants::gps_epoch_begin;	
+	rclcpp::Time val = rclcpp::Time(td.total_nanoseconds());
+	return val; }
 
 /**
  * @brief Convert ROS Time to GpsTime
@@ -222,7 +224,9 @@ inline ros::Time GpsTimeToRosTime(GpsTime input) { return ros::Time::fromBoost(G
  * @param[in] ros_time
  * @return GpsTime
  */
-inline GpsTime RosTimeToGpsTime(const ros::Time &ros_time) { return PtimeToGpsTime(ros_time.toBoost()); }
+inline GpsTime RosTimeToGpsTime(const rclcpp::Time &ros_time) {
+       TIME_NS_T ros_nanosec = ros_time.nanoseconds();	
+	return PtimeToGpsTime(Constants::gps_epoch_begin + BOOST_POSIX::microseconds(ros_nanosec)); }
 }  // namespace times
 }  // namespace fixposition
 #endif  // __FIXPOSITION_DRIVER_TIME_CONVERSIONS__

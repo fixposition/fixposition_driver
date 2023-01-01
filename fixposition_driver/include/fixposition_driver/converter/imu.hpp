@@ -13,8 +13,8 @@
 #define __FIXPOSITION_DRIVER_CONVERTER_IMU__
 
 /* ROS */
-#include <ros/ros.h>
-#include <sensor_msgs/Imu.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 
 /* PACKAGE */
 #include <fixposition_driver/converter/base_converter.hpp>
@@ -28,11 +28,12 @@ class ImuConverter : public BaseConverter {
      * @brief Construct a new ImuConverter
      *
      */
-    ImuConverter(ros::NodeHandle& nh, const bool bias_correction)
-        : imu_pub_(
-              nh.advertise<sensor_msgs::Imu>((bias_correction ? "/fixposition/corrimu" : "/fixposition/rawimu"), 100)),
-          header_(bias_correction ? "CORRIMU" : "RAWIMU"),
-          bias_correction_(bias_correction) {}
+    ImuConverter(std::shared_ptr<rclcpp::Node> node, const bool bias_correction)
+        : node_(node)
+	, imu_pub_(node->create_publisher<sensor_msgs::msg::Imu>(
+	    (bias_correction ? "/fixposition/corrimu" : "/fixposition/rawimu"), 100))
+        , header_(bias_correction ? "CORRIMU" : "RAWIMU")
+        , bias_correction_(bias_correction) {}
 
     ~ImuConverter() = default;
 
@@ -51,7 +52,8 @@ class ImuConverter : public BaseConverter {
     void ConvertTokensAndPublish(const std::vector<std::string>& tokens) final;
 
    private:
-    ros::Publisher imu_pub_;
+    std::shared_ptr<rclcpp::Node> node_;
+    rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
     const std::string header_;
 
     const bool bias_correction_;

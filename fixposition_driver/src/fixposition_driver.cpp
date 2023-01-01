@@ -11,6 +11,7 @@
  */
 
 /* SYSTEM / STL */
+#include <chrono>
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -24,17 +25,17 @@
 #include <fixposition_driver/helper.hpp>
 
 namespace fixposition {
-FixpositionDriver::FixpositionDriver(ros::NodeHandle *nh) : nh_(*nh) {
+FixpositionDriver::FixpositionDriver(std::shared_ptr<rclcpp::Node> node) : node_(node) {
     // read parameters
-    if (!params_.LoadFromRos()) {
-        ROSFatalError("Parameter Loading failed, shutting down...");
+    if (!params_.LoadFromRos(node)) {
+        ROSFatalError(node_, "Parameter Loading failed, shutting down...");
     }
 
     Connect();
 
-    ws_sub_ = nh_.subscribe<fixposition_driver::Speed>(params_.customer_input.speed_topic, 100,
-                                                       &FixpositionDriver::WsCallback, this,
-                                                       ros::TransportHints().tcpNoDelay());
+    ws_sub_ = node_->create_subscription<fixposition_driver::msg::Speed>(params_.customer_input.speed_topic, 100,
+                                                       std::bind(&FixpositionDriver::WsCallback, this,
+                                                       std::placeholders::_1));
 
     // static headers
     rawdmi_.head1 = 0xaa;
@@ -53,7 +54,7 @@ FixpositionDriver::FixpositionDriver(ros::NodeHandle *nh) : nh_(*nh) {
 
     // initialize converters
     if (!InitializeConverters()) {
-        ROSFatalError("Could not initialize output converter!");
+        ROSFatalError(node_, "Could not initialize output converter!");
     }
 }
 
@@ -75,12 +76,12 @@ bool FixpositionDriver::Connect() {
             return CreateSerialConnection();
             break;
         default:
-            ROSFatalError("Unknown connection type.");
+            ROSFatalError(node_, "Unknown connection type.");
             return false;
     }
 }
 
-void FixpositionDriver::WsCallback(const fixposition_driver::SpeedConstPtr& msg) {
+void FixpositionDriver::WsCallback(const fixposition_driver::msg::Speed::ConstSharedPtr msg) {
     if (msg->speeds.size() == 1) {
         rawdmi_.dmi1 = msg->speeds[0];
         rawdmi_.mask = (1 << 0) | (0 << 1) | (0 << 2) | (0 << 3);
@@ -95,7 +96,7 @@ void FixpositionDriver::WsCallback(const fixposition_driver::SpeedConstPtr& msg)
         rawdmi_.dmi4 = msg->speeds[3];
         rawdmi_.mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
     } else {
-        ROS_WARN_THROTTLE(1, "Invalid speed message with size %lu, the size should be either 1, 2 or 4!",
+        RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 1, "Invalid speed message with size %lu, the size should be either 1, 2 or 4!",
                           msg->speeds.size());
         return;
     }
@@ -112,39 +113,40 @@ void FixpositionDriver::WsCallback(const fixposition_driver::SpeedConstPtr& msg)
 }
 
 bool FixpositionDriver::InitializeConverters() {
-    for (const auto format : params_.fp_output.formats) {
+    for (const auto &format : params_.fp_output.formats) {
         if (format == "ODOMETRY") {
-            converters_["ODOMETRY"] = std::unique_ptr<OdometryConverter>(new OdometryConverter(nh_));
-            converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter(nh_));
+            converters_["ODOMETRY"] = std::unique_ptr<OdometryConverter>(new OdometryConverter(node_));
+            converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter(node_));
         } else if (format == "LLH") {
-            converters_["LLH"] = std::unique_ptr<LlhConverter>(new LlhConverter(nh_));
+            converters_["LLH"] = std::unique_ptr<LlhConverter>(new LlhConverter(node_));
         } else if (format == "RAWIMU") {
-            converters_["RAWIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(nh_, false));
+            converters_["RAWIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(node_, false));
         } else if (format == "CORRIMU") {
-            converters_["CORRIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(nh_, true));
+            converters_["CORRIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(node_, true));
         } else if (format == "TF") {
             if (converters_.find("TF") != converters_.end()) {
-                converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter(nh_));
+                converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter(node_));
             }
         } else {
-            ROS_INFO_STREAM("Unknown input format: " << format);
+            RCLCPP_INFO_STREAM(node_->get_logger(), "Unknown input format: " << format);
         }
     }
     return !converters_.empty();
 }
 void FixpositionDriver::Run() {
-    ros::Rate rate(params_.fp_output.rate);
-    while (ros::ok()) {
+    rclcpp::Rate rate(params_.fp_output.rate);
+    while (rclcpp::ok()) {
         if ((client_fd_ > 0) && (connection_status_ == 0) && ReadAndPublish()) {
-            ros::spinOnce();
+            rclcpp::spin_some(node_);
             rate.sleep();
         } else {
-            ROS_INFO("Reconnecting in %.1f seconds ...", params_.fp_output.reconnect_delay);
+            RCLCPP_INFO(node_->get_logger(), "Reconnecting in %.1f seconds ...", params_.fp_output.reconnect_delay);
             close(client_fd_);
             client_fd_ = -1;
 
-            ros::spinOnce();
-            ros::Duration(params_.fp_output.reconnect_delay).sleep();
+            rclcpp::spin_some(node_);
+	    std::chrono::nanoseconds reconnect_delay = std::chrono::nanoseconds((uint64_t)params_.fp_output.reconnect_delay * 1000 * 1000 * 1000);
+            rclcpp::sleep_for(reconnect_delay);
 
             Connect();
         }
@@ -164,7 +166,7 @@ bool FixpositionDriver::ReadAndPublish() {
     }
 
     if (rv == 0) {
-        ROS_ERROR_STREAM("Connection closed.");
+        RCLCPP_ERROR_STREAM(node_->get_logger(), "Connection closed.");
         return false;
     }
 
@@ -173,7 +175,7 @@ bool FixpositionDriver::ReadAndPublish() {
         return true;
     }
     if (rv < 0) {
-        ROS_ERROR_STREAM("Connection error.");
+        RCLCPP_ERROR_STREAM(node_->get_logger(), "Connection error.");
         return false;
     }
 
@@ -223,10 +225,10 @@ bool FixpositionDriver::CreateTCPSocket() {
     client_fd_ = socket(AF_INET, SOCK_STREAM, 0);
 
     if (client_fd_ < 0) {
-        ROS_ERROR_STREAM_THROTTLE(5, "Error in client creation.");
+        RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 5, "Error in client creation.");
         return false;
     } else {
-        ROS_INFO_STREAM("Client created.");
+        RCLCPP_INFO_STREAM(node_->get_logger(), "Client created.");
     }
 
     server_address.sin_family = AF_INET;
@@ -237,7 +239,7 @@ bool FixpositionDriver::CreateTCPSocket() {
     connection_status_ = connect(client_fd_, (struct sockaddr *)&server_address, sizeof server_address);
 
     if (connection_status_ != 0) {
-        ROS_ERROR_STREAM("Error on connection of TCP socket: " << strerror(errno));
+        RCLCPP_ERROR_STREAM(node_->get_logger(), "Error on connection of TCP socket: " << strerror(errno));
         return false;
     }
     return true;
@@ -288,7 +290,7 @@ bool FixpositionDriver::CreateSerialConnection() {
 
         default:
             speed = B115200;
-            ROS_ERROR_STREAM("Unsupported baudrate: " << params_.fp_output.baudrate
+            RCLCPP_ERROR_STREAM(node_->get_logger(), "Unsupported baudrate: " << params_.fp_output.baudrate
                                                       << "\n\tsupported examples:\n\t9600, "
                                                          "19200, "
                                                          "38400, "
@@ -297,7 +299,7 @@ bool FixpositionDriver::CreateSerialConnection() {
 
     if (client_fd_ == -1) {
         // Could not open the port.
-        ROS_ERROR_STREAM_THROTTLE(5, "Failed to open serial port " << strerror(errno));
+        RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 5, "Failed to open serial port " << strerror(errno));
         return false;
     } else {
         // Get current serial port options:

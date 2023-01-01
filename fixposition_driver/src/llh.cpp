@@ -31,9 +31,9 @@ static constexpr const int pos_cov_nu_idx = 12;
 static constexpr const int pos_cov_eu_idx = 13;
 
 void LlhConverter::ConvertTokensAndPublish(const std::vector<std::string>& tokens) {
-    sensor_msgs::NavSatFix navsat_msg;
+    sensor_msgs::msg::NavSatFix navsat_msg;
     if (tokens.size() != 14) {
-        ROS_INFO("Error in parsing LLH string with %lu fields! NavSatFix message will be empty.", tokens.size());
+        RCLCPP_INFO(node_->get_logger(), "Error in parsing LLH string with %lu fields! NavSatFix message will be empty.", tokens.size());
         return;
     }
     // header stamps
@@ -55,7 +55,7 @@ void LlhConverter::ConvertTokensAndPublish(const std::vector<std::string>& token
     navsat_msg.position_covariance[5] = navsat_msg.position_covariance[7] = StringToDouble(tokens.at(pos_cov_eu_idx));
     navsat_msg.position_covariance_type = 3;
 
-    navsatfix_pub_.publish(navsat_msg);
+    navsatfix_pub_->publish(navsat_msg);
 }
 
 }  // namespace fixposition

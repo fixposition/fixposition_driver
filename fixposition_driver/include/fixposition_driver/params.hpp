@@ -42,7 +42,7 @@ struct FpOutputParams {
      * @return true success
      * @return false fail
      */
-    bool LoadFromRos(const std::string &ns);
+    bool LoadFromRos(std::shared_ptr<rclcpp::Node> node, const std::string &ns);
 };
 struct CustomerInputParams {
     std::string speed_topic;
@@ -53,13 +53,13 @@ struct CustomerInputParams {
      * @return true success
      * @return false fail
      */
-    bool LoadFromRos(const std::string &ns);
+    bool LoadFromRos(std::shared_ptr<rclcpp::Node> node, const std::string &ns);
 };
 
 struct FixpositionDriverParams {
     FpOutputParams fp_output;
     CustomerInputParams customer_input;
-    bool LoadFromRos(const std::string &ns = "~/");
+    bool LoadFromRos(std::shared_ptr<rclcpp::Node> node, const std::string &ns = "~/");
 };
 
 }  // namespace fixposition

@@ -5,12 +5,7 @@
         And according to the port used for reading, i.e.
                21000 - TCP port
                /dev/ttyUSB0 - serial port -->
-    <env name="ROSCONSOLE_CONFIG_FILE" value="$(find fixposition_driver)/launch/rosconsole.conf"/>
 
-
-    <node name="fixposition_driver" pkg="fixposition_driver" type="fixposition_driver" output="screen" respawn="true" respawn_delay="5">
-        <rosparam command="load" file="$(find fixposition_driver)/launch/tcp.yaml" />
-
-
+    <node name="fixposition_driver" pkg="fixposition_driver" exec="fixposition_driver_exec" output="screen" respawn="true" respawn_delay="5">
     </node>
 </launch>

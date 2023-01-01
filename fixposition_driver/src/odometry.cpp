@@ -15,7 +15,7 @@
 #include <eigen3/Eigen/Geometry>
 
 /* ROS */
-#include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 
 /* FIXPOSITION */
 #include <fixposition_gnss_tf/gnss_tf.hpp>
@@ -88,7 +88,7 @@ int ParseStatusFlag(const std::vector<std::string> &tokens, const int idx) {
 
 void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string> &tokens) {
     if (tokens.size() != 44) {
-        ROS_INFO("Error in parsing Odometry string with %lu fields! odometry and status messages will be empty.",
+        RCLCPP_INFO(node_->get_logger(), "Error in parsing Odometry string with %lu fields! odometry and status messages will be empty.",
                  tokens.size());
         return;
     }
@@ -96,12 +96,12 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string> &
 
     const bool fusion_init = fusion_status >= 3;
 
-    const bool odom_sub_avl = odometry_pub_.getNumSubscribers() > 0;
-    const bool vrtk_sub_avl = vrtk_pub_.getNumSubscribers() > 0;
-    const bool imu_sub_avl = imu_pub_.getNumSubscribers() > 0;
-    const bool eul_sub_avl = eul_pub_.getNumSubscribers() > 0;
-    const bool eul_imu_sub_avl = eul_imu_pub_.getNumSubscribers() > 0;
-    const bool odom_enu0_sub_avl = odometry_enu0_pub_.getNumSubscribers() > 0;
+    const bool odom_sub_avl = odometry_pub_->get_subscription_count() > 0;
+    const bool vrtk_sub_avl = vrtk_pub_->get_subscription_count() > 0;
+    const bool imu_sub_avl = imu_pub_->get_subscription_count() > 0;
+    const bool eul_sub_avl = eul_pub_->get_subscription_count() > 0;
+    const bool eul_imu_sub_avl = eul_imu_pub_->get_subscription_count() > 0;
+    const bool odom_enu0_sub_avl = odometry_enu0_pub_->get_subscription_count() > 0;
 
     // common data
     const auto stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
@@ -111,7 +111,7 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string> &
                                                           tokens.at(orientation_y_idx), tokens.at(orientation_z_idx));
     if (fusion_init) {
         //  TFs
-        geometry_msgs::TransformStamped tf_ecef_poi, tf_ecef_enu;
+        geometry_msgs::msg::TransformStamped tf_ecef_poi, tf_ecef_enu;
         tf_ecef_enu.header.stamp = stamp;
         tf_ecef_poi.header.stamp = stamp;
         tf_ecef_enu.header.frame_id = "ECEF";
@@ -142,19 +142,19 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string> &
 
         // Send TFs
         if (CheckQuat(tf_ecef_poi.transform.rotation)) {
-            br_.sendTransform(tf_ecef_poi);
+            br_->sendTransform(tf_ecef_poi);
         }
         if (CheckQuat(tf_ecef_enu.transform.rotation)) {
-            br_.sendTransform(tf_ecef_enu);
+            br_->sendTransform(tf_ecef_enu);
         }
         // Send Static TF ECEF ENU0
         if (tf_ecef_enu0_set_ && CheckQuat(tf_ecef_enu0_.transform.rotation)) {
-            static_br_.sendTransform(tf_ecef_enu0_);
+            static_br_->sendTransform(tf_ecef_enu0_);
         }
     }
     // Msgs
-    nav_msgs::Odometry odom_msg;  //!<  Odmetry msg ECEF - FP_POI
-    fixposition_driver::VRTK vrtk_msg;
+    nav_msgs::msg::Odometry odom_msg;  //!<  Odmetry msg ECEF - FP_POI
+    fixposition_driver::msg::VRTK vrtk_msg;
     if (fusion_init) {
         odom_msg.header.stamp = stamp;
         odom_msg.header.frame_id = "ECEF";
@@ -199,33 +199,33 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string> &
 
     // Send Ros msgs
     if (odom_sub_avl && fusion_init) {
-        odometry_pub_.publish(odom_msg);
+        odometry_pub_->publish(odom_msg);
     }
     if (vrtk_sub_avl) {
-        vrtk_pub_.publish(vrtk_msg);
+        vrtk_pub_->publish(vrtk_msg);
     }
     if (imu_sub_avl) {
         // POI IMU Message
-        sensor_msgs::Imu imu_msg;
+        sensor_msgs::msg::Imu imu_msg;
         imu_msg.header.stamp = stamp;
         imu_msg.header.frame_id = "FP_POI";
         // Omega
         imu_msg.angular_velocity = odom_msg.twist.twist.angular;
         // Acceleration
         imu_msg.linear_acceleration = Vector3ToMsg(tokens.at(acc_x_idx), tokens.at(acc_y_idx), tokens.at(acc_z_idx));
-        imu_pub_.publish(imu_msg);
+        imu_pub_->publish(imu_msg);
     }
     if (eul_sub_avl && fusion_init) {
         // Euler angle wrt. ENU frame in the order of Yaw Pitch Roll
         const Eigen::Vector3d ypr = gnss_tf::EcefPoseToEnuEul(t_ecef_body, q_ecef_body.toRotationMatrix());
-        eul_pub_.publish(EigenToVector3Msg(ypr));
+        eul_pub_->publish(EigenToVector3Msg(ypr));
     }
     if (eul_imu_sub_avl) {
         bool valid = true;
-        geometry_msgs::TransformStamped imu_pose;
+        geometry_msgs::msg::TransformStamped imu_pose;
         try {
             // Check if the transform is being correctly published
-            imu_pose = tf_buffer_.lookupTransform("FP_IMU_HORIZONTAL", "FP_POI", ros::Time(0));
+            imu_pose = tf_buffer_->lookupTransform("FP_IMU_HORIZONTAL", "FP_POI", rclcpp::Time(0));
         } catch (tf2::TransformException &ex) {
             valid = false;
         }
@@ -233,12 +233,12 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string> &
             const Eigen::Quaterniond quat_pose = QuatMsgToEigen(imu_pose.transform.rotation);
             Eigen::Vector3d imu_ypr = gnss_tf::QuatToEul(quat_pose);
             imu_ypr.x() = 0.0;  // the yaw value is not observable using IMU alone
-            eul_imu_pub_.publish(EigenToVector3Msg(imu_ypr));
+            eul_imu_pub_->publish(EigenToVector3Msg(imu_ypr));
         }
     }
     if (odom_enu0_sub_avl && fusion_init) {
         // Odmetry msg ENU0 - FP_POI
-        nav_msgs::Odometry odom_enu0_msg;
+        nav_msgs::msg::Odometry odom_enu0_msg;
         odom_enu0_msg.header.stamp = stamp;
         odom_enu0_msg.header.frame_id = "ENU0";
         odom_enu0_msg.child_frame_id = "FP_POI";
@@ -259,7 +259,7 @@ void OdometryConverter::ConvertTokensAndPublish(const std::vector<std::string> &
         odom_enu0_msg.twist = odom_msg.twist;
 
         // Publish
-        odometry_enu0_pub_.publish(odom_enu0_msg);
+        odometry_enu0_pub_->publish(odom_enu0_msg);
     }
 }
 }  // namespace fixposition

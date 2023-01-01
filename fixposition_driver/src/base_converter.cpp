@@ -16,6 +16,7 @@
 
 namespace fixposition {
 void BaseConverter::ConvertStringAndPublish(const std::string& in_string) {
+#if 0
     if (!in_string.empty()) {
         std::vector<std::string> tokens;
         SplitMessage(tokens, in_string, ",");
@@ -31,6 +32,7 @@ void BaseConverter::ConvertStringAndPublish(const std::string& in_string) {
     } else {
         ROS_ERROR_STREAM("State message empty! Not well parsed?");
     }
+#endif
 }
 
 }  // namespace fixposition

@@ -28,9 +28,9 @@ static constexpr const int rot_y_idx = 9;
 static constexpr const int rot_z_idx = 10;
 
 void ImuConverter::ConvertTokensAndPublish(const std::vector<std::string>& tokens) {
-    sensor_msgs::Imu msg;
+    sensor_msgs::msg::Imu msg;
     if (tokens.size() != 11) {
-        ROS_INFO("Error in parsing IMU string with %lu fields! IMU message will be empty.", tokens.size());
+        RCLCPP_INFO(node_->get_logger(), "Error in parsing IMU string with %lu fields! IMU message will be empty.", tokens.size());
         return;
     }
     // header stamps
@@ -42,8 +42,8 @@ void ImuConverter::ConvertTokensAndPublish(const std::vector<std::string>& token
     msg.angular_velocity.x = StringToDouble(tokens.at(rot_x_idx));
     msg.angular_velocity.y = StringToDouble(tokens.at(rot_y_idx));
     msg.angular_velocity.z = StringToDouble(tokens.at(rot_z_idx));
-    if (imu_pub_.getNumSubscribers() > 0) {
-        imu_pub_.publish(msg);
+    if (imu_pub_->get_subscription_count() > 1) {
+        imu_pub_->publish(msg);
     }
 }
 

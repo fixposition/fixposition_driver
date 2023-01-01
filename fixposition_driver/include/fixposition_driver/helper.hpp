@@ -16,10 +16,14 @@
 /* SYSTEM / STL */
 #include <string>
 #include <vector>
+#include <memory>
 
 /* EXTERNAL */
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+
+/* ROS */
+#include <rclcpp/rclcpp.hpp>
 
 namespace fixposition {
 
@@ -46,7 +50,7 @@ int IsNmeaMessage(const char* buf, const int size);
  *
  * @param[in] error Error msg to be sent
  */
-void ROSFatalError(const std::string& error);
+void ROSFatalError(std::shared_ptr<rclcpp::Node> node, const std::string& error);
 
 }  // namespace fixposition
 #endif  // __FIXPOSITION_DRIVER_HELPER__

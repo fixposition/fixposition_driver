@@ -11,20 +11,18 @@
  */
 
 /* ROS */
-#include <ros/console.h>
-#include <ros/ros.h>
+#include "rclcpp/rclcpp.hpp"
 
 /* PACKAGE */
-#include <fixposition_driver/fixposition_driver.hpp>
+#include "fixposition_driver/fixposition_driver.hpp"
 
 int main(int argc, char **argv) {
-    ros::init(argc, argv, "fixposition_driver");
-    ros::NodeHandle node_handle;
-    ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
-    fixposition::FixpositionDriver fixposition_out(&node_handle);
-    ROS_DEBUG("Starting node...");
+    rclcpp::init(argc, argv);
+    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("fixposition_driver");
+    fixposition::FixpositionDriver fixposition_out(node);
+    RCLCPP_DEBUG(node->get_logger(), "Starting node...");
     fixposition_out.Run();
-    ros::waitForShutdown();
-    ROS_DEBUG("Exiting.");
+    rclcpp::spin(node);
+    RCLCPP_DEBUG(node->get_logger(), "Exiting.");
     return 0;
 }

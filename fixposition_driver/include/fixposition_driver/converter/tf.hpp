@@ -13,6 +13,7 @@
 #ifndef __FIXPOSITION_DRIVER_CONVERTER_TF__
 #define __FIXPOSITION_DRIVER_CONVERTER_TF__
 
+
 /* ROS */
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
@@ -28,7 +29,11 @@ class TfConverter : public BaseConverter {
      * @brief Construct a new Fixposition Msg Converter object
      *
      */
-    TfConverter(ros::NodeHandle& nh) {}
+     TfConverter(std::shared_ptr<rclcpp::Node> node) : BaseConverter(), node_(node)
+	{ 
+	  br_ = std::make_shared<tf2_ros::TransformBroadcaster>(node_);
+	  static_br_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node_);
+	}
 
     ~TfConverter() = default;
 
@@ -44,8 +49,9 @@ class TfConverter : public BaseConverter {
     void ConvertTokensAndPublish(const std::vector<std::string>& tokens) final;
 
    private:
-    tf2_ros::TransformBroadcaster br_;
-    tf2_ros::StaticTransformBroadcaster static_br_;
+    std::shared_ptr<rclcpp::Node> node_;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> br_;
+    std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_br_;
     const std::string header_ = "TF";
 
     static constexpr const int kVersion_ = 1;

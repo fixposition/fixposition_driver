@@ -20,10 +20,9 @@
 #include <eigen3/Eigen/Geometry>
 
 /* ROS */
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/Quaternion.h>
-#include <geometry_msgs/Vector3.h>
-#include <ros/console.h>
+#include <geometry_msgs/msg/point.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
 
 /* PACKAGE */
 #include <fixposition_driver/time_conversions.hpp>
@@ -74,7 +73,7 @@ inline double StringToDouble(const std::string &in_str) { return in_str.empty() 
  * @return true valid quaternion
  * @return false invalid quaternion
  */
-inline bool CheckQuat(const geometry_msgs::Quaternion &quat) {
+inline bool CheckQuat(const geometry_msgs::msg::Quaternion &quat) {
     return abs(quat.w * quat.w + quat.x * quat.x + quat.y * quat.y + quat.z * quat.z - 1.0) <= 1e-3;
 }
 
@@ -86,8 +85,8 @@ inline bool CheckQuat(const geometry_msgs::Quaternion &quat) {
  * @param[in] z
  * @return geometry_msgs::Vector3
  */
-inline geometry_msgs::Vector3 Vector3ToMsg(const std::string &x, const std::string &y, const std::string &z) {
-    geometry_msgs::Vector3 msg;
+inline geometry_msgs::msg::Vector3 Vector3ToMsg(const std::string &x, const std::string &y, const std::string &z) {
+    geometry_msgs::msg::Vector3 msg;
     msg.x = StringToDouble(x);
     msg.y = StringToDouble(y);
     msg.z = StringToDouble(z);
@@ -102,8 +101,8 @@ inline geometry_msgs::Vector3 Vector3ToMsg(const std::string &x, const std::stri
  * @param[in] z
  * @return geometry_msgs::Point
  */
-inline geometry_msgs::Point Vector3ToPointMsg(const std::string &x, const std::string &y, const std::string &z) {
-    geometry_msgs::Point msg;
+inline geometry_msgs::msg::Point Vector3ToPointMsg(const std::string &x, const std::string &y, const std::string &z) {
+    geometry_msgs::msg::Point msg;
     msg.x = StringToDouble(x);
     msg.y = StringToDouble(y);
     msg.z = StringToDouble(z);
@@ -119,9 +118,9 @@ inline geometry_msgs::Point Vector3ToPointMsg(const std::string &x, const std::s
  * @param[in] z
  * @return geometry_msgs::Quaternion
  */
-inline geometry_msgs::Quaternion Vector4ToMsg(const std::string &w, const std::string &x, const std::string &y,
+inline geometry_msgs::msg::Quaternion Vector4ToMsg(const std::string &w, const std::string &x, const std::string &y,
                                               const std::string &z) {
-    geometry_msgs::Quaternion msg;
+    geometry_msgs::msg::Quaternion msg;
     msg.w = StringToDouble(w);
     msg.x = StringToDouble(x);
     msg.y = StringToDouble(y);
@@ -135,8 +134,8 @@ inline geometry_msgs::Quaternion Vector4ToMsg(const std::string &w, const std::s
  * @param[in] quat
  * @return geometry_msgs::Quaternion
  */
-inline geometry_msgs::Quaternion EigenToQuatMsg(const Eigen::Quaterniond &quat) {
-    geometry_msgs::Quaternion msg;
+inline geometry_msgs::msg::Quaternion EigenToQuatMsg(const Eigen::Quaterniond &quat) {
+    geometry_msgs::msg::Quaternion msg;
     msg.w = quat.w();
     msg.x = quat.x();
     msg.y = quat.y();
@@ -150,7 +149,7 @@ inline geometry_msgs::Quaternion EigenToQuatMsg(const Eigen::Quaterniond &quat) 
  * @param[in] quat
  * @return geometry_msgs::Quaternion
  */
-inline Eigen::Quaterniond QuatMsgToEigen(const geometry_msgs::Quaternion &msg) {
+inline Eigen::Quaterniond QuatMsgToEigen(const geometry_msgs::msg::Quaternion &msg) {
     Eigen::Quaterniond quat;
     quat.w() = msg.w;
     quat.x() = msg.x;
@@ -177,8 +176,8 @@ inline Eigen::Vector3d Vector3ToEigen(const std::string &x, const std::string &y
  * @param[in] v
  * @return geometry_msgs::Point
  */
-inline geometry_msgs::Point EigenToPointMsg(const Eigen::Vector3d &v) {
-    geometry_msgs::Point msg;
+inline geometry_msgs::msg::Point EigenToPointMsg(const Eigen::Vector3d &v) {
+    geometry_msgs::msg::Point msg;
     msg.x = v.x();
     msg.y = v.y();
     msg.z = v.z();
@@ -191,8 +190,8 @@ inline geometry_msgs::Point EigenToPointMsg(const Eigen::Vector3d &v) {
  * @param[in] v
  * @return geometry_msgs::Vector3
  */
-inline geometry_msgs::Vector3 EigenToVector3Msg(const Eigen::Vector3d &v) {
-    geometry_msgs::Vector3 msg;
+inline geometry_msgs::msg::Vector3 EigenToVector3Msg(const Eigen::Vector3d &v) {
+    geometry_msgs::msg::Vector3 msg;
     msg.x = v.x();
     msg.y = v.y();
     msg.z = v.z();
@@ -220,13 +219,13 @@ inline Eigen::Quaterniond Vector4ToEigen(const std::string &w, const std::string
  * @param[in] gps_tow
  * @return ros::Time
  */
-inline ros::Time ConvertGpsTime(const std::string &gps_wno, const std::string &gps_tow) {
+inline rclcpp::Time ConvertGpsTime(const std::string &gps_wno, const std::string &gps_tow) {
     if (!gps_wno.empty() && gps_tow.empty()) {
         const times::GpsTime gps_time(std::stoi(gps_wno), std::stod(gps_tow));
         return times::GpsTimeToRosTime(gps_time);
     } else {
-        ROS_DEBUG_STREAM("GPS time empty. Replacing with current ROS time.");
-        return ros::Time::now();
+        perror("GPS time empty. Replacing with current ROS time.");
+        return rclcpp::Clock().now();
     }
 }
 }  // namespace fixposition

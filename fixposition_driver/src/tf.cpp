@@ -11,7 +11,7 @@
  */
 
 /* ROS */
-#include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 
 /* PACKAGE */
 #include <fixposition_driver/converter/tf.hpp>
@@ -32,13 +32,13 @@ static constexpr const int orientation_y_idx = 10;
 static constexpr const int orientation_z_idx = 11;
 
 void TfConverter::ConvertTokensAndPublish(const std::vector<std::string>& tokens) {
-    geometry_msgs::TransformStamped tf;
+    geometry_msgs::msg::TransformStamped tf;
     if (tokens.size() != 12) {
-        ROS_INFO("Error in parsing TF string with %lu fields! TFs will be empty.", tokens.size());
+        RCLCPP_INFO(node_->get_logger(), "Error in parsing TF string with %lu fields! TFs will be empty.", tokens.size());
         return;
     }
     // header stamps
-    tf.header.stamp = ros::Time::now();
+    tf.header.stamp = rclcpp::Clock().now();
     tf.header.frame_id = "FP_" + tokens.at(from_frame_idx);
     tf.child_frame_id = "FP_" + tokens.at(to_frame_idx);
 
@@ -53,9 +53,9 @@ void TfConverter::ConvertTokensAndPublish(const std::vector<std::string>& tokens
 
     if (CheckQuat(tf.transform.rotation)) {
         if (tf.child_frame_id == "FP_IMU_HORIZONTAL") {
-            br_.sendTransform(tf);
+            br_->sendTransform(tf);
         } else {
-            static_br_.sendTransform(tf);
+            static_br_->sendTransform(tf);
         }
     }
 }
