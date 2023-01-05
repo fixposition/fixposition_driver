@@ -34,8 +34,8 @@ class LlhConverter : public BaseConverter {
      * @brief Construct a new LlhConverter
      *
      */
-    LlhConverter(std::shared_ptr<rclcpp::Node> node) : node_(node)
-        , navsatfix_pub_(node->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/navsatfix", 100)) {}
+    LlhConverter(std::shared_ptr<rclcpp::Node> node) : BaseConverter(node),
+      navsatfix_pub_(node->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/navsatfix", 100)) {}
 
     ~LlhConverter() = default;
 
@@ -52,7 +52,6 @@ class LlhConverter : public BaseConverter {
     void ConvertTokensAndPublish(const std::vector<std::string>& tokens) final;
 
    private:
-    std::shared_ptr<rclcpp::Node> node_;
     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr navsatfix_pub_;
     const std::string header_ = "LLH";
     static constexpr const int kVersion_ = 1;

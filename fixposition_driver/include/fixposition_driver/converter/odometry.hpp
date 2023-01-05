@@ -42,8 +42,7 @@ class OdometryConverter : public BaseConverter {
      *
      */
     OdometryConverter(std::shared_ptr<rclcpp::Node> node)
-        : BaseConverter(),
-	  node_(node),
+        : BaseConverter(node),
           tf_ecef_enu0_set_(false)
   {
           odometry_pub_ = node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry", 100);
@@ -77,7 +76,6 @@ class OdometryConverter : public BaseConverter {
     virtual void ConvertTokensAndPublish(const std::vector<std::string> &tokens) final;
 
    private:
-    std::shared_ptr<rclcpp::Node> node_;
     const std::string header_ = "ODOMETRY";
     static constexpr const int kVersion_ = 1;
 

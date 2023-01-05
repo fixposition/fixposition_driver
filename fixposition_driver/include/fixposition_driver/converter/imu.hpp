@@ -29,7 +29,7 @@ class ImuConverter : public BaseConverter {
      *
      */
     ImuConverter(std::shared_ptr<rclcpp::Node> node, const bool bias_correction)
-        : node_(node)
+        : BaseConverter(node)
 	, imu_pub_(node->create_publisher<sensor_msgs::msg::Imu>(
 	    (bias_correction ? "/fixposition/corrimu" : "/fixposition/rawimu"), 100))
         , header_(bias_correction ? "CORRIMU" : "RAWIMU")
@@ -52,7 +52,6 @@ class ImuConverter : public BaseConverter {
     void ConvertTokensAndPublish(const std::vector<std::string>& tokens) final;
 
    private:
-    std::shared_ptr<rclcpp::Node> node_;
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
     const std::string header_;
 

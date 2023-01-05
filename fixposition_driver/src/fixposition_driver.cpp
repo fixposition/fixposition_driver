@@ -124,7 +124,7 @@ bool FixpositionDriver::InitializeConverters() {
         } else if (format == "CORRIMU") {
             converters_["CORRIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(node_, true));
         } else if (format == "TF") {
-            if (converters_.find("TF") != converters_.end()) {
+            if (converters_.find("TF") == converters_.end()) {
                 converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter(node_));
             }
         } else {
@@ -133,6 +133,7 @@ bool FixpositionDriver::InitializeConverters() {
     }
     return !converters_.empty();
 }
+
 void FixpositionDriver::Run() {
     rclcpp::Rate rate(params_.fp_output.rate);
     while (rclcpp::ok()) {
@@ -213,6 +214,7 @@ void FixpositionDriver::ConvertAndPublish(const std::string &msg) {
 
     // Get the header of the sentence
     const std::string header = tokens.at(1);
+
 
     // If we have a converter available, convert to ros. Currently supported are "FP" and "LLH"
     if (converters_[header] != nullptr) {

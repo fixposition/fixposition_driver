@@ -20,6 +20,7 @@
 #include <eigen3/Eigen/Geometry>
 
 /* ROS */
+#include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
@@ -30,7 +31,8 @@
 namespace fixposition {
 class BaseConverter {
    public:
-    BaseConverter() = default;
+    std::shared_ptr<rclcpp::Node> node_;
+    explicit BaseConverter(std::shared_ptr<rclcpp::Node> node) : node_(node) {};
     ~BaseConverter() = default;
 
     /**
@@ -39,6 +41,8 @@ class BaseConverter {
      * @param[in] in_string string of comma delimited message to convert
      */
     void ConvertStringAndPublish(const std::string &in_string);
+
+    rclcpp::Time ConvertGpsTime(const std::string &gps_wno, const std::string &gps_tow);
 
     /**
      * @brief Virtual interface to convert the split tokens into ros messages
@@ -219,13 +223,13 @@ inline Eigen::Quaterniond Vector4ToEigen(const std::string &w, const std::string
  * @param[in] gps_tow
  * @return ros::Time
  */
-inline rclcpp::Time ConvertGpsTime(const std::string &gps_wno, const std::string &gps_tow) {
+inline rclcpp::Time BaseConverter::ConvertGpsTime(const std::string &gps_wno, const std::string &gps_tow) {
     if (!gps_wno.empty() && gps_tow.empty()) {
         const times::GpsTime gps_time(std::stoi(gps_wno), std::stod(gps_tow));
         return times::GpsTimeToRosTime(gps_time);
     } else {
-        perror("GPS time empty. Replacing with current ROS time.");
-        return rclcpp::Clock().now();
+        RCLCPP_DEBUG_STREAM(node_->get_logger(), "GPS time empty. Replacing with current ROS time.");
+        return node_->get_clock()->now();
     }
 }
 }  // namespace fixposition
