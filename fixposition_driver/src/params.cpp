@@ -18,72 +18,72 @@
 
 namespace fixposition {
 
-bool FpOutputParams::LoadFromRos(std::shared_ptr<rclcpp::Node> node, const std::string &ns) {
-    // read parameters
-    //if (!rclcpp::param::get(ns + "/rate", rate)) 
-    rate = 100;
+FpOutputParams::FpOutputParams(std::shared_ptr<rclcpp::Node> node) : node_(node)
+{
+    node_->declare_parameter("fp_output.rate", 100);
+    node_->declare_parameter("fp_output.reconnect_delay", 5.0);
+    node_->declare_parameter("fp_output.type", "");
+    node_->declare_parameter("fp_output.formats", std::vector<std::string>());
+    node_->declare_parameter("fp_output.port", "");
+    node_->declare_parameter("fp_output.ip", "127.0.0.1");
+    node_->declare_parameter("fp_output.baudrate", 115200);
+} 
 
-    //if (!rclcpp::param::get(ns + "/reconnect_delay", reconnect_delay))
-    reconnect_delay = 5.0;
+bool FpOutputParams::LoadFromRos() {
+    // read parameters
+    node_->get_parameter("fp_output.rate", rate);
+    RCLCPP_INFO(node_->get_logger(), "fp_output.rate : %d", rate);
+    node_->get_parameter("fp_output.reconnect_delay", reconnect_delay);
+    RCLCPP_INFO(node_->get_logger(), "fp_output.reconnect_delay : %f", reconnect_delay);
 
     std::string type_str;
-    //if (!rclcpp::param::get(ns + "/type", type_str)) {
-    //    return false;
-    //}
-    type_str = "tcp";
+    node_->get_parameter("fp_output.type", type_str);
     if (type_str == "tcp") {
         type = INPUT_TYPE::TCP;
     } else if (type_str == "serial") {
         type = INPUT_TYPE::SERIAL;
     } else {
-        //ROS_ERROR("Input type has to be tcp or serial!");
+        RCLCPP_ERROR(node_->get_logger(), "Input type has to be tcp or serial!");
         return false;
     }
 
-    //if (!rclcpp::param::get(ns + "/formats", formats))
-      formats = {"ODOMETRY", "LLH", "RAWIMU", "CORRIMU", "TF"};
+    node_->get_parameter("fp_output.formats", formats);
+    for (size_t i = 0; i < formats.size(); i++)
+    	RCLCPP_INFO(node_->get_logger(), "fp_output.formats[%ld] : %s", i, formats[i].c_str());
 
     // Get parameters: port (required)
-    //if (!rclcpp::param::get(ns + "/port", port)) {
-    //}
+    node_->get_parameter("fp_output.port", port);
+    RCLCPP_INFO(node_->get_logger(), "fp_output.port : %s", port.c_str());
 
     if (type == INPUT_TYPE::TCP) {
-        //if (!rclcpp::param::get(ns + "/ip", ip)) {
-            // default value for IP
-            ip = "127.0.0.1";
-        //}
-        //if (!rclcpp::param::get(ns + "/port", port)) {
-            // default value for TCP port
-            port = "21000";
-        //}
+        node_->get_parameter("fp_output.ip", ip);
+        RCLCPP_INFO(node_->get_logger(), "fp_output.ip : %s", ip.c_str());
     } else if (type == INPUT_TYPE::SERIAL) {
-        //if (!rclcpp::param::get(ns + "/baudrate", baudrate)) {
-            // default value for baudrate
-            baudrate = 115200;
-        //}
-        //if (!rclcpp::param::get(ns + "/port", port)) {
-            // default value for serial port
-            port = "/dev/ttyUSB0";
-        //}
+        node_->get_parameter("fp_output.baudrate", baudrate);
+    RCLCPP_INFO(node_->get_logger(), "fp_output.baudrate : %d", baudrate);
     }
 
     return true;
 }
 
-bool CustomerInputParams::LoadFromRos(std::shared_ptr<rclcpp::Node> node, const std::string &ns) {
-    //if (!rclcpp::param::get(ns + "/speed_topic", speed_topic)) {
-        // default value for the topic name
-        speed_topic = "/fixposition/speed";
-    //}
+CustomerInputParams::CustomerInputParams(std::shared_ptr<rclcpp::Node> node) : node_(node)
+{
+    node_->declare_parameter("customer_input.speed_topic", "/fixposition/speed");
+}
 
+bool CustomerInputParams::LoadFromRos() {
+    node_->get_parameter("customer_input.speed_topic", speed_topic);
+    RCLCPP_INFO(node_->get_logger(), "customer_input.speed_topic : %s", speed_topic.c_str());
     return true;
 }
 
-bool FixpositionDriverParams::LoadFromRos(std::shared_ptr<rclcpp::Node> node, const std::string &ns) {
+bool FixpositionDriverParams::LoadFromRos(std::shared_ptr<rclcpp::Node> node) {
     bool ok = true;
+    fp_output = std::make_unique<FpOutputParams>(node);
+    customer_input = std::make_unique<CustomerInputParams>(node);
 
-    ok &= fp_output.LoadFromRos(node, ns + "fp_output");
-    ok &= customer_input.LoadFromRos(node, ns + "customer_input");
+    ok &= fp_output->LoadFromRos();
+    ok &= customer_input->LoadFromRos();
 
     return ok;
 }

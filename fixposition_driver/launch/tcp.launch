@@ -7,5 +7,6 @@
                /dev/ttyUSB0 - serial port -->
 
     <node name="fixposition_driver" pkg="fixposition_driver" exec="fixposition_driver_exec" output="screen" respawn="true" respawn_delay="5">
+    <param from="$(find-pkg-share fixposition_driver)/launch/tcp.yaml" />
     </node>
 </launch>

@@ -33,7 +33,7 @@ FixpositionDriver::FixpositionDriver(std::shared_ptr<rclcpp::Node> node) : node_
 
     Connect();
 
-    ws_sub_ = node_->create_subscription<fixposition_driver::msg::Speed>(params_.customer_input.speed_topic, 100,
+    ws_sub_ = node_->create_subscription<fixposition_driver::msg::Speed>(params_.customer_input->speed_topic, 100,
                                                        std::bind(&FixpositionDriver::WsCallback, this,
                                                        std::placeholders::_1));
 
@@ -60,7 +60,7 @@ FixpositionDriver::FixpositionDriver(std::shared_ptr<rclcpp::Node> node) : node_
 
 FixpositionDriver::~FixpositionDriver() {
     if (client_fd_ != -1) {
-        if (params_.fp_output.type == INPUT_TYPE::SERIAL) {
+        if (params_.fp_output->type == INPUT_TYPE::SERIAL) {
             tcsetattr(client_fd_, TCSANOW, &options_save_);
         }
         close(client_fd_);
@@ -68,7 +68,7 @@ FixpositionDriver::~FixpositionDriver() {
 }
 
 bool FixpositionDriver::Connect() {
-    switch (params_.fp_output.type) {
+    switch (params_.fp_output->type) {
         case INPUT_TYPE::TCP:
             return CreateTCPSocket();
             break;
@@ -113,7 +113,7 @@ void FixpositionDriver::WsCallback(const fixposition_driver::msg::Speed::ConstSh
 }
 
 bool FixpositionDriver::InitializeConverters() {
-    for (const auto &format : params_.fp_output.formats) {
+    for (const auto &format : params_.fp_output->formats) {
         if (format == "ODOMETRY") {
             converters_["ODOMETRY"] = std::unique_ptr<OdometryConverter>(new OdometryConverter(node_));
             converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter(node_));
@@ -135,18 +135,18 @@ bool FixpositionDriver::InitializeConverters() {
 }
 
 void FixpositionDriver::Run() {
-    rclcpp::Rate rate(params_.fp_output.rate);
+    rclcpp::Rate rate(params_.fp_output->rate);
     while (rclcpp::ok()) {
         if ((client_fd_ > 0) && (connection_status_ == 0) && ReadAndPublish()) {
             rclcpp::spin_some(node_);
             rate.sleep();
         } else {
-            RCLCPP_INFO(node_->get_logger(), "Reconnecting in %.1f seconds ...", params_.fp_output.reconnect_delay);
+            RCLCPP_INFO(node_->get_logger(), "Reconnecting in %.1f seconds ...", params_.fp_output->reconnect_delay);
             close(client_fd_);
             client_fd_ = -1;
 
             rclcpp::spin_some(node_);
-	    std::chrono::nanoseconds reconnect_delay = std::chrono::nanoseconds((uint64_t)params_.fp_output.reconnect_delay * 1000 * 1000 * 1000);
+	    std::chrono::nanoseconds reconnect_delay = std::chrono::nanoseconds((uint64_t)params_.fp_output->reconnect_delay * 1000 * 1000 * 1000);
             rclcpp::sleep_for(reconnect_delay);
 
             Connect();
@@ -158,9 +158,9 @@ bool FixpositionDriver::ReadAndPublish() {
     char readBuf[8192];
 
     ssize_t rv;
-    if (params_.fp_output.type == INPUT_TYPE::TCP) {
+    if (params_.fp_output->type == INPUT_TYPE::TCP) {
         rv = recv(client_fd_, (void *)&readBuf, sizeof(readBuf), MSG_DONTWAIT);
-    } else if (params_.fp_output.type == INPUT_TYPE::SERIAL) {
+    } else if (params_.fp_output->type == INPUT_TYPE::SERIAL) {
         rv = read(client_fd_, (void *)&readBuf, sizeof(readBuf));
     } else {
         rv = 0;
@@ -235,8 +235,8 @@ bool FixpositionDriver::CreateTCPSocket() {
 
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
-    server_address.sin_port = htons(std::stoi(params_.fp_output.port));
-    server_address.sin_addr.s_addr = inet_addr(params_.fp_output.ip.c_str());
+    server_address.sin_port = htons(std::stoi(params_.fp_output->port));
+    server_address.sin_addr.s_addr = inet_addr(params_.fp_output->ip.c_str());
 
     connection_status_ = connect(client_fd_, (struct sockaddr *)&server_address, sizeof server_address);
 
@@ -248,12 +248,12 @@ bool FixpositionDriver::CreateTCPSocket() {
 }
 
 bool FixpositionDriver::CreateSerialConnection() {
-    client_fd_ = open(params_.fp_output.port.c_str(), O_RDWR | O_NOCTTY);
+    client_fd_ = open(params_.fp_output->port.c_str(), O_RDWR | O_NOCTTY);
 
     struct termios options;
     speed_t speed;
 
-    switch (params_.fp_output.baudrate) {
+    switch (params_.fp_output->baudrate) {
         case 9600:
             speed = B9600;
             break;
@@ -292,7 +292,7 @@ bool FixpositionDriver::CreateSerialConnection() {
 
         default:
             speed = B115200;
-            RCLCPP_ERROR_STREAM(node_->get_logger(), "Unsupported baudrate: " << params_.fp_output.baudrate
+            RCLCPP_ERROR_STREAM(node_->get_logger(), "Unsupported baudrate: " << params_.fp_output->baudrate
                                                       << "\n\tsupported examples:\n\t9600, "
                                                          "19200, "
                                                          "38400, "
