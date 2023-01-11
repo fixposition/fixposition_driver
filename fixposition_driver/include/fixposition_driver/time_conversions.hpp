@@ -212,11 +212,20 @@ inline GpsTime PtimeToGpsTime(const BOOST_POSIX::ptime &boost_ptime) {
  * @param[in] input
  * @return ros::Time
  */
-inline rclcpp::Time GpsTimeToRosTime(GpsTime input) {
-        BOOST_POSIX::ptime gps_ptime = GpsTimeToPtime(input);
-	BOOST_POSIX::time_duration td = gps_ptime - Constants::gps_epoch_begin;	
-	rclcpp::Time val = rclcpp::Time(td.total_nanoseconds());
-	return val; }
+inline builtin_interfaces::msg::Time GpsTimeToRosTime(GpsTime input) {
+    BOOST_POSIX::time_duration d = GpsTimeToPtime(input) - BOOST_POSIX::from_time_t(0);
+    builtin_interfaces::msg::Time t;
+    int64_t sec64 = d.total_seconds();
+     if (sec64 < 0 || sec64 > std::numeric_limits<uint32_t>::max())
+       throw std::runtime_error("time_duration is out of dual 32-bit range");
+     t.sec = (uint32_t)sec64;
+#if defined(BOOST_DATE_TIME_HAS_NANOSECONDS)
+     t.nanosec = d.fractional_seconds();
+#else
+     t.nanosec = d.fractional_seconds()*1000;
+#endif
+     return t;
+}
 
 /**
  * @brief Convert ROS Time to GpsTime
@@ -224,9 +233,15 @@ inline rclcpp::Time GpsTimeToRosTime(GpsTime input) {
  * @param[in] ros_time
  * @return GpsTime
  */
-inline GpsTime RosTimeToGpsTime(const rclcpp::Time &ros_time) {
-       TIME_NS_T ros_nanosec = ros_time.nanoseconds();	
-	return PtimeToGpsTime(Constants::gps_epoch_begin + BOOST_POSIX::microseconds(ros_nanosec)); }
+inline GpsTime RosTimeToGpsTime(const builtin_interfaces::msg::Time &ros_time) {
+    BOOST_POSIX::ptime pt;
+#if defined(BOOST_DATE_TIME_HAS_NANOSECONDS)
+    pt =  BOOST_POSIX::from_time_t(ros_time.sec) + BOOST_POSIX::nanoseconds(ros_time.nanosec);
+#else
+    pt =  BOOST_POSIX::from_time_t(ros_time.sec) + BOOST_POSIX::microseconds(ros_time.nanosec/1000);
+#endif
+    return PtimeToGpsTime(pt);
+}
 }  // namespace times
 }  // namespace fixposition
 #endif  // __FIXPOSITION_DRIVER_TIME_CONVERSIONS__

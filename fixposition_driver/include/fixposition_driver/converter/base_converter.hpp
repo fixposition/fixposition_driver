@@ -224,7 +224,7 @@ inline Eigen::Quaterniond Vector4ToEigen(const std::string &w, const std::string
  * @return ros::Time
  */
 inline rclcpp::Time BaseConverter::ConvertGpsTime(const std::string &gps_wno, const std::string &gps_tow) {
-    if (!gps_wno.empty() && gps_tow.empty()) {
+    if (!gps_wno.empty() && !gps_tow.empty()) {
         const times::GpsTime gps_time(std::stoi(gps_wno), std::stod(gps_tow));
         return times::GpsTimeToRosTime(gps_time);
     } else {
