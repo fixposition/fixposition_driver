@@ -20,24 +20,24 @@ namespace fixposition {
 
 FpOutputParams::FpOutputParams(std::shared_ptr<rclcpp::Node> node) : node_(node)
 {
-    node_->declare_parameter("fp_output.rate", 100);
-    node_->declare_parameter("fp_output.reconnect_delay", 5.0);
-    node_->declare_parameter("fp_output.type", "");
-    node_->declare_parameter("fp_output.formats", std::vector<std::string>());
-    node_->declare_parameter("fp_output.port", "");
-    node_->declare_parameter("fp_output.ip", "127.0.0.1");
-    node_->declare_parameter("fp_output.baudrate", 115200);
+    node_->declare_parameter(RATE, 100);
+    node_->declare_parameter(RECONNECT_DELAY, 5.0);
+    node_->declare_parameter(TYPE, "");
+    node_->declare_parameter(FORMATS, std::vector<std::string>());
+    node_->declare_parameter(PORT, "");
+    node_->declare_parameter(IP, "127.0.0.1");
+    node_->declare_parameter(BAUDRATE, 115200);
 } 
 
 bool FpOutputParams::LoadFromRos() {
     // read parameters
-    node_->get_parameter("fp_output.rate", rate);
-    RCLCPP_INFO(node_->get_logger(), "fp_output.rate : %d", rate);
-    node_->get_parameter("fp_output.reconnect_delay", reconnect_delay);
-    RCLCPP_INFO(node_->get_logger(), "fp_output.reconnect_delay : %f", reconnect_delay);
+    node_->get_parameter(RATE, rate);
+    RCLCPP_INFO(node_->get_logger(), "%s : %d", RATE.c_str(), rate);
+    node_->get_parameter(RECONNECT_DELAY, reconnect_delay);
+    RCLCPP_INFO(node_->get_logger(), "%s : %f", RECONNECT_DELAY.c_str(), reconnect_delay);
 
     std::string type_str;
-    node_->get_parameter("fp_output.type", type_str);
+    node_->get_parameter(TYPE, type_str);
     if (type_str == "tcp") {
         type = INPUT_TYPE::TCP;
     } else if (type_str == "serial") {
@@ -47,20 +47,20 @@ bool FpOutputParams::LoadFromRos() {
         return false;
     }
 
-    node_->get_parameter("fp_output.formats", formats);
+    node_->get_parameter(FORMATS, formats);
     for (size_t i = 0; i < formats.size(); i++)
-    	RCLCPP_INFO(node_->get_logger(), "fp_output.formats[%ld] : %s", i, formats[i].c_str());
+    	RCLCPP_INFO(node_->get_logger(), "%s[%ld] : %s", FORMATS.c_str(), i, formats[i].c_str());
 
     // Get parameters: port (required)
-    node_->get_parameter("fp_output.port", port);
-    RCLCPP_INFO(node_->get_logger(), "fp_output.port : %s", port.c_str());
+    node_->get_parameter(PORT, port);
+    RCLCPP_INFO(node_->get_logger(), "%s : %s", PORT.c_str(), port.c_str());
 
     if (type == INPUT_TYPE::TCP) {
-        node_->get_parameter("fp_output.ip", ip);
-        RCLCPP_INFO(node_->get_logger(), "fp_output.ip : %s", ip.c_str());
+        node_->get_parameter(IP, ip);
+        RCLCPP_INFO(node_->get_logger(), "%s : %s", IP.c_str(), ip.c_str());
     } else if (type == INPUT_TYPE::SERIAL) {
-        node_->get_parameter("fp_output.baudrate", baudrate);
-    RCLCPP_INFO(node_->get_logger(), "fp_output.baudrate : %d", baudrate);
+        node_->get_parameter(BAUDRATE, baudrate);
+    RCLCPP_INFO(node_->get_logger(), "%s : %d", BAUDRATE.c_str(), baudrate);
     }
 
     return true;
@@ -68,12 +68,12 @@ bool FpOutputParams::LoadFromRos() {
 
 CustomerInputParams::CustomerInputParams(std::shared_ptr<rclcpp::Node> node) : node_(node)
 {
-    node_->declare_parameter("customer_input.speed_topic", "/fixposition/speed");
+    node_->declare_parameter(SPEED_TOPIC, "/fixposition/speed");
 }
 
 bool CustomerInputParams::LoadFromRos() {
-    node_->get_parameter("customer_input.speed_topic", speed_topic);
-    RCLCPP_INFO(node_->get_logger(), "customer_input.speed_topic : %s", speed_topic.c_str());
+    node_->get_parameter(SPEED_TOPIC, speed_topic);
+    RCLCPP_INFO(node_->get_logger(), "%s : %s", SPEED_TOPIC.c_str(), speed_topic.c_str());
     return true;
 }
 
