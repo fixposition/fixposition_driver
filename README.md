@@ -18,13 +18,8 @@ This driver operates as a ROS node, connecting to either a TCP or serial stream 
 
 ```
  sudo apt update
- sudo apt install -y wget
- wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
- sudo apt-get update
- sudo apt-get install -y python3-catkin-tools
  sudo apt install -y build-essential cmake
  sudo apt install -y libeigen3-dev
- sudo apt install -y ros-melodic-ros-tutorials ros-melodic-geometry-tutorials ros-melodic-rviz ros-melodic-rosbash ros-melodic-rqt-tf-tree
 ```
 
 
@@ -42,25 +37,25 @@ fp_public_ws
 
 and build it with:
 
-`catkin build fixposition_driver`
+`colcon build --packages-select fixposition_driver`
 
 Then source your development environment:
 
-`source devel/setup.bash`
+`source install/setup.bash`
 
 ## Launch the Driver
 
 -  To launch the node in serial mode, run:
 
-   `roslaunch fixposition_driver serial.launch`
+   `ros2 launch fixposition_driver serial.launch`
 
 -  In TCP mode (Wi-Fi):
 
-   `roslaunch fixposition_driver tcp.launch`
+   `ros2 launch fixposition_driver tcp.launch`
 
 -  In TCP mode (Ethernet):
 
-   `roslaunch fixposition_driver tcp.launch`
+   `ros2 launch fixposition_driver tcp.launch`
 
 To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections, check the `launch/tcp.yaml` and `launch/serial.yaml` files.
 
