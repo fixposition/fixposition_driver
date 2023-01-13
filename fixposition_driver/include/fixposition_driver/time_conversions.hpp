@@ -210,7 +210,7 @@ inline GpsTime PtimeToGpsTime(const BOOST_POSIX::ptime &boost_ptime) {
  * @brief Convert GpsTime to ROS Time
  *
  * @param[in] input
- * @return ros::Time
+ * @return builtin_interfaces::msg::Time
  */
 inline builtin_interfaces::msg::Time GpsTimeToRosTime(GpsTime input) {
     BOOST_POSIX::time_duration d = GpsTimeToPtime(input) - BOOST_POSIX::from_time_t(0);
