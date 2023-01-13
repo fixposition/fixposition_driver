@@ -230,7 +230,7 @@ inline builtin_interfaces::msg::Time GpsTimeToRosTime(GpsTime input) {
 /**
  * @brief Convert ROS Time to GpsTime
  *
- * @param[in] ros_time
+ * @param[in] builtin_interfaces::msg::Time
  * @return GpsTime
  */
 inline GpsTime RosTimeToGpsTime(const builtin_interfaces::msg::Time &ros_time) {
