@@ -22,17 +22,14 @@
 
 namespace fixposition {
 
-enum class VelTopicType : int8_t {
-    Twist = 0,
-    TwistWithCov = 1,
-    Odometry = 2
-};
+enum class VelTopicType : int8_t { Twist = 0, TwistWithCov = 1, Odometry = 2 };
 
 struct OdomInputParams {
     VelTopicType topic_type;
     std::string input_topic;
     std::string fixposition_speed_topic;
     int multiplicative_factor;
+    bool use_angular;
     /**
      * @brief Load all parameters from ROS parameter server
      *
@@ -40,7 +37,7 @@ struct OdomInputParams {
      * @return true success
      * @return false fail
      */
-    bool LoadFromRos(const std::string &ns);
+    bool LoadFromRos(const std::string& ns);
 };
 
 }  // namespace fixposition

@@ -19,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
  INCLUDE_DIRS include
- CATKIN_DEPENDS 
+ CATKIN_DEPENDS
   roscpp geometry_msgs
   nav_msgs
 )
@@ -33,7 +33,7 @@ add_executable(
   src/odom_converter_node.cpp
   src/odom_converter.cpp
   src/params.cpp
-  
+
 )
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})

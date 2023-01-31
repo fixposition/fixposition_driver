@@ -1,66 +1,18 @@
-# Fixposition Driver
+# Fixposition ROS Driver
 
-[ROS](https://www.ros.org/) Driver for [Fixposition Vision-RTK 2](https://www.fixposition.com/product)
+[ROS](https://www.ros.org/) (both ROS1 and ROS2) Driver for [Fixposition Vision-RTK 2](https://www.fixposition.com/product).
 
-## Dependencies
+The driver is designed to listen on a TCP or Serial port for the [_Fixposition ASCII Messages_](#fixposition-ascii-messages), and then publish them as corresponding ROS messages. At the same time, the driver can also subscribe to a speed input message, which will be sent back to the Vision-RTK 2 sensor and provide an external speed input.
 
--  [Eigen3](https://eigen.tuxfamily.org/index.php?title=Main_Page), tested with version [3.3.7](https://gitlab.com/libeigen/eigen/-/releases/3.3.7)
--  [Boost](https://www.boost.org/), tested with version [1.65.0](https://www.boost.org/users/history/version_1_65_0.html)
--  [CMake](https://cmake.org/)
--  [Catkin](http://wiki.ros.org/catkin)
+- For the output ROS messages, see [Output of the driver](#output-of-the-driver)
+- For the input ROS messages for speed input, see [Input Wheelspeed through the driver](#input-wheelspeed-through-the-driver)
 
--  **[fixposition_gnss_tf](https://github.com/fixposition/fixposition_gnss_tf)**: Fixposition GNSS Transformation Lib, minimum version **2.0.0**
+## Directory structure
+The code is split in the following 3 parts:
 
-This driver operates as a ROS node, connecting to either a TCP or serial stream of Fixposition Vision-RTK output data, see [Fixposition ASCII messages](#fixposition-ascii-messages) and the **Integration Manual**.
-
-## Installation
-
-To install the node, extract / clone the code and `fixposition_gnss_tf` to your catkin workspace's `src` folder:
-
-```bash
-# The folder structure should look like this
-fp_public_ws
-└── src
-    ├── fixposition_driver
-    └── gnsstransformationlib
-```
-
-and build it with:
-
-`catkin build fixposition_driver`
-
-Then source your development environment:
-
-`source devel/setup.bash`
-
-## Launch the Driver
-
--  To launch the node in serial mode, run:
-
-   `roslaunch fixposition_driver serial.launch`
-
--  In TCP mode (Wi-Fi):
-
-   `roslaunch fixposition_driver tcp.launch`
-
--  In TCP mode (Ethernet):
-
-   `roslaunch fixposition_driver tcp.launch`
-
-To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections, check the `launch/tcp.yaml` and `launch/serial.yaml` files.
-
-## Input Wheelspeed through the driver
-
-The fp_ros_driver support inputing a Speed msg (`msg/Speed.msg`) through the `/fixposition/speed` topic.
-
-The input velocity values should be in [mm/s] as integer 32bit. There are 2 Options:
-
--  Option 1: only one vehicle speed, then only fill a single value as the vehicle speed
--  Option 2: Fill in 4 Values of 4 wheels, in the order of FR, FL, RR, RL
-
-The input values will be converted into a RAWDMI message and sent via the TCP interface to the Vision-RTK2, where it will be further processed and added into the positioning engine.
-
-Note: _Currently the wheelspeed input through the ROS driver is only supported in the TCP mode_
+- `fixposition_driver_lib`: common CMake library to parse [_Fixposition ASCII Messages_](#fixposition-ascii-messages). For more details and build instructions, see [here](fixposition_driver_lib/README.md).
+- `fixposition_driver_ros1`: ROS1 driver node to subscribe and publish in the ROS1 framework. For more details and build instructions, see [here](fixposition_driver_ros1/README.md).
+- `fixposition_driver_ros2`: ROS2 driver node to subscribe and publish in the ROS2 framework. For more details and build instructions, see [here](fixposition_driver_ros2/README.md).
 
 ## Output of the driver
 
@@ -71,14 +23,14 @@ The output is published on the following:
 -  From ODOMETRY, at the configured frequency
    -  Messages
 
-   | Topic                       | Message Type              | Frequency                      | Description                                                                                           |
-   | --------------------------- | ------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------- |
-   | `/fixposition/odometry`     | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POI, Velocity and Angular Velocity in FP_POI                    |
-   | `/fixposition/odometry_enu` | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to ENU0, Velocity and Angular Velocity in FP_POI                      |
-   | `/fixposition/ypr`          | `geometry_msgs/Vector3`   | as configured on web-interface | x = Yaw, y = Pitch, z = Roll in radian. Euler angles representation of rotation between ENU and P_POI. Only available after fusion initialization.       |
+   | Topic                       | Message Type              | Frequency                      | Description                                                                                                                                                   |
+   | --------------------------- | ------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+   | `/fixposition/odometry`     | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
+   | `/fixposition/odometry_enu` | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ENU0 to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
+   | `/fixposition/ypr`          | `geometry_msgs/Vector3`   | as configured on web-interface | x = Yaw, y = Pitch, z = Roll in radian. Euler angles representation of rotation between ENU and P_POI. Only available after fusion initialization.            |
    | `/fixposition/imu_ypr`      | `geometry_msgs/Vector3`   | 200Hz                          | x = 0.0, y = Pitch, z = Roll in radian. Euler angles representation of rotation between a local horizontal frame and P_POI. Rough estimation using IMU alone. |
-   | `/fixposition/vrtk`         | `fixposition_driver/VRTK` | as configured on web-interface | Custom Message containing same Odometry information as well as status flags                           |
-   | `/fixposition/poiimu`       | `sensor_msgs/Imu`         | as configured on web-interface | Bias Corrected acceleration and rotation rate in FP_POI                                               |
+   | `/fixposition/vrtk`         | `fixposition_driver/VRTK` | as configured on web-interface | Custom Message containing same Odometry information as well as status flags                                                                                   |
+   | `/fixposition/poiimu`       | `sensor_msgs/Imu`         | as configured on web-interface | Bias Corrected acceleration and rotation rate in FP_POI                                                                                                       |
 
 -  From LLH, at the configured frequency
 
@@ -103,7 +55,7 @@ The output is published on the following:
 
 -  TFs:
     | Frames                       | Topic        | Message needed to be selected on web-interface | Frequency                      |
-    | ------------------           | ------------ | ---------------------------------------------- | ------------------------------ |
+    | ---------------------------- | ------------ | ---------------------------------------------- | ------------------------------ |
     | `ECEF-->FP_POI`              | `/tf`        | `ODOMETRY`                                     | as configured on web-interface |
     | `ECEF-->FP_ENU`              | `/tf`        | `ODOMETRY`                                     | as configured on web-interface |
     | `ECEF-->FP_ENU0`             | `/tf`        | `ODOMETRY`                                     | as configured on web-interface |
@@ -126,15 +78,61 @@ _Please note that the corresponding messages also has to be selected on the Fixp
 
 ### Explaination of frame ids
 
-| Frame ID    | Explaination                                                                                                                                    |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ECEF**    | Earth-Center-Earth-Fixed frame.                                                                                                                 |
-| **FP_VRTK** | The coordinate frame on the V-RTK's housing on the Fixposition-Logo "X".                                                                        |
-| **FP_POI**  | Point-Of-Interest, configured from V-RTK's web-interface with respect to the FP_VRTK frame. By default it is the same as FP_VRTK.               |
-| **FP_ENU**  | The **local** East-North-Up coordinate frame with the origin at the same location as FP_POI.                                                    |
-| **FP_ENU0** | The **global fixed** East-North-Up coordinate frame with the origin at the first received ODOMETRY position. Needed for visualization in Rviz.  |
-| **FP_CAM**  | The camera coordinate frame of the V-RTK.                                                                                                       |
-| **FP_IMU_HORIZONTAL**  | A local horizontal frame with the origin at the same location as FP_POI. This frame is a rough estimate determined by the IMU alone. |
+| Frame ID              | Explaination                                                                                                                                   |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ECEF**              | Earth-Center-Earth-Fixed frame.                                                                                                                |
+| **FP_VRTK**           | The coordinate frame on the V-RTK's housing on the Fixposition-Logo "X".                                                                       |
+| **FP_POI**            | Point-Of-Interest, configured from V-RTK's web-interface with respect to the FP_VRTK frame. By default it is the same as FP_VRTK.              |
+| **FP_ENU**            | The **local** East-North-Up coordinate frame with the origin at the same location as FP_POI.                                                   |
+| **FP_ENU0**           | The **global fixed** East-North-Up coordinate frame with the origin at the first received ODOMETRY position. Needed for visualization in Rviz. |
+| **FP_CAM**            | The camera coordinate frame of the V-RTK.                                                                                                      |
+| **FP_IMU_HORIZONTAL** | A local horizontal frame with the origin at the same location as FP_POI. This frame is a rough estimate determined by the IMU alone.           |
+
+## Input Wheelspeed through the driver
+
+The fp_ros_driver support inputing a Speed msg (`msg/Speed.msg`) through the `/fixposition/speed` topic.
+
+The input velocity values should be in [mm/s], respectively [mrad/s], as integer 32bit. There are 2 Options:
+
+-  Option 1: Only one vehicle speed, then only fill a single value as the vehicle speed
+-  Option 2: One vehicle speed and the rotation around the vehicle's rotation center
+-  Option 3: Fill in 4 Values of 4 wheels, in the order of FR, FL, RR, RL
+
+The input values will be converted into a NOV_B-RAWDMI message and sent via the TCP interface to the Vision-RTK2, where it will be further processed and added into the positioning engine. The following protocol is used when filling the DMI messages, as per the documentation:
+
+|    # | Offset | Field         | Type           | Unit | Example | Description                                             |
+| ---: | -----: | ------------- | -------------- | ---- | ------- | ------------------------------------------------------- |
+|    - |      0 | `sync1`       | uint8_t        | -    | `0xaa`  | Sync byte 1 (always `0xaa`)                             |
+|    - |      1 | `sync2`       | uint8_t        | -    | `0x44`  | Sync byte 2 (always `0x44`)                             |
+|    - |      2 | `sync3`       | uint8_t        | -    | `0x13`  | Sync byte 3 (always `0x13`)                             |
+|    - |      3 | `payload_len` | uint8_t        | -    | `20`    | Payload length (always `20` for this message)           |
+|    - |      4 | `msg_id`      | uint16_t       | -    | `2269`  | Message ID (always `2269` for this message)             |
+|    1 |      6 | `gps_wno`     | uint16_t       | -    | `0`     | Week number, set to `0`, not supported by VRTK2         |
+|    2 |      8 | `gps_tow`     | int32_t        | ms   | `0`     | Time of week [ms], set to `0`, no supported by VRTK2    |
+|    3 |     12 | `dmi1`        | int32_t        | -    |         | Measurement value 1, for RC or FR wheel                 |
+|    4 |     16 | `dmi2`        | int32_t        | -    |         | Measurement value 2, for FL wheel or YW sensor          |
+|    5 |     20 | `dmi3`        | int32_t        | -    |         | Measurement value 3, for RR wheel                       |
+|    6 |     24 | `dmi4`        | int32_t        | -    |         | Measurement value 4, for RL wheel                       |
+|    - |     28 | `mask`        | uint32_t       | -    |         | *Bitfield:*                                             |
+|    7 |        | `dmi1_valid`  | - *bit 0*      | -    |         | Validity flag for *dmi1* value (0 = invalid, 1 = valid) |
+|    8 |        | `dmi2_valid`  | - *bit 1*      | -    |         | Validity flag for *dmi2* value (0 = invalid, 1 = valid) |
+|    9 |        | `dmi3_valid`  | - *bit 2*      | -    |         | Validity flag for *dmi3* value (0 = invalid, 1 = valid) |
+|   10 |        | `dmi4_valid`  | - *bit 3*      | -    |         | Validity flag for *dmi4* value (0 = invalid, 1 = valid) |
+|   11 |        | `dmi1_type`   | - *bits 10…4*  | -    |         | Type of measurement present in *dmi1* value (see below) |
+|   12 |        | `dmi2_type`   | - *bits 17…11* | -    |         | Type of measurement present in *dmi2* value (see below) |
+|   13 |        | `dmi3_type`   | - *bits 24…18* | -    |         | Type of measurement present in *dmi3* value (see below) |
+|   14 |        | `dmi4_type`   | - *bits 31…25* | -    |         | Type of measurement present in *dmi3* value (see below) |
+|    - |     32 | `checksum`    | uint32_t       | -    |         | CRC32 checksum (see VRTK2 documentation)                |
+
+Measurement types (`dmi1_type`, `dmi2_type`, `dmi3_type` and `dmi4_type`):
+
+| Value | Description             |
+| :---: | ----------------------- |
+|  `0`  | Linear velocity (speed) |
+|  `1`  | Angular velocity        |
+
+Note: _Currently the wheelspeed input through the ROS driver is only supported in the TCP mode_
+
 
 ## Code Documentation
 
@@ -405,21 +403,13 @@ Message fields:
 |   10 | `orientation_y` | Float (.6) | -    | `0.511098`  | Quaternion with respect to ECEF, Y component                           |
 |   11 | `orientation_z` | Float (.6) | -    | `-0.494440` | Quaternion with respect to ECEF, Z component                           |
 
+
 # Fixposition Odometry Converter
 
-An extra node is provided to help with the integration of the wheel odometry on your vehicle. This node is intended to be used as a middleware if you already have a topic with the wheel odometry values running on your system. At the moment, messages of the type `Twist`, `TwistWithCov` and `Odometry` are accepted. The x component of the velocity in the input messages is then extracted, converted, and republished to the `/fixposition/speed` topic, where they will be consumed by the VRTK2.
+This is an extra node is provided to help with the integration of the wheel odometry on your vehicle. For details, see the subfolder [fixposition_odometry_converter](fixposition_odometry_converter/README.md).
 
-_Please note that currently, the odometry converter only works for situations where the desired input odometry has just one value, i.e. the total vehicle speed. It also assumes that the x axis of the odometry output and the VRTK2 axis are aligned. For situations where all 4 inputs are desired, a custom converter is necessary._
 
-## Input Parameters
 
-The `odom_converter.yaml` file exposes the necessary parameters for the correct operation of the node. The parameter that may cause the most doubt is the `multiplicative_factor`. This should be chosen such that the inputed float velocity value is transformed into milimeters per second, e.g. 1000 for an input that is expressed in meters per second.
-
-## Launch
-
-After the configuration is set, to launch the node simply run:
-
-   `roslaunch fixposition_odometry_converter odom_converter.launch`
 
 # License
 

@@ -17,7 +17,7 @@
 /* PACKAGE */
 #include <fixposition_odometry_converter/odom_converter.hpp>
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     ros::init(argc, argv, "fixposition_odometry_converter");
     ros::NodeHandle node_handle;
     ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);

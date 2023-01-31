@@ -1,0 +1,11 @@
+<launch>
+    <!--Change input_type and input_port according to the type of input source:
+               tcp - data over TCP
+               serial - data over a serial port
+        And according to the port used for reading, i.e.
+               21000 - TCP port
+               /dev/ttyUSB0 - serial port -->
+    <node name="fixposition_driver_ros2" pkg="fixposition_driver_ros2" exec="fixposition_driver_ros2_exec" output="screen" respawn="true" respawn_delay="5">
+    <param from="$(find-pkg-share fixposition_driver_ros2)/launch/serial.yaml" />
+    </node>
+</launch>

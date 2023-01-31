@@ -1,0 +1,10 @@
+fp_output:
+    formats: ["ODOMETRY", "LLH", "RAWIMU", "CORRIMU", "TF"]
+    type: tcp
+    port: "21000"
+    ip: "10.0.2.1" # change to VRTK2's IP address in the network
+    rate: 200
+    reconnect_delay: 5.0 # wait time in [s] until retry connection
+
+customer_input:
+    speed_topic: "/fixposition/speed"

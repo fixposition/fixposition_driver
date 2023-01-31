@@ -16,17 +16,18 @@
 /* EXTERNAL */
 
 /* ROS */
-#include <geometry_msgs/Vector3.h>
-#include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/TwistWithCovariance.h>
 #include <geometry_msgs/TwistWithCovarianceStamped.h>
+#include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/Vector3Stamped.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 
 /* PACKAGE */
 #include <fixposition_driver/Speed.h>
+
 #include <fixposition_odometry_converter/params.hpp>
 
 namespace fixposition {
@@ -48,16 +49,16 @@ class OdomConverter {
 
     /**
      * @brief Subscribes to the correct topic depending on the parameters
-     * 
+     *
      */
     void Subscribe();
 
     /**
      * @brief Converts and publishes the speed to an integer value in [mm/s]
-     * 
-     * @param speed 
+     *
+     * @param speed
      */
-    void ConvertAndPublish(const double speed);
+    void ConvertAndPublish(const double speed, const double angular, bool use_angular = false);
 
    private:
     /**
