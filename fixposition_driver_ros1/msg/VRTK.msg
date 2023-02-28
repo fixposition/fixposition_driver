@@ -22,6 +22,7 @@ geometry_msgs/Vector3 acceleration              # linear acceleration
 
 int16 fusion_status                             # field for the fusion status
 int16 imu_bias_status                           # field for the IMU bias status
-int16 gnss_status                               # field for the gnss status
+int16 gnss1_status                              # field for the gnss1 status
+int16 gnss2_status                              # field for the gnss2 status
 int16 wheelspeed_status                         # field for the wheelspeed status
 string version                                  # Fixposition software version

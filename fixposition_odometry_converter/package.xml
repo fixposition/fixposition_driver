@@ -12,5 +12,5 @@
     <depend>roscpp</depend>
     <depend>geometry_msgs</depend>
     <depend>nav_msgs</depend>
-    <depend>fixposition_driver</depend>
+    <depend>fixposition_driver_ros1</depend>
 </package>

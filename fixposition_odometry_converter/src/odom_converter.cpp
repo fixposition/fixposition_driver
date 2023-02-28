@@ -25,7 +25,7 @@ OdomConverter::OdomConverter(ros::NodeHandle* nh) : nh_(*nh) {
     Subscribe();
 
     // initialize the publisher
-    ws_pub_ = nh_.advertise<fixposition_driver::Speed>(params_.fixposition_speed_topic, 1);
+    ws_pub_ = nh_.advertise<fixposition_driver_ros1::Speed>(params_.fixposition_speed_topic, 1);
 }
 
 void OdomConverter::Subscribe() {
@@ -47,7 +47,7 @@ void OdomConverter::ConvertAndPublish(const double speed, const double angular, 
     if (ws_pub_.getNumSubscribers() > 0) {
         const int int_speed = round(speed * params_.multiplicative_factor);
         const int angular_speed = round(angular * params_.multiplicative_factor);
-        fixposition_driver::Speed msg;
+        fixposition_driver_ros1::Speed msg;
         msg.speeds.push_back(int_speed);
         if (params_.use_angular) {
             msg.speeds.push_back(angular_speed);

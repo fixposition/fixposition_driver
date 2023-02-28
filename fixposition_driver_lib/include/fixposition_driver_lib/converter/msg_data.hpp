@@ -91,10 +91,17 @@ struct VrtkData {
     Eigen::Vector3d acceleration;
     int fusion_status;
     int imu_bias_status;
-    int gnss_status;
+    int gnss1_status;
+    int gnss2_status;
     int wheelspeed_status;
     std::string version;
-    VrtkData() : fusion_status(-1), imu_bias_status(-1), gnss_status(-1), wheelspeed_status(-1), version("") {
+    VrtkData()
+        : fusion_status(-1),
+          imu_bias_status(-1),
+          gnss1_status(-1),
+          gnss2_status(-1),
+          wheelspeed_status(-1),
+          version("") {
         acceleration.setZero();
     }
 };

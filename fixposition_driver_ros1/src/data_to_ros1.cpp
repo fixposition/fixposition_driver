@@ -72,7 +72,8 @@ void VrtkDataToMsg(const VrtkData& data, fixposition_driver_ros1::VRTK& msg) {
     tf::vectorEigenToMsg(data.acceleration, msg.acceleration);
     msg.fusion_status = data.fusion_status;
     msg.imu_bias_status = data.imu_bias_status;
-    msg.gnss_status = data.gnss_status;
+    msg.gnss2_status = data.gnss1_status;
+    msg.gnss2_status = data.gnss2_status;
     msg.wheelspeed_status = data.wheelspeed_status;
     msg.version = data.version;
 }

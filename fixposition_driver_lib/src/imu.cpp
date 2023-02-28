@@ -31,8 +31,24 @@ static constexpr const int rot_y_idx = 9;
 static constexpr const int rot_z_idx = 10;
 
 void ImuConverter::ConvertTokens(const std::vector<std::string>& tokens) {
-    if (tokens.size() != 11) {
-        std::cout << "Error in parsing IMU string with" << tokens.size() << "fields! IMU message will be empty.\n";
+    bool ok = tokens.size() == kSize_;
+    if (!ok) {
+        // Size is wrong
+        std::cout << "Error in parsing IMU string with " << tokens.size() << " fields! IMU message will be empty.\n";
+
+    } else {
+        // If size is ok, check version
+        const int version = std::stoi(tokens.at(msg_version_idx));
+
+        ok = version == kVersion_;
+        if (!ok) {
+            // Version is wrong
+            std::cout << "Error in parsing IMU string with verion " << version << " ! IMU message will be empty.\n";
+        }
+    }
+
+    if (!ok) {
+        // Reset message and return
         msg_ = ImuData();
         return;
     }

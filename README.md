@@ -200,63 +200,64 @@ the configured rate.
 
 Example message (wrapped on multiple lines for readability):
 
-    $FP,ODOMETRY,1,2197,126191.765,4278415.1169,636245.1942,4672227.8942,-0.921035,-0.001266,-0.365401,
-    -0.134863,0.6169,-0.0140,-0.0068,0.01857,-0.01427,-0.00746,-0.1185,-0.0795,9.7791,4,1,1,1,0.55214,
-    0.33578,0.50777,0.08625,-0.13062,-0.45209,0.00227,0.00020,0.00270,0.00027,0.00031,0.00232,
-    0.03314,0.03828,0.03199,-0.00290,0.00246,-0.00119,fp_release_vr2_2.36.1_67*47
+    $FP,ODOMETRY,2,2231,227610.750000,4279243.1641,635824.2171,4671589.8683,-0.412792,0.290804,-0.123898,0.854216,
+    -17.1078,-0.0526,-0.3252,0.02245,0.00275,0.10369,-1.0385,-1.3707,9.8249,4,1,8,8,1,
+    0.01761,0.02274,0.01713,-0.00818,0.00235,0.00129,0.00013,0.00015,0.00014,-0.00001,0.00001,0.00002,
+    0.03482,0.06244,0.05480,0.00096,0.00509,0.00054,fp_release_vr2_2.54.0_160*4F\r\n
 
 Message fields:
 
-|    # | Field                | Format     | Unit                        | Example                    | Description                                                            |
-| ---: | -------------------- | ---------- | --------------------------- | -------------------------- | ---------------------------------------------------------------------- |
-|    1 | `msg_type`           | String     | -                           | `ODOMETRY`                 | Message type, always `ODOMETRY` for this message                       |
-|    2 | `msg_version`        | Numeric    | -                           | `1`                        | Message version, always `1` for this version of the `ODOMETRY` message |
-|    3 | `gps_week`           | Numeric    | -                           | `2197`                     | GPS week number, range 0--9999                                         |
-|    4 | `gps_tow`            | Float (.6) | s                           | `126191.765`               | GPS time of week, range 0.000--604799.999                              |
-|    5 | `pos_x`              | Float (.4) | m                           | `4278415.1169`             | Position in ECEF, X component                                          |
-|    6 | `pos_y`              | Float (.4) | m                           | `636245.1942`              | Position in ECEF, Y component                                          |
-|    7 | `pos_z`              | Float (.4) | m                           | `4672227.8942`             | Position in ECEF, Z component                                          |
-|    8 | `orientation_w`      | Float (.6) | -                           | `-0.921035`                | Quaternion with respect to ECEF, W component                           |
-|    9 | `orientation_x`      | Float (.6) | -                           | `-0.001266`                | Quaternion with respect to ECEF, X component                           |
-|   10 | `orientation_y`      | Float (.6) | -                           | `-0.365401`                | Quaternion with respect to ECEF, Y component                           |
-|   11 | `orientation_z`      | Float (.6) | -                           | `-0.134863`                | Quaternion with respect to ECEF, Z component                           |
-|   12 | `vel_x`              | Float (.4) | m/s                         | `0.6169`                   | Velocity in output frame, X component                                  |
-|   13 | `vel_y`              | Float (.4) | m/s                         | `-0.0140`                  | Velocity in output frame, Y component                                  |
-|   14 | `vel_z`              | Float (.4) | m/s                         | `-0.0068`                  | Velocity in output frame, Z component                                  |
-|   15 | `rot_x`              | Float (.5) | rad/s                       | `0.01857`                  | Bias corrected angular velocity in output frame, X component           |
-|   16 | `rot_y`              | Float (.5) | rad/s                       | `-0.01427`                 | Bias corrected angular velocity in output frame, Y component           |
-|   17 | `rot_z`              | Float (.5) | rad/s                       | `-0.00746`                 | Bias corrected angular velocity in output frame, Z component           |
-|   18 | `acc_x`              | Float (.4) | m/s<sup>2</sup>             | `-0.1185`                  | Bias corrected acceleration in output frame, X component               |
-|   19 | `acc_y`              | Float (.4) | m/s<sup>2</sup>             | `-0.0795`                  | Bias corrected acceleration in output frame, Y component               |
-|   20 | `acc_z`              | Float (.4) | m/s<sup>2</sup>             | `9.7791`                   | Bias corrected acceleration in output frame, Z component               |
-|   21 | `fusion_status`      | Numeric    | -                           | `4`                        | Fustion status, see below                                              |
-|   22 | `imu_bias_status`    | Numeric    | -                           | `1`                        | IMU bias status, see below                                             |
-|   23 | `gnss_fix_type`      | Numeric    | -                           | `1`                        | GNSS fix type, see below                                               |
-|   24 | `wheelspeed_status`  | Numeric    | -                           | `1`                        | Wheelspeed status, see below                                           |
-|   25 | `pos_cov_xx`         | Float (5)  | m<sup>2</sup>               | `0.55214`                  | Position covariance, element XX                                        |
-|   26 | `pos_cov_yy`         | Float (5)  | m<sup>2</sup>               | `0.33578`                  | Position covariance, element YY                                        |
-|   27 | `pos_cov_zz`         | Float (5)  | m<sup>2</sup>               | `0.50777`                  | Position covariance, element ZZ                                        |
-|   28 | `pos_cov_xy`         | Float (5)  | m<sup>2</sup>               | `0.08625`                  | Position covariance, element XY                                        |
-|   29 | `pos_cov_yz`         | Float (5)  | m<sup>2</sup>               | `-0.13062`                 | Position covariance, element YZ                                        |
-|   30 | `pos_cov_xz`         | Float (5)  | m<sup>2</sup>               | `-0.45209`                 | Position covariance, element XZ                                        |
-|   31 | `orientation_cov_xx` | Float (5)  | rad<sup>2</sup>             | `0.00227`                  | Velocity covariance, element XX                                        |
-|   32 | `orientation_cov_yy` | Float (5)  | rad<sup>2</sup>             | `0.00020`                  | Velocity covariance, element YY                                        |
-|   33 | `orientation_cov_zz` | Float (5)  | rad<sup>2</sup>             | `0.00270`                  | Velocity covariance, element ZZ                                        |
-|   34 | `orientation_cov_xy` | Float (5)  | rad<sup>2</sup>             | `0.00027`                  | Velocity covariance, element XY                                        |
-|   35 | `orientation_cov_yz` | Float (5)  | rad<sup>2</sup>             | `0.00031`                  | Velocity covariance, element YZ                                        |
-|   36 | `orientation_cov_xz` | Float (5)  | rad<sup>2</sup>             | `0.00232`                  | Velocity covariance, element XZ                                        |
-|   37 | `vel_cov_xx`         | Float (5)  | m<sup>2</sup>/s<sup>2</sup> | `0.03314`                  | Velocity covariance, element XX                                        |
-|   38 | `vel_cov_yy`         | Float (5)  | m<sup>2</sup>/s<sup>2</sup> | `0.03828`                  | Velocity covariance, element YY                                        |
-|   39 | `vel_cov_zz`         | Float (5)  | m<sup>2</sup>/s<sup>2</sup> | `0.03199`                  | Velocity covariance, element ZZ                                        |
-|   40 | `vel_cov_xy`         | Float (5)  | m<sup>2</sup>/s<sup>2</sup> | `-0.00290`                 | Velocity covariance, element XY                                        |
-|   41 | `vel_cov_yz`         | Float (5)  | m<sup>2</sup>/s<sup>2</sup> | `0.00246`                  | Velocity covariance, element YZ                                        |
-|   42 | `vel_cov_xz`         | Float (5)  | m<sup>2</sup>/s<sup>2</sup> | `-0.00119`                 | Velocity covariance, element XZ                                        |
-|   43 | `sw_version`         | String     | -                           | `fp_release_vr2_2.36.1_67` | Software version                                                       |
+|   # | Field                | Format     | Unit                        | Example                     | Description                                                            |
+|----:|----------------------|------------|-----------------------------|-----------------------------|------------------------------------------------------------------------|
+|   1 | `msg_type`           | String     | -                           | `ODOMETRY`                  | Message type, always `ODOMETRY` for this message                       |
+|   2 | `msg_version`        | Numeric    | -                           | `2`                         | Message version, always `2` for this version of the `ODOMETRY` message |
+|   3 | `gps_week`           | Numeric    | -                           | `2231`                      | GPS week number, range 0--9999                                         |
+|   4 | `gps_tow`            | Float (.6) | s                           | `227610.750000`             | GPS time of week, range 0.000--604799.999999                           |
+|   5 | `pos_x`              | Float (.4) | m                           | `4279243.1641`              | Position in ECEF, X component                                          |
+|   6 | `pos_y`              | Float (.4) | m                           | `635824.2171`               | Position in ECEF, Y component                                          |
+|   7 | `pos_z`              | Float (.4) | m                           | `4671589.8683`              | Position in ECEF, Z component                                          |
+|   8 | `orientation_w`      | Float (.6) | -                           | `-0.412792`                 | Quaternion with respect to ECEF, W component                           |
+|   9 | `orientation_x`      | Float (.6) | -                           | `0.290804`                  | Quaternion with respect to ECEF, X component                           |
+|  10 | `orientation_y`      | Float (.6) | -                           | `-0.123898`                 | Quaternion with respect to ECEF, Y component                           |
+|  11 | `orientation_z`      | Float (.6) | -                           | `0.854216`                  | Quaternion with respect to ECEF, Z component                           |
+|  12 | `vel_x`              | Float (.4) | m/s                         | `-17.1078`                  | Velocity in output frame, X component                                  |
+|  13 | `vel_y`              | Float (.4) | m/s                         | `-0.0526`                   | Velocity in output frame, Y component                                  |
+|  14 | `vel_z`              | Float (.4) | m/s                         | `-0.3252`                   | Velocity in output frame, Z component                                  |
+|  15 | `rot_x`              | Float (.5) | rad/s                       | `0.02245`                   | Bias corrected angular velocity in output frame, X component           |
+|  16 | `rot_y`              | Float (.5) | rad/s                       | `0.00275`                   | Bias corrected angular velocity in output frame, Y component           |
+|  17 | `rot_z`              | Float (.5) | rad/s                       | `0.10369`                   | Bias corrected angular velocity in output frame, Z component           |
+|  18 | `acc_x`              | Float (.4) | m/s<sup>2</sup>             | `-1.0385`                   | Bias corrected acceleration in output frame, X component               |
+|  19 | `acc_y`              | Float (.4) | m/s<sup>2</sup>             | `-1.3707`                   | Bias corrected acceleration in output frame, Y component               |
+|  20 | `acc_z`              | Float (.4) | m/s<sup>2</sup>             | `9.8249`                    | Bias corrected acceleration in output frame, Z component               |
+|  21 | `fusion_status`      | Numeric    | -                           | `4`                         | Fustion status, see below                                              |
+|  22 | `imu_bias_status`    | Numeric    | -                           | `1`                         | IMU bias status, see below                                             |
+|  23 | `gnss1_fix`          | Numeric    | -                           | `8`                         | Fix status of GNSS1 receiver, see below                                |
+|  24 | `gnss2_fix`          | Numeric    | -                           | `8`                         | Fix status of GNSS2 receiver, see below                                |
+|  25 | `wheelspeed_status`  | Numeric    | -                           | `1`                         | Wheelspeed status, see below                                           |
+|  26 | `pos_cov_xx`         | Float (5)  | m<sup>2</sup>               | `0.01761`                   | Position covariance, element XX                                        |
+|  27 | `pos_cov_yy`         | Float (5)  | m<sup>2</sup>               | `0.02274`                   | Position covariance, element YY                                        |
+|  28 | `pos_cov_zz`         | Float (5)  | m<sup>2</sup>               | `0.01713`                   | Position covariance, element ZZ                                        |
+|  29 | `pos_cov_xy`         | Float (5)  | m<sup>2</sup>               | `-0.00818`                  | Position covariance, element XY                                        |
+|  30 | `pos_cov_yz`         | Float (5)  | m<sup>2</sup>               | `0.00235`                   | Position covariance, element YZ                                        |
+|  31 | `pos_cov_xz`         | Float (5)  | m<sup>2</sup>               | `0.00129`                   | Position covariance, element XZ                                        |
+|  32 | `orientation_cov_xx` | Float (5)  | rad<sup>2</sup>             | `0.00013`                   | Velocity covariance, element XX                                        |
+|  33 | `orientation_cov_yy` | Float (5)  | rad<sup>2</sup>             | `0.00015`                   | Velocity covariance, element YY                                        |
+|  34 | `orientation_cov_zz` | Float (5)  | rad<sup>2</sup>             | `0.00014`                   | Velocity covariance, element ZZ                                        |
+|  35 | `orientation_cov_xy` | Float (5)  | rad<sup>2</sup>             | `-0.00001`                  | Velocity covariance, element XY                                        |
+|  36 | `orientation_cov_yz` | Float (5)  | rad<sup>2</sup>             | `0.00001`                   | Velocity covariance, element YZ                                        |
+|  37 | `orientation_cov_xz` | Float (5)  | rad<sup>2</sup>             | `0.00002`                   | Velocity covariance, element XZ                                        |
+|  38 | `vel_cov_xx`         | Float (5)  | m<sup>2</sup>/s<sup>2</sup> | `0.03482`                   | Velocity covariance, element XX                                        |
+|  39 | `vel_cov_yy`         | Float (5)  | m<sup>2</sup>/s<sup>2</sup> | `0.06244`                   | Velocity covariance, element YY                                        |
+|  40 | `vel_cov_zz`         | Float (5)  | m<sup>2</sup>/s<sup>2</sup> | `0.05480`                   | Velocity covariance, element ZZ                                        |
+|  41 | `vel_cov_xy`         | Float (5)  | m<sup>2</sup>/s<sup>2</sup> | `0.00096`                   | Velocity covariance, element XY                                        |
+|  42 | `vel_cov_yz`         | Float (5)  | m<sup>2</sup>/s<sup>2</sup> | `0.00509`                   | Velocity covariance, element YZ                                        |
+|  43 | `vel_cov_xz`         | Float (5)  | m<sup>2</sup>/s<sup>2</sup> | `0.00054`                   | Velocity covariance, element XZ                                        |
+|  44 | `sw_version`         | String     | -                           | `fp_release_vr2_2.54.0_160` | Software version                                                       |
 
 Fusion status (`fusion_status`):
 
 | Value | Description                 |
-| :---: | --------------------------- |
+|:-----:|-----------------------------|
 |  `0`  | Not started                 |
 |  `1`  | Vision only                 |
 |  `2`  | Visual inertial fusion      |
@@ -266,22 +267,14 @@ Fusion status (`fusion_status`):
 IMU bias status (`imu_bias_status`):
 
 | Value | Description        |
-| :---: | ------------------ |
+|:-----:|--------------------|
 |  `0`  | Not converged      |
 |  `1`  | IMU bias converged |
 
-Wheelspeed status (`wheelspeed_status`):
-
-| Value | Description                                              |
-| :---: | -------------------------------------------------------- |
-| `-1`  | No wheelspeed enabled                                    |
-|  `0`  | At least one wheelspeed enabled, no wheelspeed converged |
-|  `1`  | At least one wheelspeed enabled and converged            |
-
-GNSS fix type (`gnss_fix_type`):
+GNSS fix type (`gnss1_fix`, `gnss2_fix`):
 
 | Value | Description                       |
-| :---: | --------------------------------- |
+|:-----:|-----------------------------------|
 |  `0`  | Unknown                           |
 |  `1`  | No fix                            |
 |  `2`  | Dead-reckoning only               |
@@ -291,6 +284,14 @@ GNSS fix type (`gnss_fix_type`):
 |  `6`  | Single 3D fix with dead-reckoning |
 |  `7`  | RTK float fix                     |
 |  `8`  | RTK fixed fix                     |
+
+Wheelspeed status (`wheelspeed_status`):
+
+| Value | Description                                              |
+|:-----:|----------------------------------------------------------|
+| `-1`  | No wheelspeed enabled                                    |
+|  `0`  | At least one wheelspeed enabled, no wheelspeed converged |
+|  `1`  | At least one wheelspeed enabled and converged            |
 
 Remarks:
 
@@ -304,26 +305,27 @@ in East-North-up (ENU). The coordinates are transformed from ECEF using the WGS-
 
 Example message (wrapped on multiple lines for readability):
 
-    $FP,LLH,1,2197,126191.765,47.398826818,8.458494107,457.518,0.31537,
-    1.0076,0.072696,-0.080012,0.0067274,-0.011602*4E\r\n
+    $FP,LLH,1,2231,227563.250000,47.392357470,8.448121451,473.5857,
+    0.04533,0.03363,0.02884,0.00417,0.00086,-0.00136*62\r\n
 
 Message fields:
 
-|    # | Field         | Format     | Unit          | Example        | Description                                                                |
-| ---: | ------------- | ---------- | ------------- | -------------- | -------------------------------------------------------------------------- |
-|    1 | `msg_type`    | String     | -             | `LLH`          | Message type, always `LLH` for this message                                |
-|    2 | `msg_version` | Numeric    | -             | `1`            | Message version, always `1` for this version of the `LLH` message          |
-|    3 | `gps_week`    | Numeric    | -             | `2197`         | GPS week number, range 0--9999                                             |
-|    4 | `gps_tow`     | Float (.6) | s             | `126191.765`   | GPS time of week, range 0.000--604799.999                                  |
-|    5 | `latitude`    | Float (.9) | deg           | `47.398826818` | Latitude, range -90.000000000--90.000000000, > 0 for North, < 0 for South  |
-|    6 | `longitude`   | Float (.9) | deg           | `8.458494107`  | Longitude, range -180.000000000--180.000000000, > 0 for East, < 0 for West |
-|    7 | `height`      | Float (.4) | m             | `457.518`      | Ellipsoidal height                                                         |
-|    8 | `pos_cov_ee`  | Float (5)  | m<sup>2</sup> | `0.31537`      | Position covariance in ENU, element EE                                     |
-|    9 | `pos_cov_nn`  | Float (5)  | m<sup>2</sup> | `1.0076`       | Position covariance in ENU, element NN                                     |
-|   10 | `pos_cov_uu`  | Float (5)  | m<sup>2</sup> | `0.072696`     | Position covariance in ENU, element UU                                     |
-|   11 | `pos_cov_en`  | Float (5)  | m<sup>2</sup> | `-0.080012`    | Position covariance in ENU, element EN                                     |
-|   12 | `pos_cov_nu`  | Float (5)  | m<sup>2</sup> | `0.0067274`    | Position covariance in ENU, element NU                                     |
-|   13 | `pos_cov_eu`  | Float (5)  | m<sup>2</sup> | `-0.011602`    | Position covariance in ENU, element EU                                     |
+|   # | Field         | Format     | Unit          | Example         | Description                                                                |
+|----:|---------------|------------|---------------|-----------------|----------------------------------------------------------------------------|
+|   1 | `msg_type`    | String     | -             | `LLH`           | Message type, always `LLH` for this message                                |
+|   2 | `msg_version` | Numeric    | -             | `1`             | Message version, always `1` for this version of the `LLH` message          |
+|   3 | `gps_week`    | Numeric    | -             | `2231`          | GPS week number, range 0--9999                                             |
+|   4 | `gps_tow`     | Float (.6) | s             | `227563.250000` | GPS time of week, range 0.000--604799.999999                               |
+|   5 | `latitude`    | Float (.9) | deg           | `47.392357470`  | Latitude, range -90.000000000--90.000000000, > 0 for North, < 0 for South  |
+|   6 | `longitude`   | Float (.9) | deg           | `8.448121451`   | Longitude, range -180.000000000--180.000000000, > 0 for East, < 0 for West |
+|   7 | `height`      | Float (.4) | m             | `473.5857`      | Ellipsoidal height, range -1000.0000-50000.0000                            |
+|   8 | `pos_cov_ee`  | Float (5)  | m<sup>2</sup> | `0.04533`       | Position covariance in ENU, element EE                                     |
+|   9 | `pos_cov_nn`  | Float (5)  | m<sup>2</sup> | `0.03363`       | Position covariance in ENU, element NN                                     |
+|  10 | `pos_cov_uu`  | Float (5)  | m<sup>2</sup> | `0.02884`       | Position covariance in ENU, element UU                                     |
+|  11 | `pos_cov_en`  | Float (5)  | m<sup>2</sup> | `0.00417`       | Position covariance in ENU, element EN                                     |
+|  12 | `pos_cov_nu`  | Float (5)  | m<sup>2</sup> | `0.00086`       | Position covariance in ENU, element NU                                     |
+|  13 | `pos_cov_eu`  | Float (5)  | m<sup>2</sup> | `-0.00136`      | Position covariance in ENU, element EU                                     |
+
 
 ### RAWIMU message
 
@@ -336,18 +338,20 @@ Example message:
 
     $FP,RAWIMU,1,2197,126191.777855,-0.199914,0.472851,9.917973,0.023436,0.007723,0.002131*34\r\n
 
-|    # | Field         | Format     | Unit            | Example         | Description                                                          |
-| ---: | ------------- | ---------- | --------------- | --------------- | -------------------------------------------------------------------- |
-|    1 | `msg_type`    | String     | -               | `RAWIMU`        | Message type, always `RAWIMU` for this message                       |
-|    2 | `msg_version` | Numeric    | -               | `1`             | Message version, always `1` for this version of the `RAWIMU` message |
-|    3 | `gps_week`    | Numeric    | -               | `2197`          | GPS week number, range 0--9999                                       |
-|    4 | `gps_tow`     | Float (.6) | s               | `126191.777855` | GPS time of week, range 0.000--604799.999                            |
-|    5 | `acc_x`       | Float (.6) | m/s<sup>2</sup> | `-0.199914`     | Raw acceleration in output frame, X component                        |
-|    6 | `acc_y`       | Float (.6) | m/s<sup>2</sup> | `0.472851`      | Raw acceleration in output frame, Y component                        |
-|    7 | `acc_z`       | Float (.6) | m/s<sup>2</sup> | `9.917973`      | Raw acceleration in output frame, Z component                        |
-|    8 | `rot_x`       | Float (.6) | rad/s           | `0.023436`      | Raw angular velocity in output frame, X component                    |
-|    9 | `rot_y`       | Float (.6) | rad/s           | `0.007723`      | Raw angular velocity in output frame, Y component                    |
-|   10 | `rot_z`       | Float (.6) | rad/s           | `0.002131`      | Raw angular velocity in output frame, Z component                    |
+Message fields:
+
+|   # | Field         | Format     | Unit            | Example         | Description                                                          |
+|----:|---------------|------------|-----------------|-----------------|----------------------------------------------------------------------|
+|   1 | `msg_type`    | String     | -               | `RAWIMU`        | Message type, always `RAWIMU` for this message                       |
+|   2 | `msg_version` | Numeric    | -               | `1`             | Message version, always `1` for this version of the `RAWIMU` message |
+|   3 | `gps_week`    | Numeric    | -               | `2197`          | GPS week number, range 0--9999                                       |
+|   4 | `gps_tow`     | Float (.6) | s               | `126191.777855` | GPS time of week, range 0.000--604799.999999                         |
+|   5 | `acc_x`       | Float (.6) | m/s<sup>2</sup> | `-0.199914`     | Raw acceleration in output frame, X component                        |
+|   6 | `acc_y`       | Float (.6) | m/s<sup>2</sup> | `0.472851`      | Raw acceleration in output frame, Y component                        |
+|   7 | `acc_z`       | Float (.6) | m/s<sup>2</sup> | `9.917973`      | Raw acceleration in output frame, Z component                        |
+|   8 | `rot_x`       | Float (.6) | rad/s           | `0.023436`      | Raw angular velocity in output frame, X component                    |
+|   9 | `rot_y`       | Float (.6) | rad/s           | `0.007723`      | Raw angular velocity in output frame, Y component                    |
+|  10 | `rot_z`       | Float (.6) | rad/s           | `0.002131`      | Raw angular velocity in output frame, Z component                    |
 
 ### CORRIMU message
 
@@ -360,18 +364,20 @@ Example message:
 
     $FP,CORRIMU,1,2197,126191.777855,-0.195224,0.393969,9.869998,0.013342,-0.004620,-0.000728*7D\r\n
 
-|    # | Field         | Format     | Unit            | Example         | Description                                                          |
-| ---: | ------------- | ---------- | --------------- | --------------- | -------------------------------------------------------------------- |
-|    1 | `msg_type`    | String     | -               | `CORRIMU`       | Message type, always `RAWIMU` for this message                       |
-|    2 | `msg_version` | Numeric    | -               | `1`             | Message version, always `1` for this version of the `RAWIMU` message |
-|    3 | `gps_week`    | Numeric    | -               | `2197`          | GPS week number, range 0--9999                                       |
-|    4 | `gps_tow`     | Float (.6) | s               | `126191.777855` | GPS time of week, range 0.000--604799.999                            |
-|    5 | `acc_x`       | Float (.6) | m/s<sup>2</sup> | `-0.195224`     | Raw acceleration in output frame, X component                        |
-|    6 | `acc_y`       | Float (.6) | m/s<sup>2</sup> | `0.393969`      | Raw acceleration in output frame, Y component                        |
-|    7 | `acc_z`       | Float (.6) | m/s<sup>2</sup> | `9.869998`      | Raw acceleration in output frame, Z component                        |
-|    8 | `rot_x`       | Float (.6) | rad/s           | `0.013342`      | Raw angular velocity in output frame, X component                    |
-|    9 | `rot_y`       | Float (.6) | rad/s           | `-0.004620`     | Raw angular velocity in output frame, Y component                    |
-|   10 | `rot_z`       | Float (.6) | rad/s           | `-0.000728`     | Raw angular velocity in output frame, Z component                    |
+Message fields:
+
+|   # | Field         | Format     | Unit            | Example         | Description                                                          |
+| --: | ------------- | ---------- | --------------- | --------------- | -------------------------------------------------------------------- |
+|   1 | `msg_type`    | String     | -               | `CORRIMU`       | Message type, always `RAWIMU` for this message                       |
+|   2 | `msg_version` | Numeric    | -               | `1`             | Message version, always `1` for this version of the `RAWIMU` message |
+|   3 | `gps_week`    | Numeric    | -               | `2197`          | GPS week number, range 0--9999                                       |
+|   4 | `gps_tow`     | Float (.6) | s               | `126191.777855` | GPS time of week, range 0.000--604799.999                            |
+|   5 | `acc_x`       | Float (.6) | m/s<sup>2</sup> | `-0.195224`     | Raw acceleration in output frame, X component                        |
+|   6 | `acc_y`       | Float (.6) | m/s<sup>2</sup> | `0.393969`      | Raw acceleration in output frame, Y component                        |
+|   7 | `acc_z`       | Float (.6) | m/s<sup>2</sup> | `9.869998`      | Raw acceleration in output frame, Z component                        |
+|   8 | `rot_x`       | Float (.6) | rad/s           | `0.013342`      | Raw angular velocity in output frame, X component                    |
+|   9 | `rot_y`       | Float (.6) | rad/s           | `-0.004620`     | Raw angular velocity in output frame, Y component                    |
+|  10 | `rot_z`       | Float (.6) | rad/s           | `-0.000728`     | Raw angular velocity in output frame, Z component                    |
 
 Remarks:
 
@@ -382,27 +388,28 @@ Remarks:
 
 This message contains information for static coordinate transformations.
 
-Example message (wrapped on multiple lines for readability):
+Example messages:
 
-    $FP,TF,1,VRTK,CAM,0.01795,0.00044,-0.01103,
-    0.485049,-0.508955,0.511098,-0.494440*4A
+    $FP,TF,2,2233,315835.000000,VRTK,CAM,-0.00000,-0.00000,-0.00000,1.000000,0.000000,0.000000,0.000000*6B\r\n
+    $FP,TF,2,2233,315835.000000,POI,VRTK,-0.99301,-2.01395,-2.99298,0.999995,-0.002616,-0.001748,-0.000868*52\r\n
 
 Message fields:
 
-|    # | Field           | Format     | Unit | Example     | Description                                                            |
-| ---: | --------------- | ---------- | ---- | ----------- | ---------------------------------------------------------------------- |
-|    1 | `msg_type`      | String     | -    | `TF`        | Message type, always `ODOMETRY` for this message                       |
-|    2 | `msg_version`   | Numeric    | -    | `1`         | Message version, always `1` for this version of the `ODOMETRY` message |
-|    3 | `from_frame`    | Numeric    | -    | `CAM`       | GPS week number, range 0--9999                                         |
-|    4 | `to_frame`      | Float (.6) | s    | `VRTK`      | GPS time of week, range 0.000--604799.999                              |
-|    5 | `translation_x` | Float (.5) | m    | `0.01795`   | Position in ECEF, X component                                          |
-|    6 | `translation_y` | Float (.5) | m    | `0.00044`   | Position in ECEF, Y component                                          |
-|    7 | `translation_z` | Float (.5) | m    | `-0.01103`  | Position in ECEF, Z component                                          |
-|    8 | `orientation_w` | Float (.6) | -    | `0.485049`  | Quaternion with respect to ECEF, W component                           |
-|    9 | `orientation_x` | Float (.6) | -    | `-0.508955` | Quaternion with respect to ECEF, X component                           |
-|   10 | `orientation_y` | Float (.6) | -    | `0.511098`  | Quaternion with respect to ECEF, Y component                           |
-|   11 | `orientation_z` | Float (.6) | -    | `-0.494440` | Quaternion with respect to ECEF, Z component                           |
-
+|   # | Field           | Format     | Unit | Example         | Description                                                      |
+|----:|-----------------|------------|------|-----------------|------------------------------------------------------------------|
+|   1 | `msg_type`      | String     | -    | `TF`            | Message type, always `TF` for this message                       |
+|   2 | `msg_version`   | Numeric    | -    | `2`             | Message version, always `2` for this version of the `TF` message |
+|   3 | `gps_week`      | Numeric    | -    | `2233`          | GPS week number, range 0--9999                                   |
+|   4 | `gps_tow`       | Float (.6) | s    | `315835.000000` | GPS time of week, range 0.000--604799.999999                     |
+|   5 | `frame_a`       | String     | -    | `POI`           | Target frame (maximum 8 characters: A-Z and 0-9)                 |
+|   6 | `frame_b`       | String     | -    | `VRTK`          | Initial frame (maximum 8 characters: A-Z and 0-9)                |
+|   7 | `translation_x` | Float (.5) | m    | `-0.99301`      | Translation, X component                                         |
+|   8 | `translation_y` | Float (.5) | m    | `-2.01395`      | Translation, Y component                                         |
+|   9 | `translation_z` | Float (.5) | m    | `-2.99298`      | Translation, Z component                                         |
+|  10 | `orientation_w` | Float (.6) | -    | `0.999995`      | Rotation in quaternion, W component                              |
+|  11 | `orientation_x` | Float (.6) | -    | `-0.002616`     | Rotation in quaternion, X component                              |
+|  12 | `orientation_y` | Float (.6) | -    | `-0.001748`     | Rotation in quaternion, Y component                              |
+|  13 | `orientation_z` | Float (.6) | -    | `-0.000868`     | Rotation in quaternion, Z component                              |
 
 # Fixposition Odometry Converter
 

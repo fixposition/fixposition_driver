@@ -36,15 +36,6 @@ class BaseConverter {
      */
     virtual void ConvertTokens(const std::vector<std::string>& tokens) = 0;
 
-    /**
-     * @brief Check the header and version of the corresponding message to make sure it is correct
-     *
-     * @param[in] msg_header expected header
-     * @param[in] msg_version expected version
-     * @return true correct
-     * @return false incorrect
-     */
-    virtual bool CheckHeaderAndVersion(const std::string msg_header, const std::string msg_version) = 0;
 };
 
 //===================================================

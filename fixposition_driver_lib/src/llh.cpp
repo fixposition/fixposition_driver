@@ -17,7 +17,7 @@ namespace fixposition {
 
 /// msg field indices
 static constexpr const int msg_type_idx = 1;
-static constexpr const int msg_versio_idx = 2;
+static constexpr const int msg_version_idx = 2;
 static constexpr const int gps_week_idx = 3;
 static constexpr const int gps_tow_idx = 4;
 static constexpr const int latitude_idx = 5;
@@ -31,12 +31,30 @@ static constexpr const int pos_cov_nu_idx = 12;
 static constexpr const int pos_cov_eu_idx = 13;
 
 void LlhConverter::ConvertTokens(const std::vector<std::string>& tokens) {
-    if (tokens.size() != 14) {
-        std::cout << "Error in parsing LLH string with" << tokens.size()
-                  << "fields! NavSatFix message will be empty.\n";
+    bool ok = tokens.size() == kSize_;
+    if (!ok) {
+        // Size is wrong
+        std::cout << "Error in parsing LLH string with " << tokens.size()
+                  << " fields! NavSatFix message will be empty.\n";
+
+    } else {
+        // If size is ok, check version
+        const int version = std::stoi(tokens.at(msg_version_idx));
+
+        ok = version == kVersion_;
+        if (!ok) {
+            // Version is wrong
+            std::cout << "Error in parsing LLH string with verion " << version
+                      << " ! NavSatFix message will be empty.\n";
+        }
+    }
+
+    if (!ok) {
+        // Reset message and return
         msg_ = NavSatFixData();
         return;
     }
+
     // header stamps
     msg_.stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
 

@@ -57,10 +57,6 @@ class OdometryConverter : public BaseConverter {
 
     ~OdometryConverter() = default;
 
-    bool CheckHeaderAndVersion(const std::string msg_header, const std::string msg_version) final {
-        return msg_header == header_ && std::stoi(msg_version) == kVersion_;
-    }
-
     /**
      * @brief Comma Delimited FP,ODOMETRY message, convert to Data structs and if available,
      * call observers
@@ -84,7 +80,8 @@ class OdometryConverter : public BaseConverter {
 
    private:
     const std::string header_ = "ODOMETRY";
-    static constexpr const int kVersion_ = 1;
+    static constexpr const int kVersion_ = 2;
+    static constexpr const int kSize_ = 45;
 
     //! transform between ECEF and ENU0
     bool tf_ecef_enu0_set_;  //!< flag to indicate if the tf is already set

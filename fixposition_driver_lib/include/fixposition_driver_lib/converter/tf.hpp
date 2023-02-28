@@ -33,9 +33,6 @@ class TfConverter : public BaseConverter {
 
     ~TfConverter() = default;
 
-    bool CheckHeaderAndVersion(const std::string msg_header, const std::string msg_version) final {
-        return msg_header == header_ && std::stoi(msg_version) == kVersion_;
-    }
     /**
      * @brief ake comma-delimited tokens of FP,TF message, convert to Data structs and if available,
      * call observers
@@ -58,7 +55,8 @@ class TfConverter : public BaseConverter {
 
     const std::string header_ = "TF";
 
-    static constexpr const int kVersion_ = 1;
+    static constexpr const int kVersion_ = 2;
+    static constexpr const int kSize_ = 14;
 };
 }  // namespace fixposition
 #endif  // __FIXPOSITION_DRIVER_LIB_CONVERTER_TF__

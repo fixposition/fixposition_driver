@@ -46,27 +46,28 @@ static constexpr const int acc_y_idx = 19;
 static constexpr const int acc_z_idx = 20;
 static constexpr const int fusion_status_idx = 21;
 static constexpr const int imu_bias_status_idx = 22;
-static constexpr const int gnss_fix_type_idx = 23;
-static constexpr const int wheelspeed_status_idx = 24;
-static constexpr const int pos_cov_xx_idx = 25;
-static constexpr const int pos_cov_yy_idx = 26;
-static constexpr const int pos_cov_zz_idx = 27;
-static constexpr const int pos_cov_xy_idx = 28;
-static constexpr const int pos_cov_yz_idx = 29;
-static constexpr const int pos_cov_xz_idx = 30;
-static constexpr const int orientation_cov_xx_idx = 31;
-static constexpr const int orientation_cov_yy_idx = 32;
-static constexpr const int orientation_cov_zz_idx = 33;
-static constexpr const int orientation_cov_xy_idx = 34;
-static constexpr const int orientation_cov_yz_idx = 35;
-static constexpr const int orientation_cov_xz_idx = 36;
-static constexpr const int vel_cov_xx_idx = 37;
-static constexpr const int vel_cov_yy_idx = 38;
-static constexpr const int vel_cov_zz_idx = 39;
-static constexpr const int vel_cov_xy_idx = 40;
-static constexpr const int vel_cov_yz_idx = 41;
-static constexpr const int vel_cov_xz_idx = 42;
-static constexpr const int sw_version_idx = 43;
+static constexpr const int gnss1_fix_type_idx = 23;
+static constexpr const int gnss2_fix_type_idx = 24;
+static constexpr const int wheelspeed_status_idx = 25;
+static constexpr const int pos_cov_xx_idx = 26;
+static constexpr const int pos_cov_yy_idx = 27;
+static constexpr const int pos_cov_zz_idx = 28;
+static constexpr const int pos_cov_xy_idx = 29;
+static constexpr const int pos_cov_yz_idx = 30;
+static constexpr const int pos_cov_xz_idx = 31;
+static constexpr const int orientation_cov_xx_idx = 32;
+static constexpr const int orientation_cov_yy_idx = 33;
+static constexpr const int orientation_cov_zz_idx = 34;
+static constexpr const int orientation_cov_xy_idx = 35;
+static constexpr const int orientation_cov_yz_idx = 36;
+static constexpr const int orientation_cov_xz_idx = 37;
+static constexpr const int vel_cov_xx_idx = 38;
+static constexpr const int vel_cov_yy_idx = 39;
+static constexpr const int vel_cov_zz_idx = 40;
+static constexpr const int vel_cov_xy_idx = 41;
+static constexpr const int vel_cov_yz_idx = 42;
+static constexpr const int vel_cov_xz_idx = 43;
+static constexpr const int sw_version_idx = 44;
 
 /**
  * @brief Parse status flag field
@@ -84,13 +85,30 @@ int ParseStatusFlag(const std::vector<std::string>& tokens, const int idx) {
 }
 
 void OdometryConverter::ConvertTokens(const std::vector<std::string>& tokens) {
-    if (tokens.size() != 44) {
+    bool ok = tokens.size() == kSize_;
+    if (!ok) {
+        // Size is wrong
         std::cout << "Error in parsing Odometry string with " << tokens.size()
-                  << " fields! odometry and status messages will be empty.\n";
+                  << " fields! Odometry and status messages will be empty.\n";
 
+    } else {
+        // If size is ok, check version
+        const int version = std::stoi(tokens.at(msg_version_idx));
+
+        ok = version == kVersion_;
+        if (!ok) {
+            // Version is wrong
+            std::cout << "Error in parsing Odometry string with verion " << version
+                      << " ! Odometry and status messages will be empty.\n";
+        }
+    }
+
+    if (!ok) {
+        // Reset message and return
         msgs_ = Msgs();
         return;
     }
+
     const int fusion_status = ParseStatusFlag(tokens, fusion_status_idx);
 
     const bool fusion_init = fusion_status >= 3;
@@ -203,7 +221,8 @@ void OdometryConverter::ConvertTokens(const std::vector<std::string>& tokens) {
     // Status, regardless of fusion_init
     msgs_.vrtk.fusion_status = fusion_status;
     msgs_.vrtk.imu_bias_status = ParseStatusFlag(tokens, imu_bias_status_idx);
-    msgs_.vrtk.gnss_status = ParseStatusFlag(tokens, gnss_fix_type_idx);
+    msgs_.vrtk.gnss1_status = ParseStatusFlag(tokens, gnss1_fix_type_idx);
+    msgs_.vrtk.gnss2_status = ParseStatusFlag(tokens, gnss2_fix_type_idx);
     msgs_.vrtk.wheelspeed_status = ParseStatusFlag(tokens, wheelspeed_status_idx);
     msgs_.vrtk.version = tokens.at(sw_version_idx).empty() ? "UNKNOWN" : tokens.at(sw_version_idx);
 
