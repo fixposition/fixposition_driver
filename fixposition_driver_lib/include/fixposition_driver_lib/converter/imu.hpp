@@ -34,10 +34,6 @@ class ImuConverter : public BaseConverter {
 
     ~ImuConverter() = default;
 
-    bool CheckHeaderAndVersion(const std::string msg_header, const std::string msg_version) final {
-        return msg_header == header_ && std::stoi(msg_version) == kVersion_;
-    }
-
     /**
      * @brief Take comma-delimited tokens of FP,RAWIMU or FP,RAWIMU message, convert to Data structs and if available,
      * call observers
@@ -63,6 +59,7 @@ class ImuConverter : public BaseConverter {
 
     const bool bias_correction_;
     static constexpr const int kVersion_ = 1;
+    static constexpr const int kSize_ = 11;
 };
 }  // namespace fixposition
 #endif  // __FIXPOSITION_DRIVER_LIB_CONVERTER_IMU__

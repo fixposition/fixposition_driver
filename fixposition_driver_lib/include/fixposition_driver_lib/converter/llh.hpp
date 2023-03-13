@@ -35,10 +35,6 @@ class LlhConverter : public BaseConverter {
 
     ~LlhConverter() = default;
 
-    bool CheckHeaderAndVersion(const std::string msg_header, const std::string msg_version) final {
-        return msg_header == header_ && std::stoi(msg_version) == kVersion_;
-    }
-
     /**
      * @brief Take comma-delimited tokens of FP,LLH message, convert to Data structs and if available,
      * call observers
@@ -61,6 +57,7 @@ class LlhConverter : public BaseConverter {
     std::vector<LlhObserver> obs_;
     const std::string header_ = "LLH";
     static constexpr const int kVersion_ = 1;
+    static constexpr const int kSize_ = 14;
 };
 }  // namespace fixposition
 #endif  // __FIXPOSITION_DRIVER_LIB_CONVERTER_LLH__

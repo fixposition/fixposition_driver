@@ -4,15 +4,40 @@
 
 The driver is designed to listen on a TCP or Serial port for the [_Fixposition ASCII Messages_](#fixposition-ascii-messages), and then publish them as corresponding ROS messages. At the same time, the driver can also subscribe to a speed input message, which will be sent back to the Vision-RTK 2 sensor and provide an external speed input.
 
-- For the output ROS messages, see [Output of the driver](#output-of-the-driver)
-- For the input ROS messages for speed input, see [Input Wheelspeed through the driver](#input-wheelspeed-through-the-driver)
+-   For the output ROS messages, see [Output of the driver](#output-of-the-driver)
+-   For the input ROS messages for speed input, see [Input Wheelspeed through the driver](#input-wheelspeed-through-the-driver)
+
+## Changelogs
+
+_For questions about compatibility, please contact Fixpositions Support support@fixposition.com_
+
+-   [6.0.1](https://github.com/fixposition/fixposition_driver/releases/tag/6.0.1)
+    -   Adapted to be compatible with updated Fixposition message definitions
+    -   **Compatible with Vision-RTK 2 software released after 09.03.2023**
+-   [5.0.0](https://github.com/fixposition/fixposition_driver/releases/tag/5.0.0)
+    -   Support both ROS1 and ROS2
+    -   Diverse bugfixes in code and documentation
+    -   **This is the last version compatible with Vision-RTK 2 software released before 17.01.2023**
+-   [4.4.0](https://github.com/fixposition/fixposition_driver/releases/tag/4.4.0)
+    -   Pitch-Roll estimation from IMU data parsed from Vision-RTK 2, output available before fusion initialization.
+    -   OdometryConverter imeplemented as an example for wheelspeed data integration.
+-   [4.3.0](https://github.com/fixposition/fixposition_driver/releases/tag/4.3.0)
+    -   Automatic reconnect after connection is lost
+    -   Adaption to latest Vision-RTK 2 software changes
+-   [4.2.0](https://github.com/fixposition/fixposition_driver/releases/tag/4.2.0)
+    -   Euler Angle Yaw-Pitch-Roll in local ENU frame
+    -   Odometry in fixed ENU0 frame
+-   [4.0.1](https://github.com/fixposition/fixposition_driver/releases/tag/4.0.1)
+    -   First public release
+    -   Code cleanup
 
 ## Directory structure
+
 The code is split in the following 3 parts:
 
-- `fixposition_driver_lib`: common CMake library to parse [_Fixposition ASCII Messages_](#fixposition-ascii-messages). For more details and build instructions, see [here](fixposition_driver_lib/README.md).
-- `fixposition_driver_ros1`: ROS1 driver node to subscribe and publish in the ROS1 framework. For more details and build instructions, see [here](fixposition_driver_ros1/README.md).
-- `fixposition_driver_ros2`: ROS2 driver node to subscribe and publish in the ROS2 framework. For more details and build instructions, see [here](fixposition_driver_ros2/README.md).
+-   `fixposition_driver_lib`: common CMake library to parse [_Fixposition ASCII Messages_](#fixposition-ascii-messages). For more details and build instructions, see [here](fixposition_driver_lib/README.md).
+-   `fixposition_driver_ros1`: ROS1 driver node to subscribe and publish in the ROS1 framework. For more details and build instructions, see [here](fixposition_driver_ros1/README.md).
+-   `fixposition_driver_ros2`: ROS2 driver node to subscribe and publish in the ROS2 framework. For more details and build instructions, see [here](fixposition_driver_ros2/README.md).
 
 ## Output of the driver
 
@@ -20,59 +45,56 @@ The code is split in the following 3 parts:
 
 The output is published on the following:
 
--  From ODOMETRY, at the configured frequency
-   -  Messages
+-   From ODOMETRY, at the configured frequency
 
-   | Topic                       | Message Type              | Frequency                      | Description                                                                                                                                                   |
-   | --------------------------- | ------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-   | `/fixposition/odometry`     | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
-   | `/fixposition/odometry_enu` | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ENU0 to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
-   | `/fixposition/ypr`          | `geometry_msgs/Vector3`   | as configured on web-interface | x = Yaw, y = Pitch, z = Roll in radian. Euler angles representation of rotation between ENU and P_POI. Only available after fusion initialization.            |
-   | `/fixposition/imu_ypr`      | `geometry_msgs/Vector3`   | 200Hz                          | x = 0.0, y = Pitch, z = Roll in radian. Euler angles representation of rotation between a local horizontal frame and P_POI. Rough estimation using IMU alone. |
-   | `/fixposition/vrtk`         | `fixposition_driver/VRTK` | as configured on web-interface | Custom Message containing same Odometry information as well as status flags                                                                                   |
-   | `/fixposition/poiimu`       | `sensor_msgs/Imu`         | as configured on web-interface | Bias Corrected acceleration and rotation rate in FP_POI                                                                                                       |
+    -   Messages
 
--  From LLH, at the configured frequency
+    | Topic                       | Message Type              | Frequency                      | Description                                                                                                                                                   |
+    | --------------------------- | ------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | `/fixposition/odometry`     | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
+    | `/fixposition/odometry_enu` | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ENU0 to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
+    | `/fixposition/ypr`          | `geometry_msgs/Vector3`   | as configured on web-interface | x = Yaw, y = Pitch, z = Roll in radian. Euler angles representation of rotation between ENU and P_POI. Only available after fusion initialization.            |
+    | `/fixposition/imu_ypr`      | `geometry_msgs/Vector3`   | 200Hz                          | x = 0.0, y = Pitch, z = Roll in radian. Euler angles representation of rotation between a local horizontal frame and P_POI. Rough estimation using IMU alone. |
+    | `/fixposition/vrtk`         | `fixposition_driver/VRTK` | as configured on web-interface | Custom Message containing same Odometry information as well as status flags                                                                                   |
+    | `/fixposition/poiimu`       | `sensor_msgs/Imu`         | as configured on web-interface | Bias Corrected acceleration and rotation rate in FP_POI                                                                                                       |
 
+-   From LLH, at the configured frequency
 
-   | Topic                    | Message Type            | Frequency                      | Description                    |
-   | ------------------------ | ----------------------- | ------------------------------ | ------------------------------ |
-   | `/fixposition/navsatfix` | `sensor_msgs/NavSatFix` | as configured on web-interface | Latitude, Longitude and Height |
+    | Topic                    | Message Type            | Frequency                      | Description                    |
+    | ------------------------ | ----------------------- | ------------------------------ | ------------------------------ |
+    | `/fixposition/navsatfix` | `sensor_msgs/NavSatFix` | as configured on web-interface | Latitude, Longitude and Height |
 
+-   From RAWIMU, at 200Hz
 
--  From RAWIMU, at 200Hz
+    | Topic                 | Message Type      | Frequency | Description                                                                               |
+    | --------------------- | ----------------- | --------- | ----------------------------------------------------------------------------------------- |
+    | `/fixposition/rawimu` | `sensor_msgs/Imu` | 200Hz     | Raw (without bias correction) IMU acceleration and angular velocity data in FP_VRTK frame |
 
-   | Topic                 | Message Type      | Frequency | Description                                                                               |
-   | --------------------- | ----------------- | --------- | ----------------------------------------------------------------------------------------- |
-   | `/fixposition/rawimu` | `sensor_msgs/Imu` | 200Hz     | Raw (without bias correction) IMU acceleration and angular velocity data in FP_VRTK frame |
+-   From CORRIMU, at 200Hz
 
+    | Topic                  | Message Type      | Frequency | Description                                                                |
+    | ---------------------- | ----------------- | --------- | -------------------------------------------------------------------------- |
+    | `/fixposition/corrimu` | `sensor_msgs/Imu` | 200Hz     | Bias Corrected IMU acceleration and angular velocity data in FP_VRTK frame |
 
--  From CORRIMU, at 200Hz
-
-   | Topic                  | Message Type      | Frequency | Description                                                                |
-   | ---------------------- | ----------------- | --------- | -------------------------------------------------------------------------- |
-   | `/fixposition/corrimu` | `sensor_msgs/Imu` | 200Hz     | Bias Corrected IMU acceleration and angular velocity data in FP_VRTK frame |
-
--  TFs:
-    | Frames                       | Topic        | Message needed to be selected on web-interface | Frequency                      |
+-   TFs:
+    | Frames | Topic | Message needed to be selected on web-interface | Frequency |
     | ---------------------------- | ------------ | ---------------------------------------------- | ------------------------------ |
-    | `ECEF-->FP_POI`              | `/tf`        | `ODOMETRY`                                     | as configured on web-interface |
-    | `ECEF-->FP_ENU`              | `/tf`        | `ODOMETRY`                                     | as configured on web-interface |
-    | `ECEF-->FP_ENU0`             | `/tf`        | `ODOMETRY`                                     | as configured on web-interface |
-    | `FP_POI-->FP_IMU_HORIZONTAL` | `/tf`        | `ODOMETRY`                                     | 200Hz                          |
-    | `FP_POI-->FP_VRTK`           | `/tf_static` | `TF_POI_VRTK`                                  | 1Hz                            |
-    | `FP_VRTK-->FP_CAM`           | `/tf_static` | `TF_VRTK_CAM`                                  | 1Hz                            |
+    | `ECEF-->FP_POI` | `/tf` | `ODOMETRY` | as configured on web-interface |
+    | `ECEF-->FP_ENU` | `/tf` | `ODOMETRY` | as configured on web-interface |
+    | `ECEF-->FP_ENU0` | `/tf` | `ODOMETRY` | as configured on web-interface |
+    | `FP_POI-->FP_IMU_HORIZONTAL` | `/tf` | `ODOMETRY` | 200Hz |
+    | `FP_POI-->FP_VRTK` | `/tf_static` | `TF_POI_VRTK` | 1Hz |
+    | `FP_VRTK-->FP_CAM` | `/tf_static` | `TF_VRTK_CAM` | 1Hz |
 
+-   ROS TF Tree:
 
--  ROS TF Tree:
-
-   ```mermaid
-   graph TD;
-   ECEF-->FP_POI-->FP_VRTK-->FP_CAM
-   FP_POI-->FP_IMU_HORIZONTAL
-   ECEF-->FP_ENU
-   ECEF-->FP_ENU0
-   ```
+    ```mermaid
+    graph TD;
+    ECEF-->FP_POI-->FP_VRTK-->FP_CAM
+    FP_POI-->FP_IMU_HORIZONTAL
+    ECEF-->FP_ENU
+    ECEF-->FP_ENU0
+    ```
 
 _Please note that the corresponding messages also has to be selected on the Fixposition V-RTK's configuration interface._
 
@@ -94,35 +116,35 @@ The fp_ros_driver support inputing a Speed msg (`msg/Speed.msg`) through the `/f
 
 The input velocity values should be in [mm/s], respectively [mrad/s], as integer 32bit. There are 2 Options:
 
--  Option 1: Only one vehicle speed, then only fill a single value as the vehicle speed
--  Option 2: One vehicle speed and the rotation around the vehicle's rotation center
--  Option 3: Fill in 4 Values of 4 wheels, in the order of FR, FL, RR, RL
+-   Option 1: Only one vehicle speed, then only fill a single value as the vehicle speed
+-   Option 2: One vehicle speed and the rotation around the vehicle's rotation center
+-   Option 3: Fill in 4 Values of 4 wheels, in the order of FR, FL, RR, RL
 
 The input values will be converted into a NOV_B-RAWDMI message and sent via the TCP interface to the Vision-RTK2, where it will be further processed and added into the positioning engine. The following protocol is used when filling the DMI messages, as per the documentation:
 
-|    # | Offset | Field         | Type           | Unit | Example | Description                                             |
-| ---: | -----: | ------------- | -------------- | ---- | ------- | ------------------------------------------------------- |
-|    - |      0 | `sync1`       | uint8_t        | -    | `0xaa`  | Sync byte 1 (always `0xaa`)                             |
-|    - |      1 | `sync2`       | uint8_t        | -    | `0x44`  | Sync byte 2 (always `0x44`)                             |
-|    - |      2 | `sync3`       | uint8_t        | -    | `0x13`  | Sync byte 3 (always `0x13`)                             |
-|    - |      3 | `payload_len` | uint8_t        | -    | `20`    | Payload length (always `20` for this message)           |
-|    - |      4 | `msg_id`      | uint16_t       | -    | `2269`  | Message ID (always `2269` for this message)             |
-|    1 |      6 | `gps_wno`     | uint16_t       | -    | `0`     | Week number, set to `0`, not supported by VRTK2         |
-|    2 |      8 | `gps_tow`     | int32_t        | ms   | `0`     | Time of week [ms], set to `0`, no supported by VRTK2    |
-|    3 |     12 | `dmi1`        | int32_t        | -    |         | Measurement value 1, for RC or FR wheel                 |
-|    4 |     16 | `dmi2`        | int32_t        | -    |         | Measurement value 2, for FL wheel or YW sensor          |
-|    5 |     20 | `dmi3`        | int32_t        | -    |         | Measurement value 3, for RR wheel                       |
-|    6 |     24 | `dmi4`        | int32_t        | -    |         | Measurement value 4, for RL wheel                       |
-|    - |     28 | `mask`        | uint32_t       | -    |         | *Bitfield:*                                             |
-|    7 |        | `dmi1_valid`  | - *bit 0*      | -    |         | Validity flag for *dmi1* value (0 = invalid, 1 = valid) |
-|    8 |        | `dmi2_valid`  | - *bit 1*      | -    |         | Validity flag for *dmi2* value (0 = invalid, 1 = valid) |
-|    9 |        | `dmi3_valid`  | - *bit 2*      | -    |         | Validity flag for *dmi3* value (0 = invalid, 1 = valid) |
-|   10 |        | `dmi4_valid`  | - *bit 3*      | -    |         | Validity flag for *dmi4* value (0 = invalid, 1 = valid) |
-|   11 |        | `dmi1_type`   | - *bits 10…4*  | -    |         | Type of measurement present in *dmi1* value (see below) |
-|   12 |        | `dmi2_type`   | - *bits 17…11* | -    |         | Type of measurement present in *dmi2* value (see below) |
-|   13 |        | `dmi3_type`   | - *bits 24…18* | -    |         | Type of measurement present in *dmi3* value (see below) |
-|   14 |        | `dmi4_type`   | - *bits 31…25* | -    |         | Type of measurement present in *dmi3* value (see below) |
-|    - |     32 | `checksum`    | uint32_t       | -    |         | CRC32 checksum (see VRTK2 documentation)                |
+|   # | Offset | Field         | Type           | Unit | Example | Description                                             |
+| --: | -----: | ------------- | -------------- | ---- | ------- | ------------------------------------------------------- |
+|   - |      0 | `sync1`       | uint8_t        | -    | `0xaa`  | Sync byte 1 (always `0xaa`)                             |
+|   - |      1 | `sync2`       | uint8_t        | -    | `0x44`  | Sync byte 2 (always `0x44`)                             |
+|   - |      2 | `sync3`       | uint8_t        | -    | `0x13`  | Sync byte 3 (always `0x13`)                             |
+|   - |      3 | `payload_len` | uint8_t        | -    | `20`    | Payload length (always `20` for this message)           |
+|   - |      4 | `msg_id`      | uint16_t       | -    | `2269`  | Message ID (always `2269` for this message)             |
+|   1 |      6 | `gps_wno`     | uint16_t       | -    | `0`     | Week number, set to `0`, not supported by VRTK2         |
+|   2 |      8 | `gps_tow`     | int32_t        | ms   | `0`     | Time of week [ms], set to `0`, no supported by VRTK2    |
+|   3 |     12 | `dmi1`        | int32_t        | -    |         | Measurement value 1, for RC or FR wheel                 |
+|   4 |     16 | `dmi2`        | int32_t        | -    |         | Measurement value 2, for FL wheel or YW sensor          |
+|   5 |     20 | `dmi3`        | int32_t        | -    |         | Measurement value 3, for RR wheel                       |
+|   6 |     24 | `dmi4`        | int32_t        | -    |         | Measurement value 4, for RL wheel                       |
+|   - |     28 | `mask`        | uint32_t       | -    |         | _Bitfield:_                                             |
+|   7 |        | `dmi1_valid`  | - _bit 0_      | -    |         | Validity flag for _dmi1_ value (0 = invalid, 1 = valid) |
+|   8 |        | `dmi2_valid`  | - _bit 1_      | -    |         | Validity flag for _dmi2_ value (0 = invalid, 1 = valid) |
+|   9 |        | `dmi3_valid`  | - _bit 2_      | -    |         | Validity flag for _dmi3_ value (0 = invalid, 1 = valid) |
+|  10 |        | `dmi4_valid`  | - _bit 3_      | -    |         | Validity flag for _dmi4_ value (0 = invalid, 1 = valid) |
+|  11 |        | `dmi1_type`   | - _bits 10…4_  | -    |         | Type of measurement present in _dmi1_ value (see below) |
+|  12 |        | `dmi2_type`   | - _bits 17…11_ | -    |         | Type of measurement present in _dmi2_ value (see below) |
+|  13 |        | `dmi3_type`   | - _bits 24…18_ | -    |         | Type of measurement present in _dmi3_ value (see below) |
+|  14 |        | `dmi4_type`   | - _bits 31…25_ | -    |         | Type of measurement present in _dmi3_ value (see below) |
+|   - |     32 | `checksum`    | uint32_t       | -    |         | CRC32 checksum (see VRTK2 documentation)                |
 
 Measurement types (`dmi1_type`, `dmi2_type`, `dmi3_type` and `dmi4_type`):
 
@@ -132,7 +154,6 @@ Measurement types (`dmi1_type`, `dmi2_type`, `dmi3_type` and `dmi4_type`):
 |  `1`  | Angular velocity        |
 
 Note: _Currently the wheelspeed input through the ROS driver is only supported in the TCP mode_
-
 
 ## Code Documentation
 
@@ -150,48 +171,48 @@ NMEA style framing is used. Frames (messages) are in this form:
 
 Where:
 
--  The NMEA style framing:
-   -  <code><b style="color: red;">\$</b></code>
-      -- Start character ("$", ASCII 36)
-   -  <code><b style="color: red;">\*CC</b></code>
-      -- Checksum: "\*" (ASCII 42) and two digit XOR value of all payload
-      characters in captial hexadecimal notation, for example:
-      "FPX" = `'F' ^ 'P' ^ 'X' = 70 ^ 80 ^ 88 = 78 = 0x4e` = checksum `4E`
-   -  <code><b style="color: red;">\r\n</b></code>
-      -- Sentence termination characters (CR + LF, ASCII 13 + 10)
--  A Fixposition identifier:
-   -  <code><b style="color: green;">FP</b></code>
-      -- Fixposition ASCII message identifier, "FP" (ASCII 70 + 80)
--  Fixposition message type and version:
-   -  <code><b style="color: blue;">msg_type</b></code> (= <code><em>field<sub>1</sub></em></code>)
-      -- Message type, all captial letters (ASCII 65--90)
-   -  <code><b style="color: blue;">msg_version</b></code> (= <code><em>field<sub>2</sub></em></code>)
-      -- Message version, decimal number (letters 0--9, ASCII 48--57), range 1--...
--  Data fields (payload)
-   -  <code><em>field<sub>3</sub></em>,<em>field<sub>4</sub></em>,...,<em>field<sub>N</sub></em></code>
-      -- The structure of the message data is defined by the <code><b style="color: blue;">msg_type</b></code>
-      and <code><b style="color: blue;">version</b></code>.
-      Each field can contain all printable 7-bit ASCII characters (ASCII 32–126), excluding the
-      reserved characters `!` (ASCII 33), `$` (ASCII 36), `*` (ASCII 42), `,` (ASCII 44),
-      `\` (ASCII 92), `~` (ASCII 126).
--  Field separators
-   -  All fields (identifier, message type, message version, data fields) are separated by a comma (`,`, ASCII 44)
--  Null fields
-   -  Data fields can be _null_, meaning their value is absent to indicate that no data is
-      available. The data for null fields is the empty string. For example:
-      -  Definition: <code>...,<em>field<sub>i</sub></em>,<em>field<sub>i+1</sub></em>,<em>field<sub>i+2</sub></em>,...</code>
-      -  Values: <code><em>field<sub>i</sub></em></code> = 123, <code><em>field<sub>i+1</sub></em></code> = _null_,
-         <code><em>field<sub>i+2</sub></em></code> = 456
-      -  Payload string: <code>...,123,,456,...</code>
--  Data field types:
-   -  _Numeric_: Decimal integer number, one or more digits (0-9) and optional leading "-" sign
-   -  _Float (.x)_: Decimal floating point number, one or more digits (0-9) and optional leading "-" sign, with
-      _x_ digits fractional part separated by a dot (".")
-   -  _Float (x)_: Decimal floating point number with _x_ significant digits, optional leading "-", optional fractional
-      part separated by a dot (".")
-   -  _String_: String of allowed payload characters (but not the `,` field separator)
-   -  ...
-   -  ...
+-   The NMEA style framing:
+    -   <code><b style="color: red;">\$</b></code>
+        -- Start character ("$", ASCII 36)
+    -   <code><b style="color: red;">\*CC</b></code>
+        -- Checksum: "\*" (ASCII 42) and two digit XOR value of all payload
+        characters in captial hexadecimal notation, for example:
+        "FPX" = `'F' ^ 'P' ^ 'X' = 70 ^ 80 ^ 88 = 78 = 0x4e` = checksum `4E`
+    -   <code><b style="color: red;">\r\n</b></code>
+        -- Sentence termination characters (CR + LF, ASCII 13 + 10)
+-   A Fixposition identifier:
+    -   <code><b style="color: green;">FP</b></code>
+        -- Fixposition ASCII message identifier, "FP" (ASCII 70 + 80)
+-   Fixposition message type and version:
+    -   <code><b style="color: blue;">msg_type</b></code> (= <code><em>field<sub>1</sub></em></code>)
+        -- Message type, all captial letters (ASCII 65--90)
+    -   <code><b style="color: blue;">msg_version</b></code> (= <code><em>field<sub>2</sub></em></code>)
+        -- Message version, decimal number (letters 0--9, ASCII 48--57), range 1--...
+-   Data fields (payload)
+    -   <code><em>field<sub>3</sub></em>,<em>field<sub>4</sub></em>,...,<em>field<sub>N</sub></em></code>
+        -- The structure of the message data is defined by the <code><b style="color: blue;">msg_type</b></code>
+        and <code><b style="color: blue;">version</b></code>.
+        Each field can contain all printable 7-bit ASCII characters (ASCII 32–126), excluding the
+        reserved characters `!` (ASCII 33), `$` (ASCII 36), `*` (ASCII 42), `,` (ASCII 44),
+        `\` (ASCII 92), `~` (ASCII 126).
+-   Field separators
+    -   All fields (identifier, message type, message version, data fields) are separated by a comma (`,`, ASCII 44)
+-   Null fields
+    -   Data fields can be _null_, meaning their value is absent to indicate that no data is
+        available. The data for null fields is the empty string. For example:
+        -   Definition: <code>...,<em>field<sub>i</sub></em>,<em>field<sub>i+1</sub></em>,<em>field<sub>i+2</sub></em>,...</code>
+        -   Values: <code><em>field<sub>i</sub></em></code> = 123, <code><em>field<sub>i+1</sub></em></code> = _null_,
+            <code><em>field<sub>i+2</sub></em></code> = 456
+        -   Payload string: <code>...,123,,456,...</code>
+-   Data field types:
+    -   _Numeric_: Decimal integer number, one or more digits (0-9) and optional leading "-" sign
+    -   _Float (.x)_: Decimal floating point number, one or more digits (0-9) and optional leading "-" sign, with
+        _x_ digits fractional part separated by a dot (".")
+    -   _Float (x)_: Decimal floating point number with _x_ significant digits, optional leading "-", optional fractional
+        part separated by a dot (".")
+    -   _String_: String of allowed payload characters (but not the `,` field separator)
+    -   ...
+    -   ...
 
 ### ODOMETRY message
 
@@ -208,7 +229,7 @@ Example message (wrapped on multiple lines for readability):
 Message fields:
 
 |   # | Field                | Format     | Unit                        | Example                     | Description                                                            |
-|----:|----------------------|------------|-----------------------------|-----------------------------|------------------------------------------------------------------------|
+| --: | -------------------- | ---------- | --------------------------- | --------------------------- | ---------------------------------------------------------------------- |
 |   1 | `msg_type`           | String     | -                           | `ODOMETRY`                  | Message type, always `ODOMETRY` for this message                       |
 |   2 | `msg_version`        | Numeric    | -                           | `2`                         | Message version, always `2` for this version of the `ODOMETRY` message |
 |   3 | `gps_week`           | Numeric    | -                           | `2231`                      | GPS week number, range 0--9999                                         |
@@ -257,7 +278,7 @@ Message fields:
 Fusion status (`fusion_status`):
 
 | Value | Description                 |
-|:-----:|-----------------------------|
+| :---: | --------------------------- |
 |  `0`  | Not started                 |
 |  `1`  | Vision only                 |
 |  `2`  | Visual inertial fusion      |
@@ -267,14 +288,14 @@ Fusion status (`fusion_status`):
 IMU bias status (`imu_bias_status`):
 
 | Value | Description        |
-|:-----:|--------------------|
+| :---: | ------------------ |
 |  `0`  | Not converged      |
 |  `1`  | IMU bias converged |
 
 GNSS fix type (`gnss1_fix`, `gnss2_fix`):
 
 | Value | Description                       |
-|:-----:|-----------------------------------|
+| :---: | --------------------------------- |
 |  `0`  | Unknown                           |
 |  `1`  | No fix                            |
 |  `2`  | Dead-reckoning only               |
@@ -288,14 +309,14 @@ GNSS fix type (`gnss1_fix`, `gnss2_fix`):
 Wheelspeed status (`wheelspeed_status`):
 
 | Value | Description                                              |
-|:-----:|----------------------------------------------------------|
+| :---: | -------------------------------------------------------- |
 | `-1`  | No wheelspeed enabled                                    |
 |  `0`  | At least one wheelspeed enabled, no wheelspeed converged |
 |  `1`  | At least one wheelspeed enabled and converged            |
 
 Remarks:
 
--  The output frame is the frame configured on the web-interface.
+-   The output frame is the frame configured on the web-interface.
 
 ### LLH message
 
@@ -311,7 +332,7 @@ Example message (wrapped on multiple lines for readability):
 Message fields:
 
 |   # | Field         | Format     | Unit          | Example         | Description                                                                |
-|----:|---------------|------------|---------------|-----------------|----------------------------------------------------------------------------|
+| --: | ------------- | ---------- | ------------- | --------------- | -------------------------------------------------------------------------- |
 |   1 | `msg_type`    | String     | -             | `LLH`           | Message type, always `LLH` for this message                                |
 |   2 | `msg_version` | Numeric    | -             | `1`             | Message version, always `1` for this version of the `LLH` message          |
 |   3 | `gps_week`    | Numeric    | -             | `2231`          | GPS week number, range 0--9999                                             |
@@ -325,7 +346,6 @@ Message fields:
 |  11 | `pos_cov_en`  | Float (5)  | m<sup>2</sup> | `0.00417`       | Position covariance in ENU, element EN                                     |
 |  12 | `pos_cov_nu`  | Float (5)  | m<sup>2</sup> | `0.00086`       | Position covariance in ENU, element NU                                     |
 |  13 | `pos_cov_eu`  | Float (5)  | m<sup>2</sup> | `-0.00136`      | Position covariance in ENU, element EU                                     |
-
 
 ### RAWIMU message
 
@@ -341,7 +361,7 @@ Example message:
 Message fields:
 
 |   # | Field         | Format     | Unit            | Example         | Description                                                          |
-|----:|---------------|------------|-----------------|-----------------|----------------------------------------------------------------------|
+| --: | ------------- | ---------- | --------------- | --------------- | -------------------------------------------------------------------- |
 |   1 | `msg_type`    | String     | -               | `RAWIMU`        | Message type, always `RAWIMU` for this message                       |
 |   2 | `msg_version` | Numeric    | -               | `1`             | Message version, always `1` for this version of the `RAWIMU` message |
 |   3 | `gps_week`    | Numeric    | -               | `2197`          | GPS week number, range 0--9999                                       |
@@ -381,8 +401,8 @@ Message fields:
 
 Remarks:
 
--  The output frame of the IMU messages is the X on VRTK sensor, NOT the frame configured from the
-   webinterface (They are of course the same when on webinterface the configs are 0s).
+-   The output frame of the IMU messages is the X on VRTK sensor, NOT the frame configured from the
+    webinterface (They are of course the same when on webinterface the configs are 0s).
 
 ### TF message
 
@@ -396,7 +416,7 @@ Example messages:
 Message fields:
 
 |   # | Field           | Format     | Unit | Example         | Description                                                      |
-|----:|-----------------|------------|------|-----------------|------------------------------------------------------------------|
+| --: | --------------- | ---------- | ---- | --------------- | ---------------------------------------------------------------- |
 |   1 | `msg_type`      | String     | -    | `TF`            | Message type, always `TF` for this message                       |
 |   2 | `msg_version`   | Numeric    | -    | `2`             | Message version, always `2` for this version of the `TF` message |
 |   3 | `gps_week`      | Numeric    | -    | `2233`          | GPS week number, range 0--9999                                   |
@@ -414,9 +434,6 @@ Message fields:
 # Fixposition Odometry Converter
 
 This is an extra node is provided to help with the integration of the wheel odometry on your vehicle. For details, see the subfolder [fixposition_odometry_converter](fixposition_odometry_converter/README.md).
-
-
-
 
 # License
 
