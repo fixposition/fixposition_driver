@@ -19,6 +19,7 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_eigen REQUIRED)
 find_package(fixposition_gnss_tf REQUIRED)
 find_package(fixposition_driver_lib REQUIRED)
 
@@ -79,7 +80,7 @@ install(DIRECTORY
   "launch"
   DESTINATION share/${PROJECT_NAME}/
 )
-ament_target_dependencies(${PROJECT_NAME}_exec rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs tf2_ros fixposition_gnss_tf fixposition_driver_lib)
+ament_target_dependencies(${PROJECT_NAME}_exec rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs tf2_ros tf2_eigen fixposition_gnss_tf fixposition_driver_lib)
 
 # define ament package for this project
 ament_package()

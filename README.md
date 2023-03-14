@@ -10,7 +10,8 @@ The driver is designed to listen on a TCP or Serial port for the [_Fixposition A
 ## Changelogs
 
 _For questions about compatibility, please contact Fixpositions Support support@fixposition.com_
-
+-   [6.0.2](https://github.com/fixposition/fixposition_driver/releases/tag/6.0.2)
+    -   Add missing depencency of `tf2_eigen` in `fixposition_driver_ros2/CMakeList.txt`
 -   [6.0.1](https://github.com/fixposition/fixposition_driver/releases/tag/6.0.1)
     -   Adapted to be compatible with updated Fixposition message definitions
     -   **Compatible with Vision-RTK 2 software released after 09.03.2023**
