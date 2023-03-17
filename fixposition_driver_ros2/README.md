@@ -43,7 +43,7 @@ make sure you have sourced the setup.bash from ros:
 `/opt/ros/{ROS_DISTRO}/setup.bash`, for example
 
 ```
-source /opt/ros/foxy/setup.bash`
+source /opt/ros/foxy/setup.bash
 ```
 
 and build it with:
