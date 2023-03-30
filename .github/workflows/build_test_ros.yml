@@ -17,12 +17,12 @@ jobs:
         config:
           - name: "melodic"
             container:
-              image: "ros:melodic"
+              image: "osrf/ros:melodic-desktop-full"
               env:
                 ROS_DISTRO: melodic
           - name: "noetic"
             container:
-              image: "ros:noetic"
+              image: "osrf/ros:noetic-desktop-full"
               env:
                 ROS_DISTRO: noetic
 
