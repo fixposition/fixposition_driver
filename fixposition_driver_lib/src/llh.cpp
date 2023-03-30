@@ -58,7 +58,7 @@ void LlhConverter::ConvertTokens(const std::vector<std::string>& tokens) {
     // header stamps
     msg_.stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
 
-    msg_.frame_id = "POI";
+    msg_.frame_id = "FP_POI";
     msg_.latitude = StringToDouble(tokens.at(latitude_idx));
     msg_.longitude = StringToDouble(tokens.at(longitude_idx));
     msg_.altitude = StringToDouble(tokens.at(height_idx));
