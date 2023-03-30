@@ -40,13 +40,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: fixposition/fixposition_gnss_tf
-          path: src/fixposition_gnss_tf          
+          path: src/fixposition_gnss_tf
       - name: Set up Deps
         run: |
           sudo apt-get update
           sudo apt-get install -y libeigen3-dev libyaml-cpp-dev libgtest-dev python3-osrf-pycommon python3-catkin-tools
       - name: Install Gtest
-        if: matrix.config.container.image == 'ros:melodic'
+        if: matrix.config.container.image == 'osrf/ros:melodic-desktop-full'
         run: |
           cd /usr/src/gtest
           sudo cmake .
@@ -62,4 +62,4 @@ jobs:
         run: |
           source /opt/ros/$ROS_DISTRO/setup.bash
           catkin build --force-cmake -DBUILD_TESTING=ON
-          catkin run_tests          
+          catkin run_tests
