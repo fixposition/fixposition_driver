@@ -45,16 +45,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libeigen3-dev libyaml-cpp-dev libgtest-dev python3-osrf-pycommon
-      # - name: Install Gtest
-      #   if: matrix.config.container.image == 'ros:melodic'
-      #   run: |
-      #     cd /usr/src/gtest
-      #     sudo cmake .
-      #     sudo make
-      #     sudo make install
-      # - name: Init Workspace
-      #   run: |
-      #     catkin init
       - name: Ignore ROS1 node
         run: |
           touch src/fixposition_driver/fixposition_driver_ros1/COLCON_IGNORE      
