@@ -1,0 +1,65 @@
+name: Build and Test with ROS1
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: "melodic"
+            container:
+              image: "osrf/ros:melodic-desktop-full"
+              env:
+                ROS_DISTRO: melodic
+          - name: "noetic"
+            container:
+              image: "osrf/ros:noetic-desktop-full"
+              env:
+                ROS_DISTRO: noetic
+
+    container: ${{ matrix.config.container }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: src/fixposition_driver
+      - name: Checkout Deps
+        uses: actions/checkout@v3
+        with:
+          repository: fixposition/fixposition_gnss_tf
+          path: src/fixposition_gnss_tf
+      - name: Set up Deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libeigen3-dev libyaml-cpp-dev libgtest-dev python3-osrf-pycommon python3-catkin-tools
+      - name: Install Gtest
+        if: matrix.config.container.image == 'osrf/ros:melodic-desktop-full'
+        run: |
+          cd /usr/src/gtest
+          sudo cmake .
+          sudo make
+          sudo make install
+      - name: Ignore ROS2 node
+        run: |
+          touch src/fixposition_driver/fixposition_driver_ros2/CATKIN_IGNORE
+      - name: Init Workspace
+        run: |
+          catkin init
+      - name: Build and Test
+        run: |
+          source /opt/ros/$ROS_DISTRO/setup.bash
+          catkin build --force-cmake -DBUILD_TESTING=ON
+          catkin run_tests

@@ -1,5 +1,9 @@
 # Fixposition ROS Driver
 
+-   [ROS1 melodic / noetic ![](./../../actions/workflows/build_test_ros.yml/badge.svg)](./../../actions/workflows/build_test_ros.yml)
+-   [ROS2 foxy / humble ![](./../../actions/workflows/build_test_ros2.yml/badge.svg)](./../../actions/workflows/build_test_ros2.yml)
+
+
 [ROS](https://www.ros.org/) (both ROS1 and ROS2) Driver for [Fixposition Vision-RTK 2](https://www.fixposition.com/product).
 
 The driver is designed to listen on a TCP or Serial port for the [_Fixposition ASCII Messages_](#fixposition-ascii-messages), and then publish them as corresponding ROS messages. At the same time, the driver can also subscribe to a speed input message, which will be sent back to the Vision-RTK 2 sensor and provide an external speed input.
