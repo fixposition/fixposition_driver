@@ -1,0 +1,66 @@
+name: Build and Test with ROS2
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: "humble"
+            container:
+              image: "osrf/ros:humble-desktop-full"
+              env:
+                ROS_DISTRO: humble
+          - name: "foxy"
+            container:
+              image: "osrf/ros:foxy-desktop"
+              env:
+                ROS_DISTRO: foxy
+
+    container: ${{ matrix.config.container }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: src/fixposition_driver
+      - name: Checkout Deps
+        uses: actions/checkout@v3
+        with:
+          repository: fixposition/fixposition_gnss_tf
+          path: src/fixposition_gnss_tf    
+      - name: Set up Deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libeigen3-dev libyaml-cpp-dev libgtest-dev python3-osrf-pycommon
+      # - name: Install Gtest
+      #   if: matrix.config.container.image == 'ros:melodic'
+      #   run: |
+      #     cd /usr/src/gtest
+      #     sudo cmake .
+      #     sudo make
+      #     sudo make install
+      # - name: Init Workspace
+      #   run: |
+      #     catkin init
+      - name: Ignore ROS1 node
+        run: |
+          touch src/fixposition_driver/fixposition_driver_ros1/COLCON_IGNORE      
+      - name: Build and Test
+        run: |
+          source /opt/ros/$ROS_DISTRO/setup.bash
+          colcon build --packages-up-to fixposition_driver_ros2 --cmake-args -DBUILD_TESTING=ON
+          colcon test --packages-up-to fixposition_driver_ros2
+          colcon test-result --test-result-base build/fixposition_gnss_tf/
