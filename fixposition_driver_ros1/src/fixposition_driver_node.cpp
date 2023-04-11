@@ -150,13 +150,14 @@ void FixpositionDriverNode::Run() {
         // Read data and publish to ros
         const bool connection_ok = RunOnce();
         // process Incoming ROS msgs
-        ros::spinOnce();
+        // ros::spinOnce();
         // Handle connection loss
         if (!connection_ok) {
             printf("Reconnecting in %.1f seconds ...\n", params_.fp_output.reconnect_delay);
             ros::Duration(params_.fp_output.reconnect_delay).sleep();
             Connect();
         }
+    rate.sleep(); //ensure the loop runs at the desired rate
     }
 }
 
@@ -178,6 +179,10 @@ int main(int argc, char** argv) {
         ROS_INFO("Params Loaded!");
         fixposition::FixpositionDriverNode node(params);
         ROS_DEBUG("Starting node...");
+        
+        unsigned int num_threads = 4; // Adjust the number of threads based on the CPU core count
+        ros::AsyncSpinner spinner(num_threads);
+        spinner.start();
 
         node.Run();
         ros::waitForShutdown();
