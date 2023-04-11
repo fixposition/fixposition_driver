@@ -87,6 +87,7 @@ void FixpositionDriverNode::RegisterObservers() {
                     }
 
                     // TFs
+                    if (data.vrtk.fusion_status >0) {
                     geometry_msgs::TransformStamped tf_ecef_poi;
                     geometry_msgs::TransformStamped tf_ecef_enu;
                     geometry_msgs::TransformStamped tf_ecef_enu0;
@@ -97,6 +98,7 @@ void FixpositionDriverNode::RegisterObservers() {
                     br_.sendTransform(tf_ecef_enu);
                     br_.sendTransform(tf_ecef_poi);
                     static_br_.sendTransform(tf_ecef_enu0);
+                    }
                 });
         } else if (format == "LLH" && converters_["LLH"]) {
             dynamic_cast<LlhConverter*>(converters_["LLH"].get())->AddObserver([this](const NavSatFixData& data) {
