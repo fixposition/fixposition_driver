@@ -150,7 +150,7 @@ void FixpositionDriverNode::Run() {
         // Read data and publish to ros
         const bool connection_ok = RunOnce();
         // process Incoming ROS msgs
-        // ros::spinOnce();
+        ros::spinOnce();
         // Handle connection loss
         if (!connection_ok) {
             printf("Reconnecting in %.1f seconds ...\n", params_.fp_output.reconnect_delay);
@@ -162,7 +162,7 @@ void FixpositionDriverNode::Run() {
 }
 
 void FixpositionDriverNode::WsCallback(const fixposition_driver_ros1::SpeedConstPtr& msg) {
-    ROS_WARN("WsCallback");
+    // ROS_WARN("WsCallback");
     FixpositionDriver::WsCallback(msg->speeds);
 }
 
