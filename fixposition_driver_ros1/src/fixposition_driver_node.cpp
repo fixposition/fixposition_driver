@@ -87,17 +87,17 @@ void FixpositionDriverNode::RegisterObservers() {
                     }
 
                     // TFs
-                    if (data.vrtk.fusion_status >0) {
-                    geometry_msgs::TransformStamped tf_ecef_poi;
-                    geometry_msgs::TransformStamped tf_ecef_enu;
-                    geometry_msgs::TransformStamped tf_ecef_enu0;
-                    TfDataToMsg(data.tf_ecef_poi, tf_ecef_poi);
-                    TfDataToMsg(data.tf_ecef_enu, tf_ecef_enu);
-                    TfDataToMsg(data.tf_ecef_enu0, tf_ecef_enu0);
+                    if (data.vrtk.fusion_status > 0) {
+                        geometry_msgs::TransformStamped tf_ecef_poi;
+                        geometry_msgs::TransformStamped tf_ecef_enu;
+                        geometry_msgs::TransformStamped tf_ecef_enu0;
+                        TfDataToMsg(data.tf_ecef_poi, tf_ecef_poi);
+                        TfDataToMsg(data.tf_ecef_enu, tf_ecef_enu);
+                        TfDataToMsg(data.tf_ecef_enu0, tf_ecef_enu0);
 
-                    br_.sendTransform(tf_ecef_enu);
-                    br_.sendTransform(tf_ecef_poi);
-                    static_br_.sendTransform(tf_ecef_enu0);
+                        br_.sendTransform(tf_ecef_enu);
+                        br_.sendTransform(tf_ecef_poi);
+                        static_br_.sendTransform(tf_ecef_enu0);
                     }
                 });
         } else if (format == "LLH" && converters_["LLH"]) {
@@ -156,9 +156,9 @@ void FixpositionDriverNode::Run() {
             printf("Reconnecting in %.1f seconds ...\n", params_.fp_output.reconnect_delay);
             ros::Duration(params_.fp_output.reconnect_delay).sleep();
             Connect();
+        } else {
+            rate.sleep(); //ensure the loop runs at the desired rate
         }
-    rate.sleep(); //ensure the loop runs at the desired rate
-    }
 }
 
 void FixpositionDriverNode::WsCallback(const fixposition_driver_ros1::SpeedConstPtr& msg) {
@@ -179,10 +179,6 @@ int main(int argc, char** argv) {
         ROS_INFO("Params Loaded!");
         fixposition::FixpositionDriverNode node(params);
         ROS_DEBUG("Starting node...");
-        
-        unsigned int num_threads = 4; // Adjust the number of threads based on the CPU core count
-        ros::AsyncSpinner spinner(num_threads);
-        spinner.start();
 
         node.Run();
         ros::waitForShutdown();
