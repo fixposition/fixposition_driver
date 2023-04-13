@@ -158,7 +158,8 @@ void FixpositionDriverNode::Run() {
             Connect();
         } else {
             rate.sleep(); //ensure the loop runs at the desired rate
-        }
+          }
+    }
 }
 
 void FixpositionDriverNode::WsCallback(const fixposition_driver_ros1::SpeedConstPtr& msg) {
