@@ -87,16 +87,18 @@ void FixpositionDriverNode::RegisterObservers() {
                     }
 
                     // TFs
-                    geometry_msgs::TransformStamped tf_ecef_poi;
-                    geometry_msgs::TransformStamped tf_ecef_enu;
-                    geometry_msgs::TransformStamped tf_ecef_enu0;
-                    TfDataToMsg(data.tf_ecef_poi, tf_ecef_poi);
-                    TfDataToMsg(data.tf_ecef_enu, tf_ecef_enu);
-                    TfDataToMsg(data.tf_ecef_enu0, tf_ecef_enu0);
+                    if (data.vrtk.fusion_status > 0) {
+                        geometry_msgs::TransformStamped tf_ecef_poi;
+                        geometry_msgs::TransformStamped tf_ecef_enu;
+                        geometry_msgs::TransformStamped tf_ecef_enu0;
+                        TfDataToMsg(data.tf_ecef_poi, tf_ecef_poi);
+                        TfDataToMsg(data.tf_ecef_enu, tf_ecef_enu);
+                        TfDataToMsg(data.tf_ecef_enu0, tf_ecef_enu0);
 
-                    br_.sendTransform(tf_ecef_enu);
-                    br_.sendTransform(tf_ecef_poi);
-                    static_br_.sendTransform(tf_ecef_enu0);
+                        br_.sendTransform(tf_ecef_enu);
+                        br_.sendTransform(tf_ecef_poi);
+                        static_br_.sendTransform(tf_ecef_enu0);
+                    }
                 });
         } else if (format == "LLH" && converters_["LLH"]) {
             dynamic_cast<LlhConverter*>(converters_["LLH"].get())->AddObserver([this](const NavSatFixData& data) {
@@ -154,6 +156,8 @@ void FixpositionDriverNode::Run() {
             printf("Reconnecting in %.1f seconds ...\n", params_.fp_output.reconnect_delay);
             ros::Duration(params_.fp_output.reconnect_delay).sleep();
             Connect();
+        } else {
+            rate.sleep(); //ensure the loop runs at the desired rate
         }
     }
 }
