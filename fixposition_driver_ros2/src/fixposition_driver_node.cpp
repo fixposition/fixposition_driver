@@ -55,7 +55,7 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
 }
 
 void FixpositionDriverNode::Run() {
-    const rclcpp::Rate rate(params_.fp_output.rate);
+    rclcpp::Rate rate(params_.fp_output.rate);
     const auto reconnect_delay =
         std::chrono::nanoseconds((uint64_t)params_.fp_output.reconnect_delay * 1000 * 1000 * 1000);
 
