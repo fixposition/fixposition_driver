@@ -50,32 +50,12 @@ add_executable(
   src/data_to_ros2.cpp
 )
 
-if($ENV{ROS_DISTRO} MATCHES "humble")
+if($ENV{ROS_DISTRO} MATCHES "humble|rolling")
   rosidl_get_typesupport_target(
     cpp_typesupport_target
     ${PROJECT_NAME} "rosidl_typesupport_cpp"
   )
-elseif($ENV{ROS_DISTRO} MATCHES "rolling")
-  rosidl_get_typesupport_target(
-    cpp_typesupport_target
-    ${PROJECT_NAME} "rosidl_typesupport_cpp"
-  )
-elseif($ENV{ROS_DISTRO} MATCHES "galactic")
-  rosidl_target_interfaces(
-    ${PROJECT_NAME}_exec
-    ${PROJECT_NAME} "rosidl_typesupport_cpp"
-  )
-elseif($ENV{ROS_DISTRO} MATCHES "foxy")
-  rosidl_target_interfaces(
-    ${PROJECT_NAME}_exec
-    ${PROJECT_NAME} "rosidl_typesupport_cpp"
-  )
-elseif($ENV{ROS_DISTRO} MATCHES "eloquent")
-  rosidl_target_interfaces(
-    ${PROJECT_NAME}_exec
-    ${PROJECT_NAME} "rosidl_typesupport_cpp"
-  )
-elseif($ENV{ROS_DISTRO} MATCHES "dashing")
+elseif($ENV{ROS_DISTRO} MATCHES "galactic|foxy|eloquent|dashing")
   rosidl_target_interfaces(
     ${PROJECT_NAME}_exec
     ${PROJECT_NAME} "rosidl_typesupport_cpp"
