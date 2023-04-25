@@ -50,10 +50,19 @@ add_executable(
   src/data_to_ros2.cpp
 )
 
-rosidl_target_interfaces(
-  ${PROJECT_NAME}_exec
-  ${PROJECT_NAME} "rosidl_typesupport_cpp"
-)
+if($ENV{ROS_DISTRO} MATCHES "humble|rolling")
+  rosidl_get_typesupport_target(
+    cpp_typesupport_target
+    ${PROJECT_NAME} "rosidl_typesupport_cpp"
+  )
+elseif($ENV{ROS_DISTRO} MATCHES "galactic|foxy|eloquent|dashing")
+  rosidl_target_interfaces(
+    ${PROJECT_NAME}_exec
+    ${PROJECT_NAME} "rosidl_typesupport_cpp"
+  )
+else()
+  message(FATAL_ERROR "Unsupported ROS_DISTRO")
+endif()
 
 target_link_libraries(
   ${PROJECT_NAME}_exec
