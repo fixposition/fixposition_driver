@@ -3,7 +3,6 @@
 -   [ROS1 melodic / noetic ![](./../../actions/workflows/build_test_ros.yml/badge.svg)](./../../actions/workflows/build_test_ros.yml)
 -   [ROS2 foxy / humble ![](./../../actions/workflows/build_test_ros2.yml/badge.svg)](./../../actions/workflows/build_test_ros2.yml)
 
-
 [ROS](https://www.ros.org/) (both ROS1 and ROS2) Driver for [Fixposition Vision-RTK 2](https://www.fixposition.com/product).
 
 The driver is designed to listen on a TCP or Serial port for the [_Fixposition ASCII Messages_](#fixposition-ascii-messages), and then publish them as corresponding ROS messages. At the same time, the driver can also subscribe to a speed input message, which will be sent back to the Vision-RTK 2 sensor and provide an external speed input.
@@ -14,6 +13,7 @@ The driver is designed to listen on a TCP or Serial port for the [_Fixposition A
 ## Changelogs
 
 _For questions about compatibility, please contact Fixpositions Support support@fixposition.com_
+
 -   [6.0.2](https://github.com/fixposition/fixposition_driver/releases/tag/6.0.2)
     -   Add missing depencency of `tf2_eigen` in `fixposition_driver_ros2/CMakeList.txt`
 -   [6.0.1](https://github.com/fixposition/fixposition_driver/releases/tag/6.0.1)
@@ -50,6 +50,8 @@ The code is split in the following 3 parts:
 
 The output is published on the following:
 
+#### Vision-RTK2 Fusion
+
 -   From ODOMETRY, at the configured frequency
 
     -   Messages
@@ -69,6 +71,17 @@ The output is published on the following:
     | ------------------------ | ----------------------- | ------------------------------ | ------------------------------ |
     | `/fixposition/navsatfix` | `sensor_msgs/NavSatFix` | as configured on web-interface | Latitude, Longitude and Height |
 
+#### Vision-RTK2 GNSS Antenna Positions
+
+-   From NOV_B-BESTGNSSPOS, at the configured frequency, GNSS1 and GNSS2 raw antenna positions
+
+    | Topic                | Message Type            | Frequency                      | Description                    |
+    | -------------------- | ----------------------- | ------------------------------ | ------------------------------ |
+    | `/fixposition/gnss1` | `sensor_msgs/NavSatFix` | as configured on web-interface | Latitude, Longitude and Height |
+    | `/fixposition/gnss2` | `sensor_msgs/NavSatFix` | as configured on web-interface | Latitude, Longitude and Height |
+
+#### Vision-RTK2 IMU data
+
 -   From RAWIMU, at 200Hz
 
     | Topic                 | Message Type      | Frequency | Description                                                                               |
@@ -80,6 +93,8 @@ The output is published on the following:
     | Topic                  | Message Type      | Frequency | Description                                                                |
     | ---------------------- | ----------------- | --------- | -------------------------------------------------------------------------- |
     | `/fixposition/corrimu` | `sensor_msgs/Imu` | 200Hz     | Bias Corrected IMU acceleration and angular velocity data in FP_VRTK frame |
+
+#### Transforms
 
 -   TFs:
     | Frames | Topic | Message needed to be selected on web-interface | Frequency |
