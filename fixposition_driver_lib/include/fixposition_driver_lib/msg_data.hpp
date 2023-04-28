@@ -106,7 +106,7 @@ struct VrtkData {
     }
 };
 
-struct NavSatSatusData {
+struct NavSatStatusData {
     enum class Status : int8_t {
         STATUS_NO_FIX = -1,   // # unable to fix position
         STATUS_FIX = 0,       // # unaugmented fix
@@ -121,7 +121,7 @@ struct NavSatFixData {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     times::GpsTime stamp;
     std::string frame_id;
-    NavSatSatusData status;
+    NavSatStatusData status;
     double latitude;
     double longitude;
     double altitude;

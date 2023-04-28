@@ -72,7 +72,7 @@ void ImuDataToMsg(const ImuData& data, sensor_msgs::msg::Imu& msg);
  * @param[in] data
  * @param[in] msg
  */
-void NavSatStatusDataToMsg(const NavSatSatusData& data, sensor_msgs::msg::NavSatStatus& msg);
+void NavSatStatusDataToMsg(const NavSatStatusData& data, sensor_msgs::msg::NavSatStatus& msg);
 
 /**
  * @brief

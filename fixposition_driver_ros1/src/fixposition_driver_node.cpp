@@ -74,6 +74,7 @@ void FixpositionDriverNode::RegisterObservers() {
         }
     });
 
+
     // FP_A
     for (const auto& format : params_.fp_output.formats) {
         if (format == "ODOMETRY") {
