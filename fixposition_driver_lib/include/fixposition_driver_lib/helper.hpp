@@ -20,6 +20,8 @@
 /* EXTERNAL */
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <fixposition_driver_lib/msg_data.hpp>
+#include <fixposition_driver_lib/nov_type.hpp>
 
 namespace fixposition {
 
@@ -33,13 +35,26 @@ namespace fixposition {
 void SplitMessage(std::vector<std::string>& tokens, const std::string& msg, const std::string& delim);
 
 /**
- * @brief Check If msg is NMEA
+ * @brief
  *
- * @param[in] buf start pointer of a char* buffer
- * @param[in] size size of the buffer to check
- * @return int the length of the NMEA message found. If no NMEA found then 0. If size argument is too small then -1
+ * @param[in] header
+ * @param[in] bestgnsspos
+ * @param[out] navsatfix
  */
-int IsNmeaMessage(const char* buf, const int size);
+void BestGnssPosToNavSatFix(const Oem7MessageHeaderMem* const header, const BESTGNSSPOSMem* const bestgnsspos,
+                            NavSatFixData& navsatfix);
+
+/**
+ * @brief Convert NOV to other data structs
+ *
+ * @tparam T_nov NOV struct type
+ * @tparam T_data Data struct type
+ * @param[in] header
+ * @param[in] nov
+ * @param[out] data
+ */
+template <class T_nov, class T_data>
+void NovToData(const Oem7MessageHeaderMem* const header, const T_nov* const nov, T_data& data);
 
 }  // namespace fixposition
 #endif  // __FIXPOSITION_DRIVER_LIB_HELPER__

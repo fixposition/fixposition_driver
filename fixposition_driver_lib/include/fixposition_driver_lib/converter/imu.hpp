@@ -17,12 +17,12 @@
 
 /* PACKAGE */
 #include <fixposition_driver_lib/converter/base_converter.hpp>
-#include <fixposition_driver_lib/converter/msg_data.hpp>
+#include <fixposition_driver_lib/msg_data.hpp>
 #include <fixposition_driver_lib/time_conversions.hpp>
 
 namespace fixposition {
 
-class ImuConverter : public BaseConverter {
+class ImuConverter : public BaseAsciiConverter {
    public:
     using ImuObserver = std::function<void(const ImuData&)>;
     /**

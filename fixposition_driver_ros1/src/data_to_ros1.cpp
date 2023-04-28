@@ -21,10 +21,15 @@ void ImuDataToMsg(const ImuData& data, sensor_msgs::Imu& msg) {
     tf::vectorEigenToMsg(data.angular_velocity, msg.angular_velocity);
 }
 
+void NavSatStatusDataToMsg(const NavSatSatusData& data, sensor_msgs::NavSatStatus& msg) {
+    msg.status = data.status;
+    msg.service = data.service;
+}
+
 void NavSatFixDataToMsg(const NavSatFixData& data, sensor_msgs::NavSatFix& msg) {
     msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
     msg.header.frame_id = data.frame_id;
-
+    NavSatStatusDataToMsg(data.status, msg.status);
     msg.latitude = data.latitude;
     msg.longitude = data.longitude;
     msg.altitude = data.altitude;

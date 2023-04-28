@@ -18,11 +18,11 @@
 
 /* PACKAGE */
 #include <fixposition_driver_lib/converter/base_converter.hpp>
-#include <fixposition_driver_lib/converter/msg_data.hpp>
+#include <fixposition_driver_lib/msg_data.hpp>
 
 namespace fixposition {
 
-class TfConverter : public BaseConverter {
+class TfConverter : public BaseAsciiConverter {
    public:
     using TfObserver = std::function<void(const TfData&)>;
     /**

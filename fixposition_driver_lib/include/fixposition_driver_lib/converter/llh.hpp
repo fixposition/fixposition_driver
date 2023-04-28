@@ -19,12 +19,12 @@
 
 /* PACKAGE */
 #include <fixposition_driver_lib/converter/base_converter.hpp>
-#include <fixposition_driver_lib/converter/msg_data.hpp>
+#include <fixposition_driver_lib/msg_data.hpp>
 #include <fixposition_driver_lib/time_conversions.hpp>
 
 namespace fixposition {
 
-class LlhConverter : public BaseConverter {
+class LlhConverter : public BaseAsciiConverter {
    public:
     using LlhObserver = std::function<void(const NavSatFixData&)>;
     /**

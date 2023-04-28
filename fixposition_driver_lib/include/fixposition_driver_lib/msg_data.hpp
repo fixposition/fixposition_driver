@@ -10,8 +10,8 @@
  *
  */
 
-#ifndef __FIXPOSITION_DRIVER_LIB_CONVERTER_MSG_DATA__
-#define __FIXPOSITION_DRIVER_LIB_CONVERTER_MSG_DATA__
+#ifndef __FIXPOSITION_DRIVER_LIB_MSG_DATA__
+#define __FIXPOSITION_DRIVER_LIB_MSG_DATA__
 
 /* EXTERNAL */
 #include <eigen3/Eigen/Core>
@@ -106,10 +106,22 @@ struct VrtkData {
     }
 };
 
+struct NavSatSatusData {
+    enum class Status : int8_t {
+        STATUS_NO_FIX = -1,   // # unable to fix position
+        STATUS_FIX = 0,       // # unaugmented fix
+        STATUS_SBAS_FIX = 1,  // # with satellite-based augmentation
+        STATUS_GBAS_FIX = 2,  // # with ground-based augmentation
+    };
+    int8_t status;
+    uint16_t service;
+};
+
 struct NavSatFixData {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     times::GpsTime stamp;
     std::string frame_id;
+    NavSatSatusData status;
     double latitude;
     double longitude;
     double altitude;
@@ -119,4 +131,4 @@ struct NavSatFixData {
 };
 
 }  // namespace fixposition
-#endif  //__FIXPOSITION_DRIVER_LIB_CONVERTER_MSG_DATA__
+#endif  //__FIXPOSITION_DRIVER_LIB_MSG_DATA__

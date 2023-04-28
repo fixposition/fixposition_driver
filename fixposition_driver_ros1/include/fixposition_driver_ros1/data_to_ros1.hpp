@@ -20,7 +20,7 @@
 #include <sensor_msgs/NavSatFix.h>
 
 /* FIXPOSITION DRIVER LIB */
-#include <fixposition_driver_lib/converter/msg_data.hpp>
+#include <fixposition_driver_lib/msg_data.hpp>
 
 /* PACKAGE */
 #include <fixposition_driver_ros1/VRTK.h>
@@ -33,6 +33,9 @@ namespace fixposition {
  * @param[out] msg
  */
 void ImuDataToMsg(const ImuData& data, sensor_msgs::Imu& msg);
+
+
+void NavSatStatusDataToMsg(const NavSatSatusData& data, sensor_msgs::NavSatStatus& msg);
 
 /**
  * @brief

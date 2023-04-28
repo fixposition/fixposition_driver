@@ -29,7 +29,7 @@
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 
 /* FIXPOSITION */
-#include <fixposition_driver_lib/converter/msg_data.hpp>
+#include <fixposition_driver_lib/msg_data.hpp>
 #include <fixposition_driver_lib/time_conversions.hpp>
 
 /* PACKAGE */

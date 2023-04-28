@@ -55,11 +55,19 @@ class FixpositionDriver {
     void WsCallback(const std::vector<int>& speeds);
 
     /**
-     * @brief Convert the string using correct converter
+     * @brief Convert the Nmea like string using correct converter
      *
      * @param[in] msg NMEA like string to be converted. $HEADER,,,,,,,*CHECKSUM
      */
-    void ConvertAndPublish(const std::string& msg);
+    void NmeaConvertAndPublish(const std::string& msg);
+
+    /**
+     * @brief Convert the buffer after identified as Nov msg
+     *
+     * @param[in] msg ptr to the start of the msg
+     * @param[in] size size of the msg
+     */
+    void NovConvertAndPublish(const uint8_t* msg, int size);
 
     /**
      * @brief Initialize convertes based on config
@@ -105,8 +113,13 @@ class FixpositionDriver {
 
     RAWDMI rawdmi_;  //!< RAWDMI msg struct
 
-    std::unordered_map<std::string, std::unique_ptr<BaseConverter>>
-        converters_;  //!< converters corresponding to the input formats
+    std::unordered_map<std::string, std::unique_ptr<BaseAsciiConverter>>
+        a_converters_;  //!< ascii converters corresponding to the input formats
+
+    using BestgnssposObserver = std::function<void(const Oem7MessageHeaderMem*, const BESTGNSSPOSMem*)>;
+    std::vector<BestgnssposObserver> bestgnsspos_obs_;  //!< observers for bestgnsspos
+
+    // TODO: Add more NOV types
 
     int client_fd_ = -1;  //!< TCP or Serial file descriptor
     int connection_status_ = -1;
