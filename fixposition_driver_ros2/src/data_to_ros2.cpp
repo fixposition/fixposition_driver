@@ -25,10 +25,15 @@ void ImuDataToMsg(const ImuData& data, sensor_msgs::msg::Imu& msg) {
     tf2::toMsg(data.angular_velocity, msg.angular_velocity);
 }
 
+void NavSatStatusDataToMsg(const NavSatSatusData& data, sensor_msgs::msg::NavSatStatus& msg) {
+    msg.status = data.status;
+    msg.service = data.service;
+}
+
 void NavSatFixDataToMsg(const NavSatFixData& data, sensor_msgs::msg::NavSatFix& msg) {
     msg.header.stamp = GpsTimeToMsgTime(data.stamp);
     msg.header.frame_id = data.frame_id;
-
+    NavSatStatusDataToMsg(data.status, msg.status);
     msg.latitude = data.latitude;
     msg.longitude = data.longitude;
     msg.altitude = data.altitude;

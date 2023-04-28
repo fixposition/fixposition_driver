@@ -34,7 +34,12 @@ namespace fixposition {
  */
 void ImuDataToMsg(const ImuData& data, sensor_msgs::Imu& msg);
 
-
+/**
+ * @brief 
+ * 
+ * @param[in] data
+ * @param[in] msg
+ */
 void NavSatStatusDataToMsg(const NavSatSatusData& data, sensor_msgs::NavSatStatus& msg);
 
 /**

@@ -67,6 +67,14 @@ inline builtin_interfaces::msg::Time GpsTimeToMsgTime(times::GpsTime input) {
 void ImuDataToMsg(const ImuData& data, sensor_msgs::msg::Imu& msg);
 
 /**
+ * @brief 
+ * 
+ * @param[in] data
+ * @param[in] msg
+ */
+void NavSatStatusDataToMsg(const NavSatSatusData& data, sensor_msgs::msg::NavSatStatus& msg);
+
+/**
  * @brief
  *
  * @param[in] data
