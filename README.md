@@ -13,7 +13,12 @@ The driver is designed to listen on a TCP or Serial port for the [_Fixposition A
 ## Changelogs
 
 _For questions about compatibility, please contact Fixpositions Support support@fixposition.com_
-
+-   [6.0.3](https://github.com/fixposition/fixposition_driver/releases/tag/6.0.3)
+    - Fix Frame ID of FP_POI in LLH converter
+    - Add ci file for ROS
+    - Fix wrong gnss status
+    - Remove 'WsCallback' warning
+    - Bugfix of sending empty TFs
 -   [6.0.2](https://github.com/fixposition/fixposition_driver/releases/tag/6.0.2)
     -   Add missing depencency of `tf2_eigen` in `fixposition_driver_ros2/CMakeList.txt`
 -   [6.0.1](https://github.com/fixposition/fixposition_driver/releases/tag/6.0.1)
