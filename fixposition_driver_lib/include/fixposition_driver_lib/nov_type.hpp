@@ -18,10 +18,9 @@
 #include <stdint.h>
 
 /* ****************************************************************************************************************** */
-#define NOVATEL_SYNC_1       0xaa
-#define NOVATEL_SYNC_2       0x44
-#define NOVATEL_SYNC_3_LONG  0x12
-#define NOVATEL_SYNC_3_SHORT 0x13
+
+namespace fixposition {
+
 /**
  * @brief CRC32 calculation
  *
@@ -683,4 +682,5 @@ const size_t OEM7_BINARY_MSG_HDR_LEN = sizeof(Oem7MessageHeaderMem);
 const size_t OEM7_BINARY_MSG_SHORT_HDR_LEN = sizeof(Oem7MessgeShortHeaderMem);
 
 /* ****************************************************************************************************************** */
+}  // namespace fixposition
 #endif  // __LIB_NOVATEL_TYPE_H__

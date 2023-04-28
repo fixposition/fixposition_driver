@@ -73,7 +73,7 @@ int IsNmeaMessage(const char* buf, const int size) {
 }
 
 int IsNovMessage(const uint8_t* buf, const int size) {
-    if (buf[0] != NOVATEL_SYNC_1) {
+    if (buf[0] != SYNC_CHAR_1) {
         return 0;
     }
 
@@ -81,7 +81,7 @@ int IsNovMessage(const uint8_t* buf, const int size) {
         return -1;
     }
 
-    if ((buf[1] != NOVATEL_SYNC_2) || ((buf[2] != NOVATEL_SYNC_3_LONG) && (buf[2] != NOVATEL_SYNC_3_SHORT))) {
+    if ((buf[1] != SYNC_CHAR_2) || ((buf[2] != SYNC_CHAR_3_LONG) && (buf[2] != SYNC_CHAR_3_SHORT))) {
         return 0;
     }
 
@@ -106,7 +106,7 @@ int IsNovMessage(const uint8_t* buf, const int size) {
     int len = 0;
 
     // Long header
-    if (buf[2] == NOVATEL_SYNC_3_LONG) {
+    if (buf[2] == SYNC_CHAR_3_LONG) {
         const uint8_t headerLen = buf[3];
         const uint16_t msgLen = ((uint16_t)buf[9] << 8) | (uint16_t)buf[8];
         len = headerLen + msgLen + sizeof(uint32_t);
