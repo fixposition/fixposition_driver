@@ -56,9 +56,11 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
 void FixpositionDriverNode::RegisterObservers() {
     // NOV_B
     bestgnsspos_obs_.push_back([this](const Oem7MessageHeaderMem* header, const BESTGNSSPOSMem* payload) {
+        // Buffer to data struct
         NavSatFixData nav_sat_fix;
         NovToData(header, payload, nav_sat_fix);
 
+        // Publish
         if (nav_sat_fix.frame_id == "GNSS1" || nav_sat_fix.frame_id == "GNSS") {
             if (navsatfix_gnss1_pub_.getNumSubscribers() > 0) {
                 sensor_msgs::NavSatFix msg;
