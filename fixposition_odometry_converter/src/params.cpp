@@ -2,11 +2,13 @@
  *  @file
  *  @brief Implementation of Parameter Loading for the odometry parameters
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 

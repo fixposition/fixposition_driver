@@ -2,11 +2,13 @@
  *  @file
  *  @brief Declaration of RAWDMI message struct
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 

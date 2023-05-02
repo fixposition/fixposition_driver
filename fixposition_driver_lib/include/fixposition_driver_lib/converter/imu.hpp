@@ -2,11 +2,13 @@
  *  @file
  *  @brief Declaration of ImuConverter
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 #ifndef __FIXPOSITION_DRIVER_LIB_CONVERTER_IMU__
