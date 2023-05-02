@@ -55,27 +55,8 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
 
 void FixpositionDriverNode::RegisterObservers() {
     // NOV_B
-    bestgnsspos_obs_.push_back([this](const Oem7MessageHeaderMem* header, const BESTGNSSPOSMem* payload) {
-        // Buffer to data struct
-        NavSatFixData nav_sat_fix;
-        NovToData(header, payload, nav_sat_fix);
-
-        // Publish
-        if (nav_sat_fix.frame_id == "GNSS1" || nav_sat_fix.frame_id == "GNSS") {
-            if (navsatfix_gnss1_pub_.getNumSubscribers() > 0) {
-                sensor_msgs::NavSatFix msg;
-                NavSatFixDataToMsg(nav_sat_fix, msg);
-                navsatfix_gnss1_pub_.publish(msg);
-            }
-        } else if (nav_sat_fix.frame_id == "GNSS2") {
-            if (navsatfix_gnss2_pub_.getNumSubscribers() > 0) {
-                sensor_msgs::NavSatFix msg;
-                NavSatFixDataToMsg(nav_sat_fix, msg);
-                navsatfix_gnss2_pub_.publish(msg);
-            }
-        }
-    });
-
+    bestgnsspos_obs_.push_back(std::bind(&FixpositionDriverNode::BestGnssPosToPublishNavSatFix, this,
+                                         std::placeholders::_1, std::placeholders::_2));
 
     // FP_A
     for (const auto& format : params_.fp_output.formats) {
@@ -191,6 +172,28 @@ void FixpositionDriverNode::Run() {
 
 void FixpositionDriverNode::WsCallback(const fixposition_driver_ros1::SpeedConstPtr& msg) {
     FixpositionDriver::WsCallback(msg->speeds);
+}
+
+void FixpositionDriverNode::BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header,
+                                                          const BESTGNSSPOSMem* payload) {
+    // Buffer to data struct
+    NavSatFixData nav_sat_fix;
+    NovToData(header, payload, nav_sat_fix);
+
+    // Publish
+    if (nav_sat_fix.frame_id == "GNSS1" || nav_sat_fix.frame_id == "GNSS") {
+        if (navsatfix_gnss1_pub_.getNumSubscribers() > 0) {
+            sensor_msgs::NavSatFix msg;
+            NavSatFixDataToMsg(nav_sat_fix, msg);
+            navsatfix_gnss1_pub_.publish(msg);
+        }
+    } else if (nav_sat_fix.frame_id == "GNSS2") {
+        if (navsatfix_gnss2_pub_.getNumSubscribers() > 0) {
+            sensor_msgs::NavSatFix msg;
+            NavSatFixDataToMsg(nav_sat_fix, msg);
+            navsatfix_gnss2_pub_.publish(msg);
+        }
+    }
 }
 
 }  // namespace fixposition

@@ -54,6 +54,14 @@ class FixpositionDriverNode : public FixpositionDriver {
     void WsCallback(const fixposition_driver_ros2::msg::Speed::ConstSharedPtr msg);
 
    private:
+    /**
+     * @brief Observer Functions to publish NavSatFix from BestGnssPos
+     *
+     * @param[in] header
+     * @param[in] payload
+     */
+    void BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header, const BESTGNSSPOSMem* payload);
+    
     std::shared_ptr<rclcpp::Node> node_;
     rclcpp::Subscription<fixposition_driver_ros2::msg::Speed>::SharedPtr ws_sub_;  //!< wheelspeed message subscriber
 
