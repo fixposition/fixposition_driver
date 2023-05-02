@@ -2,11 +2,13 @@
  *  @file
  *  @brief Declaration of OdometryConverter
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 
@@ -22,12 +24,12 @@
 /* PACKAGE */
 
 #include <fixposition_driver_lib/converter/base_converter.hpp>
-#include <fixposition_driver_lib/converter/msg_data.hpp>
+#include <fixposition_driver_lib/msg_data.hpp>
 #include <fixposition_driver_lib/time_conversions.hpp>
 
 namespace fixposition {
 
-class OdometryConverter : public BaseConverter {
+class OdometryConverter : public BaseAsciiConverter {
    public:
     /**
      * @brief Data for Messages published from the ODOMETRY msg
@@ -50,7 +52,7 @@ class OdometryConverter : public BaseConverter {
      * @brief Construct a new Fixposition Msg Converter object
      *
      */
-    OdometryConverter() : BaseConverter(), tf_ecef_enu0_set_(false) {
+    OdometryConverter() : BaseAsciiConverter(), tf_ecef_enu0_set_(false) {
         msgs_.tf_ecef_enu0.frame_id = "ECEF";
         msgs_.tf_ecef_enu0.child_frame_id = "FP_ENU0";
     }

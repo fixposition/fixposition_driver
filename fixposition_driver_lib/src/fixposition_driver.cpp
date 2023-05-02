@@ -2,11 +2,13 @@
  *  @file
  *  @brief Implementation of FixpositionDriver class
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 
@@ -22,6 +24,7 @@
 #include <fixposition_driver_lib/converter/tf.hpp>
 #include <fixposition_driver_lib/fixposition_driver.hpp>
 #include <fixposition_driver_lib/helper.hpp>
+#include <fixposition_driver_lib/parser.hpp>
 
 namespace fixposition {
 FixpositionDriver::FixpositionDriver(const FixpositionDriverParams& params) : params_(params) {
@@ -90,7 +93,7 @@ void FixpositionDriver::WsCallback(const std::vector<int>& speeds) {
     }
 
     // Calculate CRC
-    const uint32_t checksum = crc32((const uint8_t*)&rawdmi_, sizeof(rawdmi_));
+    const uint32_t checksum = nov_crc32((const uint8_t*)&rawdmi_, sizeof(rawdmi_));
 
     // Compose entire message
     uint8_t message[sizeof(rawdmi_) + sizeof(checksum)];
@@ -103,23 +106,23 @@ void FixpositionDriver::WsCallback(const std::vector<int>& speeds) {
 bool FixpositionDriver::InitializeConverters() {
     for (const auto& format : params_.fp_output.formats) {
         if (format == "ODOMETRY") {
-            converters_["ODOMETRY"] = std::unique_ptr<OdometryConverter>(new OdometryConverter());
-            converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter());
+            a_converters_["ODOMETRY"] = std::unique_ptr<OdometryConverter>(new OdometryConverter());
+            a_converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter());
         } else if (format == "LLH") {
-            converters_["LLH"] = std::unique_ptr<LlhConverter>(new LlhConverter());
+            a_converters_["LLH"] = std::unique_ptr<LlhConverter>(new LlhConverter());
         } else if (format == "RAWIMU") {
-            converters_["RAWIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(false));
+            a_converters_["RAWIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(false));
         } else if (format == "CORRIMU") {
-            converters_["CORRIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(true));
+            a_converters_["CORRIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(true));
         } else if (format == "TF") {
-            if (converters_.find("TF") == converters_.end()) {
-                converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter());
+            if (a_converters_.find("TF") == a_converters_.end()) {
+                a_converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter());
             }
         } else {
             std::cerr << "Unknown input format: " << format << "\n";
         }
     }
-    return !converters_.empty();
+    return !a_converters_.empty();
 }
 bool FixpositionDriver::RunOnce() {
     if ((client_fd_ > 0) && (connection_status_ == 0) && ReadAndPublish()) {
@@ -157,28 +160,47 @@ bool FixpositionDriver::ReadAndPublish() {
         return false;
     }
 
-    // find start of a NMEA style message
-    char* start = (char*)memchr(readBuf, '$', rv);
-    while (start != NULL) {
-        // check if it is NMEA with correct checksum
-        auto nmea_size = IsNmeaMessage(start, rv - (start - readBuf));
-
-        // convert the message into ros messages
-        if (nmea_size > 0) {
-            std::string msg(start, nmea_size);
-            ConvertAndPublish(msg);
-
-            // move to next $ for next message
-            start = (char*)memchr(start + 1, '$', rv);
-        } else {
+    ssize_t start_id = 0;
+    while (start_id < rv) {
+        int msg_size = 0;
+        // Nov B
+        msg_size = IsNovMessage((uint8_t*)&readBuf[start_id], rv - start_id);
+        if (msg_size > 0) {
+            NovConvertAndPublish((uint8_t*)&readBuf[start_id], msg_size);
+            start_id += msg_size;
+            continue;
+        }
+        if (msg_size == 0) {
+            // do nothing
+        }
+        if (msg_size < 0) {
             break;
         }
+
+        // Nmea (incl. FP_A)
+        msg_size = IsNmeaMessage(&readBuf[start_id], rv - start_id);
+        if (msg_size > 0) {
+            // NovConvertAndPublish(start, msg_size);
+            std::string msg(&readBuf[start_id], msg_size);
+            NmeaConvertAndPublish(msg);
+            start_id += msg_size;
+            continue;
+        }
+        if (msg_size == 0) {
+            // do nothing
+        }
+        if (msg_size < 0) {
+            break;
+        }
+
+        // No Match, increment by 1
+        ++start_id;
     }
 
     return true;
 }
 
-void FixpositionDriver::ConvertAndPublish(const std::string& msg) {
+void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
     // split the msg into tokens, removing the *XX checksum
     std::vector<std::string> tokens;
     std::size_t star_pos = msg.find_last_of("*");
@@ -193,9 +215,22 @@ void FixpositionDriver::ConvertAndPublish(const std::string& msg) {
     const std::string header = tokens.at(1);
 
     // If we have a converter available, convert to ros. Currently supported are "FP", "LLH", "TF", "RAWIMU", "CORRIMU"
-    if (converters_[header] != nullptr) {
-        converters_[header]->ConvertTokens(tokens);
+    if (a_converters_[header] != nullptr) {
+        a_converters_[header]->ConvertTokens(tokens);
     }
+}
+
+void FixpositionDriver::NovConvertAndPublish(const uint8_t* msg, int size) {
+    auto* header = reinterpret_cast<const Oem7MessageHeaderMem*>(msg);
+    const auto msg_id = header->message_id;
+
+    if (msg_id == static_cast<uint16_t>(MessageId::BESTGNSSPOS)) {
+        for (auto& ob : bestgnsspos_obs_) {
+            auto* payload = reinterpret_cast<const BESTGNSSPOSMem*>(msg + sizeof(Oem7MessageHeaderMem));
+            ob(header, payload);
+        }
+    }
+    // TODO add more msg types
 }
 
 bool FixpositionDriver::CreateTCPSocket() {

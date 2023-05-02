@@ -2,11 +2,13 @@
  *  @file
  *  @brief Implementation of OdomConverter class
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 

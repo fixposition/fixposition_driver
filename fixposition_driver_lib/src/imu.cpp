@@ -2,11 +2,13 @@
  *  @file
  *  @brief Implementation of ImuConverter converter
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 

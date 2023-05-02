@@ -2,11 +2,13 @@
  *  @file
  *  @brief Declaration of FixpositionDriver ROS1 Node
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 
@@ -51,12 +53,22 @@ class FixpositionDriverNode : public FixpositionDriver {
     void WsCallback(const fixposition_driver_ros1::SpeedConstPtr& msg);
 
    private:
+    /**
+     * @brief Observer Functions to publish NavSatFix from BestGnssPos
+     *
+     * @param[in] header
+     * @param[in] payload
+     */
+    void BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header, const BESTGNSSPOSMem* payload);
+
     ros::NodeHandle nh_;
     ros::Subscriber ws_sub_;  //!< wheelspeed message subscriber
 
     ros::Publisher rawimu_pub_;
     ros::Publisher corrimu_pub_;
     ros::Publisher navsatfix_pub_;
+    ros::Publisher navsatfix_gnss1_pub_;
+    ros::Publisher navsatfix_gnss2_pub_;
     ros::Publisher odometry_pub_;       //!< ECEF Odometry
     ros::Publisher poiimu_pub_;         //!< Bias corrected IMU
     ros::Publisher vrtk_pub_;           //!< VRTK message

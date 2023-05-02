@@ -2,11 +2,13 @@
  *  @file
  *  @brief Main function for the fixposition driver ros node
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 
@@ -23,6 +25,7 @@
 #include <fixposition_driver_lib/converter/odometry.hpp>
 #include <fixposition_driver_lib/converter/tf.hpp>
 #include <fixposition_driver_lib/fixposition_driver.hpp>
+#include <fixposition_driver_lib/helper.hpp>
 #include <fixposition_gnss_tf/gnss_tf.hpp>
 
 /* PACKAGE */
@@ -38,6 +41,8 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
       rawimu_pub_(node_->create_publisher<sensor_msgs::msg::Imu>("/fixposition/rawimu", 100)),
       corrimu_pub_(node_->create_publisher<sensor_msgs::msg::Imu>("/fixposition/corrimu", 100)),
       navsatfix_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/navsatfix", 100)),
+      navsatfix_gnss1_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/gnss1", 100)),
+      navsatfix_gnss2_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/gnss2", 100)),
       odometry_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry", 100)),
       poiimu_pub_(node_->create_publisher<sensor_msgs::msg::Imu>("/fixposition/poiimu", 100)),
       vrtk_pub_(node_->create_publisher<fixposition_driver_ros2::msg::VRTK>("/fixposition/vrtk", 100)),
@@ -77,9 +82,13 @@ void FixpositionDriverNode::Run() {
 }
 
 void FixpositionDriverNode::RegisterObservers() {
+    // NOV_B
+    bestgnsspos_obs_.push_back(std::bind(&FixpositionDriverNode::BestGnssPosToPublishNavSatFix, this,
+                                         std::placeholders::_1, std::placeholders::_2));
+    // FP_A
     for (const auto& format : params_.fp_output.formats) {
         if (format == "ODOMETRY") {
-            dynamic_cast<OdometryConverter*>(converters_["ODOMETRY"].get())
+            dynamic_cast<OdometryConverter*>(a_converters_["ODOMETRY"].get())
                 ->AddObserver([this](const OdometryConverter::Msgs& data) {
                     // ODOMETRY Observer Lambda
                     // Msgs
@@ -128,29 +137,29 @@ void FixpositionDriverNode::RegisterObservers() {
                         static_br_->sendTransform(tf_ecef_enu0);
                     }
                 });
-        } else if (format == "LLH" && converters_["LLH"]) {
-            dynamic_cast<LlhConverter*>(converters_["LLH"].get())->AddObserver([this](const NavSatFixData& data) {
+        } else if (format == "LLH" && a_converters_["LLH"]) {
+            dynamic_cast<LlhConverter*>(a_converters_["LLH"].get())->AddObserver([this](const NavSatFixData& data) {
                 // LLH Observer Lambda
                 sensor_msgs::msg::NavSatFix msg;
                 NavSatFixDataToMsg(data, msg);
                 navsatfix_pub_->publish(msg);
             });
         } else if (format == "RAWIMU") {
-            dynamic_cast<ImuConverter*>(converters_["RAWIMU"].get())->AddObserver([this](const ImuData& data) {
+            dynamic_cast<ImuConverter*>(a_converters_["RAWIMU"].get())->AddObserver([this](const ImuData& data) {
                 // RAWIMU Observer Lambda
                 sensor_msgs::msg::Imu msg;
                 ImuDataToMsg(data, msg);
                 rawimu_pub_->publish(msg);
             });
         } else if (format == "CORRIMU") {
-            dynamic_cast<ImuConverter*>(converters_["CORRIMU"].get())->AddObserver([this](const ImuData& data) {
+            dynamic_cast<ImuConverter*>(a_converters_["CORRIMU"].get())->AddObserver([this](const ImuData& data) {
                 // CORRIMU Observer Lambda
                 sensor_msgs::msg::Imu msg;
                 ImuDataToMsg(data, msg);
                 corrimu_pub_->publish(msg);
             });
         } else if (format == "TF") {
-            dynamic_cast<TfConverter*>(converters_["TF"].get())->AddObserver([this](const TfData& data) {
+            dynamic_cast<TfConverter*>(a_converters_["TF"].get())->AddObserver([this](const TfData& data) {
                 // TF Observer Lambda
                 geometry_msgs::msg::TransformStamped tf;
                 TfDataToMsg(data, tf);
@@ -176,6 +185,28 @@ void FixpositionDriverNode::RegisterObservers() {
 
 void FixpositionDriverNode::WsCallback(const fixposition_driver_ros2::msg::Speed::ConstSharedPtr msg) {
     FixpositionDriver::WsCallback(msg->speeds);
+}
+
+void FixpositionDriverNode::BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header,
+                                                          const BESTGNSSPOSMem* payload) {
+    // Buffer to data struct
+    NavSatFixData nav_sat_fix;
+    NovToData(header, payload, nav_sat_fix);
+
+    // Publish
+    if (nav_sat_fix.frame_id == "GNSS1" || nav_sat_fix.frame_id == "GNSS") {
+        if (navsatfix_gnss1_pub_->get_subscription_count() > 0) {
+            sensor_msgs::msg::NavSatFix msg;
+            NavSatFixDataToMsg(nav_sat_fix, msg);
+            navsatfix_gnss1_pub_->publish(msg);
+        }
+    } else if (nav_sat_fix.frame_id == "GNSS2") {
+        if (navsatfix_gnss2_pub_->get_subscription_count() > 0) {
+            sensor_msgs::msg::NavSatFix msg;
+            NavSatFixDataToMsg(nav_sat_fix, msg);
+            navsatfix_gnss2_pub_->publish(msg);
+        }
+    }
 }
 
 }  // namespace fixposition

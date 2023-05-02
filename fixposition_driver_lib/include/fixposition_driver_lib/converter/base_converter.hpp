@@ -2,11 +2,13 @@
  *  @file
  *  @brief Base Converter to define the interfaces
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 
@@ -24,10 +26,10 @@
 #include <fixposition_driver_lib/time_conversions.hpp>
 
 namespace fixposition {
-class BaseConverter {
+class BaseAsciiConverter {
    public:
-    BaseConverter() = default;
-    ~BaseConverter() = default;
+    BaseAsciiConverter() = default;
+    ~BaseAsciiConverter() = default;
 
     /**
      * @brief Virtual interface to convert the split tokens into ros messages

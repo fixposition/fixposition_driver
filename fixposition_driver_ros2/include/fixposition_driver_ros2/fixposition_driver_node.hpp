@@ -2,11 +2,13 @@
  *  @file
  *  @brief Declaration of FixpositionDriver ROS1 Node
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 
@@ -54,12 +56,22 @@ class FixpositionDriverNode : public FixpositionDriver {
     void WsCallback(const fixposition_driver_ros2::msg::Speed::ConstSharedPtr msg);
 
    private:
+    /**
+     * @brief Observer Functions to publish NavSatFix from BestGnssPos
+     *
+     * @param[in] header
+     * @param[in] payload
+     */
+    void BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header, const BESTGNSSPOSMem* payload);
+    
     std::shared_ptr<rclcpp::Node> node_;
     rclcpp::Subscription<fixposition_driver_ros2::msg::Speed>::SharedPtr ws_sub_;  //!< wheelspeed message subscriber
 
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr rawimu_pub_;
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr corrimu_pub_;
     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr navsatfix_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr navsatfix_gnss1_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr navsatfix_gnss2_pub_;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr poiimu_pub_;             //!< Bias corrected IMU from ODOMETRY
     rclcpp::Publisher<fixposition_driver_ros2::msg::VRTK>::SharedPtr vrtk_pub_;  //!< VRTK message

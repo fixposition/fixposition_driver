@@ -2,11 +2,13 @@
  *  @file
  *  @brief Convert Data classes to ROS2 msgs
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 
@@ -29,7 +31,7 @@
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 
 /* FIXPOSITION */
-#include <fixposition_driver_lib/converter/msg_data.hpp>
+#include <fixposition_driver_lib/msg_data.hpp>
 #include <fixposition_driver_lib/time_conversions.hpp>
 
 /* PACKAGE */
@@ -65,6 +67,14 @@ inline builtin_interfaces::msg::Time GpsTimeToMsgTime(times::GpsTime input) {
  * @param[out] msg
  */
 void ImuDataToMsg(const ImuData& data, sensor_msgs::msg::Imu& msg);
+
+/**
+ * @brief 
+ * 
+ * @param[in] data
+ * @param[in] msg
+ */
+void NavSatStatusDataToMsg(const NavSatStatusData& data, sensor_msgs::msg::NavSatStatus& msg);
 
 /**
  * @brief

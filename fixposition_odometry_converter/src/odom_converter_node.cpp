@@ -2,11 +2,13 @@
  *  @file
  *  @brief Main function for the odometry converter ros node
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 

@@ -2,11 +2,13 @@
  *  @file
  *  @brief Convert Data classes to ROS1 msgs
  *
+ * \verbatim
  *  ___    ___
  *  \  \  /  /
  *   \  \/  /   Fixposition AG
  *   /  /\  \   All right reserved.
  *  /__/  \__\
+ * \endverbatim
  *
  */
 
@@ -20,7 +22,7 @@
 #include <sensor_msgs/NavSatFix.h>
 
 /* FIXPOSITION DRIVER LIB */
-#include <fixposition_driver_lib/converter/msg_data.hpp>
+#include <fixposition_driver_lib/msg_data.hpp>
 
 /* PACKAGE */
 #include <fixposition_driver_ros1/VRTK.h>
@@ -33,6 +35,14 @@ namespace fixposition {
  * @param[out] msg
  */
 void ImuDataToMsg(const ImuData& data, sensor_msgs::Imu& msg);
+
+/**
+ * @brief 
+ * 
+ * @param[in] data
+ * @param[in] msg
+ */
+void NavSatStatusDataToMsg(const NavSatStatusData& data, sensor_msgs::NavSatStatus& msg);
 
 /**
  * @brief
