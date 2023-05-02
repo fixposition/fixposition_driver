@@ -1,13 +1,38 @@
-/* ************************************************************************************************/  // clang-format off
 /*!
-    @file
-    @brief NOVATEL functions
-     ___    ___
-     \  \  /  /
-      \  \/  /   Copyright (c) Fixposition AG
-      /  /\  \   All right reserved
-     /__/  \__\
-*/
+ * \verbatim
+ *  ___    ___
+ *  \  \  /  /
+ *   \  \/  /   Copyright (c) Fixposition AG
+ *   /  /\  \   All right reserved
+ *  /__/  \__\
+ *
+ *  Portions copyright NovAtel:
+ *
+ *     Copyright (c) 2020 NovAtel Inc.
+ *
+ *     Permission is hereby granted, free of charge, to any person obtaining a copy
+ *     of this software and associated documentation files (the "Software"), to deal
+ *     in the Software without restriction, including without limitation the rights
+ *     to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *     copies of the Software, and to permit persons to whom the Software is
+ *     furnished to do so, subject to the following conditions:
+ *
+ *     The above copyright notice and this permission notice shall be included in all
+ *     copies or substantial portions of the Software.
+ *
+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *     IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *     AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *     SOFTWARE.
+ * \endverbatim
+ *
+ *   @file
+ *   @brief NovAtel types and utilities
+ */
+
 /* ****************************************************************************************************************** */
 #ifndef __FIXPOSITION_DRIVER_LIB_NOV_TYPE__
 #define __FIXPOSITION_DRIVER_LIB_NOV_TYPE__
@@ -72,7 +97,7 @@ enum class MessageId : uint16_t {
     INSSTDEV = 2051,
     PSRDOP2 = 1163,
     RXSTATUS = 93,
-    TIME = 101    
+    TIME = 101
 };
 
 /**
@@ -219,7 +244,7 @@ enum class GpsReferenceTimeStatus : uint8_t {
  */
 const char* GpsReferenceTimeStatusStr(const GpsReferenceTimeStatus time_status);
 
-enum class MessageTypeSource : uint8_t { // clang-format off
+enum class MessageTypeSource : uint8_t {  // clang-format off
     PRIMARY   = 0b00000000, //!< Primary antenna
     SECONDARY = 0b00000001, //!< Secondary antenna
     _MASK     = 0b00011111, //!< Mask for the source part of the message_type field
