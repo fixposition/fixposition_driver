@@ -58,7 +58,7 @@ void ImuConverter::ConvertTokens(const std::vector<std::string>& tokens) {
     msg_.stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
     msg_.linear_acceleration = Vector3ToEigen(tokens.at(acc_x_idx), tokens.at(acc_y_idx), tokens.at(acc_z_idx));
     msg_.angular_velocity = Vector3ToEigen(tokens.at(rot_x_idx), tokens.at(rot_y_idx), tokens.at(rot_z_idx));
-
+    msg_.frame_id = "FP_VRTK";
     // process all observers
     for (auto& ob : obs_) {
         ob(msg_);
