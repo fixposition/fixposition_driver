@@ -100,7 +100,17 @@ void FixpositionDriver::WsCallback(const std::vector<int>& speeds) {
     memcpy(&message[0], &rawdmi_, sizeof(rawdmi_));
     memcpy(&message[sizeof(rawdmi_)], &checksum, sizeof(checksum));
 
-    send(this->client_fd_, &message[0], sizeof(message), MSG_DONTWAIT);
+    switch (params_.fp_output.type) {
+        case INPUT_TYPE::TCP:
+            send(this->client_fd_, &message[0], sizeof(message), MSG_DONTWAIT);
+            break;
+        case INPUT_TYPE::SERIAL:
+            write(this->client_fd_, &message[0], sizeof(message));
+            break;
+        default:
+            std::cerr << "Unknown connection type!\n";
+            break;
+    }
 }
 
 bool FixpositionDriver::InitializeConverters() {
