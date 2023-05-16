@@ -27,6 +27,11 @@ void SplitMessage(std::vector<std::string>& tokens, const std::string& msg, cons
 
 void BestGnssPosToNavSatFix(const Oem7MessageHeaderMem* const header, const BESTGNSSPOSMem* const bestgnsspos,
                             NavSatFixData& navsatfix) {
+    // Header timestamp
+    navsatfix.stamp.wno = header->gps_week;
+    navsatfix.stamp.tow = header->gps_milliseconds * 1e-3;
+
+    // Data
     navsatfix.latitude = bestgnsspos->lat;
     navsatfix.longitude = bestgnsspos->lon;
     navsatfix.altitude = bestgnsspos->hgt;
