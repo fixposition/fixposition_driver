@@ -14,6 +14,9 @@ The driver is designed to listen on a TCP or Serial port for the [_Fixposition A
 
 _For questions about compatibility, please contact Fixpositions Support support@fixposition.com_
 
+-   [6.1.1](https://github.com/fixposition/fixposition_driver/releases/tag/6.1.1)
+    -   Bugfix for serial connection
+    -   Add frame_id for imu messages 
 -   [6.1.0](https://github.com/fixposition/fixposition_driver/releases/tag/6.1.0)
     -   Add feature to publish GNSS Antenna positions even if Fusion is not initialized. NOV_B-BESTGNSSPOS is used and sensor_msgs::NavSatFix is published. See more details in [Vision-RTK2 GNSS Antenna Positions](#Vision-RTK2-GNSS-Antenna-Positions).
 -   [6.0.3](https://github.com/fixposition/fixposition_driver/releases/tag/6.0.3)
