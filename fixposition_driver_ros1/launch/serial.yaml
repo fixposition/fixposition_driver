@@ -1,5 +1,5 @@
 fp_output:
-    formats: ["FP", "LLH"]
+    formats: ["ODOMETRY", "LLH", "RAWIMU", "CORRIMU", "TF"]
     type: serial
     port: "/dev/ttyUSB0"
     serial_baudrate: 115200
