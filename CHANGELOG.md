@@ -2,6 +2,14 @@
 
 _For questions about compatibility, please contact Fixpositions Support support@fixposition.com_
 
+## [6.1.3](https://github.com/fixposition/fixposition_driver/releases/tag/6.1.3)
+
+    - Improve README
+
+## [6.1.2](https://github.com/fixposition/fixposition_driver/releases/tag/6.1.2)
+
+    - Bugfix gnss message timestamps
+
 ## [6.1.1](https://github.com/fixposition/fixposition_driver/releases/tag/6.1.1)
 
     -   Bugfix for serial connection
