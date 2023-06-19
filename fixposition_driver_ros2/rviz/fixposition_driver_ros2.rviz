@@ -96,7 +96,7 @@ Visualization Manager:
         Z: 0
       Plane: XY
       Plane Cell Count: 10
-      Reference Frame: FP_IMU_HORIZONTAL
+      Reference Frame: FP_IMUH
       Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz_default_plugins/Odometry
@@ -149,7 +149,7 @@ Visualization Manager:
           Value: true
         FP_ENU0:
           Value: true
-        FP_IMU_HORIZONTAL:
+        FP_IMUH:
           Value: true
         FP_POI:
           Value: true

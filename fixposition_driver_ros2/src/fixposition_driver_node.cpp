@@ -163,7 +163,7 @@ void FixpositionDriverNode::RegisterObservers() {
                 // TF Observer Lambda
                 geometry_msgs::msg::TransformStamped tf;
                 TfDataToMsg(data, tf);
-                if (tf.child_frame_id == "FP_IMU_HORIZONTAL" && tf.header.frame_id == "FP_POI") {
+                if (tf.child_frame_id == "FP_IMUH" && tf.header.frame_id == "FP_POI") {
                     br_->sendTransform(tf);
 
                     // Publish Pitch Roll based on IMU only
