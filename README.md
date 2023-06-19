@@ -188,7 +188,7 @@ The output is published on the following:
     | `ECEF-->FP_POI` | `/tf` | `ODOMETRY` | as configured on web-interface |
     | `ECEF-->FP_ENU` | `/tf` | `ODOMETRY` | as configured on web-interface |
     | `ECEF-->FP_ENU0` | `/tf` | `ODOMETRY` | as configured on web-interface |
-    | `FP_POI-->FP_IMU_HORIZONTAL` | `/tf` | `ODOMETRY` | 200Hz |
+    | `FP_POI-->FP_IMUH` | `/tf` | `ODOMETRY` | 200Hz |
     | `FP_POI-->FP_VRTK` | `/tf_static` | `TF_POI_VRTK` | 1Hz |
     | `FP_VRTK-->FP_CAM` | `/tf_static` | `TF_VRTK_CAM` | 1Hz |
 
@@ -197,7 +197,7 @@ The output is published on the following:
     ```mermaid
     graph TD;
     ECEF-->FP_POI-->FP_VRTK-->FP_CAM
-    FP_POI-->FP_IMU_HORIZONTAL
+    FP_POI-->FP_IMUH
     ECEF-->FP_ENU
     ECEF-->FP_ENU0
     ```
@@ -214,7 +214,7 @@ _Please note that the corresponding messages also has to be selected on the Fixp
 | **FP_ENU**            | The **local** East-North-Up coordinate frame with the origin at the same location as FP_POI.                                                   |
 | **FP_ENU0**           | The **global fixed** East-North-Up coordinate frame with the origin at the first received ODOMETRY position. Needed for visualization in Rviz. |
 | **FP_CAM**            | The camera coordinate frame of the V-RTK.                                                                                                      |
-| **FP_IMU_HORIZONTAL** | A local horizontal frame with the origin at the same location as FP_POI. This frame is a rough estimate determined by the IMU alone.           |
+| **FP_IMUH** | A local horizontal frame with the origin at the same location as FP_POI. This frame is a rough estimate determined by the IMU alone.           |
 
 ## Input Wheelspeed through the driver
 
