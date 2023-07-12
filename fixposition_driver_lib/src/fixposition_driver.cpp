@@ -26,6 +26,19 @@
 #include <fixposition_driver_lib/helper.hpp>
 #include <fixposition_driver_lib/parser.hpp>
 
+#ifndef B460800
+#define B460800 460800
+#endif
+#ifndef B500000
+#define B500000 500000
+#endif
+#ifndef B921600
+#define B921600 921600
+#endif
+#ifndef B1000000
+#define B1000000 1000000
+#endif
+
 namespace fixposition {
 FixpositionDriver::FixpositionDriver(const FixpositionDriverParams& params) : params_(params) {
     Connect();
