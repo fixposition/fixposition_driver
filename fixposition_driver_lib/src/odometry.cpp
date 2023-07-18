@@ -196,7 +196,7 @@ void OdometryConverter::ConvertTokens(const std::vector<std::string>& tokens) {
 
         // Odmetry msg ENU0 - FP_POI
         msgs_.odometry_enu0.stamp = stamp;
-        msgs_.odometry_enu0.frame_id = "ENU0";
+        msgs_.odometry_enu0.frame_id = "FP_ENU0";
         msgs_.odometry_enu0.child_frame_id = "FP_POI";
         // Pose
         // convert position in ECEF into position in ENU0
