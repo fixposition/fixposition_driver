@@ -46,7 +46,7 @@ class FixpositionDriver {
      * @brief Run in Loop the Read Convert and Publish cycle
      *
      */
-    bool RunOnce();
+    virtual bool RunOnce();
 
    protected:
     /**
@@ -54,14 +54,14 @@ class FixpositionDriver {
      *
      * @param[in] msg
      */
-    void WsCallback(const std::vector<int>& speeds);
+    virtual void WsCallback(const std::vector<int>& speeds);
 
     /**
      * @brief Convert the Nmea like string using correct converter
      *
      * @param[in] msg NMEA like string to be converted. $HEADER,,,,,,,*CHECKSUM
      */
-    void NmeaConvertAndPublish(const std::string& msg);
+    virtual void NmeaConvertAndPublish(const std::string& msg);
 
     /**
      * @brief Convert the buffer after identified as Nov msg
@@ -69,7 +69,7 @@ class FixpositionDriver {
      * @param[in] msg ptr to the start of the msg
      * @param[in] size size of the msg
      */
-    void NovConvertAndPublish(const uint8_t* msg, int size);
+    virtual void NovConvertAndPublish(const uint8_t* msg, int size);
 
     /**
      * @brief Initialize convertes based on config
@@ -77,7 +77,7 @@ class FixpositionDriver {
      * @return true
      * @return false
      */
-    bool InitializeConverters();
+    virtual bool InitializeConverters();
 
     /**
      * @brief Read data and publish to ros if possible
@@ -85,7 +85,7 @@ class FixpositionDriver {
      * @return true data read success or no data
      * @return false connection problems, restart the connection
      */
-    bool ReadAndPublish();
+    virtual bool ReadAndPublish();
 
     /**
      * @brief Connect the defined TCP or Serial socket
@@ -93,7 +93,7 @@ class FixpositionDriver {
      * @return true success
      * @return false cannot connect
      */
-    bool Connect();
+    virtual bool Connect();
 
     /**
      * @brief Initialize TCP connection
@@ -101,7 +101,7 @@ class FixpositionDriver {
      * @return true success
      * @return false fail
      */
-    bool CreateTCPSocket();
+    virtual bool CreateTCPSocket();
 
     /**
      * @brief Initialize Serial connection
@@ -109,7 +109,7 @@ class FixpositionDriver {
      * @return true success
      * @return false fail
      */
-    bool CreateSerialConnection();
+    virtual bool CreateSerialConnection();
 
     FixpositionDriverParams params_;
 
