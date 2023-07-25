@@ -55,6 +55,7 @@ jobs:
       - name: Ignore ROS2 node
         run: |
           touch src/fixposition_driver/fixposition_driver_ros2/CATKIN_IGNORE
+          touch src/fixposition_driver/fixposition_odometry_converter_ros2/CATKIN_IGNORE
       - name: Init Workspace
         run: |
           catkin init
@@ -62,5 +63,4 @@ jobs:
         run: |
           source /opt/ros/$ROS_DISTRO/setup.bash
           catkin build fixposition_driver_lib fixposition_driver_ros1 fixposition_odometry_converter --force-cmake -DBUILD_TESTING=ON
-
           catkin run_tests
