@@ -1,0 +1,5 @@
+<launch>
+  <node name="odom_converter_node" pkg="fixposition_odometry_converter_ros2" exec="odom_converter_node" output="screen">
+    <param from="$(find-pkg-share fixposition_odometry_converter_ros2)/launch/odom_converter.yaml" />
+  </node>
+</launch>

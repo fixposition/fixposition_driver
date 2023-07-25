@@ -539,7 +539,7 @@ Message fields:
 
 # Fixposition Odometry Converter
 
-This is an extra node is provided to help with the integration of the wheel odometry on your vehicle. For details, see the subfolder [fixposition_odometry_converter](fixposition_odometry_converter/README.md).
+This is an extra node is provided to help with the integration of the wheel odometry on your vehicle. For details, see the subfolder [fixposition_odometry_converter](fixposition_odometry_converter/README.md) (ROS 1) and [fixposition_odometry_converter_ros2](fixposition_odometry_converter_ros2/README.md) (ROS 2). When building the ROS 1 version add a file named 'CATKIN_IGNORE' to the `fixposition_odometry_converter_ros2` folder.
 
 # License
 
