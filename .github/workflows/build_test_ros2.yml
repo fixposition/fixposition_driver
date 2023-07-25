@@ -51,6 +51,6 @@ jobs:
       - name: Build and Test
         run: |
           source /opt/ros/$ROS_DISTRO/setup.bash
-          colcon build --packages-up-to fixposition_driver_ros2 fixposition_odometry_converter_ros2 --cmake-args -DBUILD_TESTING=ON
+          colcon build --packages-up-to fixposition_driver_ros2 --cmake-args -DBUILD_TESTING=ON
           colcon test --packages-up-to fixposition_driver_ros2
           colcon test-result --test-result-base build/fixposition_gnss_tf/
