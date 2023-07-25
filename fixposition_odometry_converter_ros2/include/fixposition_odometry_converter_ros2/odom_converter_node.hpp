@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef __ODOM_CONVERTER_HPP__
-#define __ODOM_CONVERTER_HPP__
+#ifndef __ODOM_CONVERTER_NODE_HPP__
+#define __ODOM_CONVERTER_NODE_HPP__
 
 /* ROS */
 #include <geometry_msgs/msg/twist.hpp>
@@ -86,4 +86,4 @@ class OdomConverterNode : public rclcpp::Node {
     rclcpp::Publisher<fixposition_driver_ros2::msg::Speed>::SharedPtr ws_pub_;
 };
 }  // namespace fixposition
-#endif  //__FIXPOSITION_DRIVER_FIXPOSITION_DRIVER__
+#endif  //__ODOM_CONVERTER_NODE_HPP__
