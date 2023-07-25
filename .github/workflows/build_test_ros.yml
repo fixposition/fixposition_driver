@@ -61,5 +61,5 @@ jobs:
       - name: Build and Test
         run: |
           source /opt/ros/$ROS_DISTRO/setup.bash
-          catkin build --force-cmake -DBUILD_TESTING=ON
+          catkin build fixposition_driver fixposition_odometry_converter --force-cmake -DBUILD_TESTING=ON
           catkin run_tests
