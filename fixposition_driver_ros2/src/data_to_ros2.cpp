@@ -13,7 +13,7 @@
  */
 
 /* ROS */
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 /* PACKAGE */
 #include <fixposition_driver_ros2/data_to_ros2.hpp>

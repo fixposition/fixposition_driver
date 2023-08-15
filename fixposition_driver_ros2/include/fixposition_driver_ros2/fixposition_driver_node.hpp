@@ -21,10 +21,10 @@
 #include <unordered_map>
 
 /* ROS2 */
-#include <nav_msgs/msg/odometry.h>
+#include <nav_msgs/msg/odometry.hpp>
 #include <rcl/rcl.h>
-#include <sensor_msgs/msg/imu.h>
-#include <sensor_msgs/msg/nav_sat_fix.h>
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
