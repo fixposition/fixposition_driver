@@ -13,7 +13,12 @@
  */
 
 /* ROS */
+#if __has_include(<tf2_eigen/tf2_eigen.hpp>)
+#include <tf2_eigen/tf2_eigen.hpp>
+#else
+// This header was deprecated as of ROS2 Humble, but is still required in order to support Foxy.
 #include <tf2_eigen/tf2_eigen.h>
+#endif
 
 /* PACKAGE */
 #include <fixposition_driver_ros2/data_to_ros2.hpp>
