@@ -126,7 +126,7 @@ Then source your environment after the build:
 
     `ros2 launch fixposition_driver_ros2 tcp.launch`
 
-To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections, check the `launch/tcp.yaml` and `launch/serial.yaml` files.
+**To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections, check the `launch/tcp.yaml` and `launch/serial.yaml` files and read this note below.**
 
 > [!NOTE]
 > ROS2, unlike ROS1, by default uses a `install` directory in the workspace. So when you do `ros2 launch xxx`, the configuration and launch files are taken from the `install` and not directly from the `src` directory.
