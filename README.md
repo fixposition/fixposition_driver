@@ -130,10 +130,12 @@ To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections,
 
 > [!NOTE]
 > ROS2, unlike ROS1, by default uses a `install` directory in the workspace. So when you do `ros2 launch xxx`, the configuration and launch files are taken from the `install` and not directly from the `src` directory.
-> If you want to modify the parameters int the YAML files. You can:
->   - Modify them in the `src` directory and then re-run `colcon build --packages-up-to fixposition_driver_ros2`
->     or
->   - Modify them directly in `install`. However then the next time you do `colcon build` they will be overriden by the files in `src`.
+> 
+> If you want to modify the parameters in the YAML files. You can:
+>   - Modify the YAML file in the `src` directory and then re-run `colcon build --packages-up-to fixposition_driver_ros2` to update them into the `install` directory.
+>
+>       or 
+>   - Modify the YAML file in `install`. However, the next time you do `colcon build` they will be overriden by the files in `src`.
 
 
 ## Output of the driver
