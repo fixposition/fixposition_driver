@@ -1,8 +1,6 @@
 
 # Fixposition Odometry Converter
 
-_This is currently only available in ROS1, a ROS2 version will be release later._
-
 ## Description
 
 An extra node is provided to help with the integration of the wheel odometry on your vehicle. This node is intended to be used as a middleware if you already have a topic with the wheel odometry values running on your system. At the moment, messages of the type `geometry_msgs/Twist`, `geometry_msgs/TwistWithCov` and `nav_msgs/Odometry` are accepted. To select one of these, modify the `topic_type` in the `odom_converter.yaml` file. The x component of the velocity in the input messages is then extracted, converted, and republished to the `/fixposition/speed` topic, where they will be consumed by the VRTK2. If the param `use_angular` is selected, the z component of the angular velocity (yaw rate) of the input messages is also extracted and placed in the speed vector.
