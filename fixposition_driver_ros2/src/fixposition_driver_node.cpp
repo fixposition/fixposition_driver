@@ -47,8 +47,8 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
       poiimu_pub_(node_->create_publisher<sensor_msgs::msg::Imu>("/fixposition/poiimu", 100)),
       vrtk_pub_(node_->create_publisher<fixposition_driver_ros2::msg::VRTK>("/fixposition/vrtk", 100)),
       odometry_enu0_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry_enu", 100)),
-      eul_pub_(node_->create_publisher<geometry_msgs::msg::Vector3>("/fixposition/ypr", 100)),
-      eul_imu_pub_(node_->create_publisher<geometry_msgs::msg::Vector3>("/fixposition/imu_ypr", 100)),
+      eul_pub_(node_->create_publisher<geometry_msgs::msg::Vector3Stamped>("/fixposition/ypr", 100)),
+      eul_imu_pub_(node_->create_publisher<geometry_msgs::msg::Vector3Stamped>("/fixposition/imu_ypr", 100)),
       br_(std::make_shared<tf2_ros::TransformBroadcaster>(node_)),
       static_br_(std::make_shared<tf2_ros::StaticTransformBroadcaster>(node_)) {
     ws_sub_ = node_->create_subscription<fixposition_driver_ros2::msg::Speed>(
@@ -110,10 +110,12 @@ void FixpositionDriverNode::RegisterObservers() {
                         vrtk_pub_->publish(vrtk);
                     }
                     if (eul_pub_->get_subscription_count() > 0) {
-                        geometry_msgs::msg::Vector3 ypr;
-                        ypr.set__x(data.eul.x());
-                        ypr.set__y(data.eul.y());
-                        ypr.set__z(data.eul.z());
+                        geometry_msgs::msg::Vector3Stamped ypr;
+                        ypr.header.stamp = GpsTimeToMsgTime(data.odometry.stamp);
+                        ypr.header.frame_id = "FP_POI";
+                        ypr.vector.set__x(data.eul.x());
+                        ypr.vector.set__y(data.eul.y());
+                        ypr.vector.set__z(data.eul.z());
                         eul_pub_->publish(ypr);
                     }
 
@@ -169,10 +171,12 @@ void FixpositionDriverNode::RegisterObservers() {
                     // Publish Pitch Roll based on IMU only
                     Eigen::Vector3d imu_ypr_eigen = gnss_tf::QuatToEul(data.rotation);
                     imu_ypr_eigen.x() = 0.0;  // the yaw value is not observable using IMU alone
-                    geometry_msgs::msg::Vector3 imu_ypr;
-                    imu_ypr.set__x(imu_ypr_eigen.x());
-                    imu_ypr.set__y(imu_ypr_eigen.y());
-                    imu_ypr.set__z(imu_ypr_eigen.z());
+                    geometry_msgs::msg::Vector3Stamped imu_ypr;
+                    imu_ypr.header.stamp = tf.header.stamp;
+                    imu_ypr.header.frame_id = "FP_POI";
+                    imu_ypr.vector.set__x(imu_ypr_eigen.x());
+                    imu_ypr.vector.set__y(imu_ypr_eigen.y());
+                    imu_ypr.vector.set__z(imu_ypr_eigen.z());
                     eul_imu_pub_->publish(imu_ypr);
 
                 } else {
