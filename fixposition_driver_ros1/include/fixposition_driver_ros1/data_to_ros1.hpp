@@ -16,6 +16,7 @@
 #define __FIXPOSITION_DRIVER_ROS1_DATA_TO_ROS1__
 /* ROS */
 #include <eigen_conversions/eigen_msg.h>
+#include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
