@@ -46,8 +46,8 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
       poiimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/poiimu", 100)),
       vrtk_pub_(nh_.advertise<fixposition_driver_ros1::VRTK>("/fixposition/vrtk", 100)),
       odometry_enu0_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_enu", 100)),
-      eul_pub_(nh_.advertise<geometry_msgs::Vector3>("/fixposition/ypr", 100)),
-      eul_imu_pub_(nh_.advertise<geometry_msgs::Vector3>("/fixposition/imu_ypr", 100)) {
+      eul_pub_(nh_.advertise<geometry_msgs::Vector3Stamped>("/fixposition/ypr", 100)),
+      eul_imu_pub_(nh_.advertise<geometry_msgs::Vector3Stamped>("/fixposition/imu_ypr", 100)) {
     ws_sub_ = nh_.subscribe<fixposition_driver_ros1::Speed>(params_.customer_input.speed_topic, 100,
                                                             &FixpositionDriverNode::WsCallback, this,
                                                             ros::TransportHints().tcpNoDelay());
@@ -85,8 +85,10 @@ void FixpositionDriverNode::RegisterObservers() {
                         vrtk_pub_.publish(vrtk);
                     }
                     if (eul_pub_.getNumSubscribers() > 0) {
-                        geometry_msgs::Vector3 ypr;
-                        tf::vectorEigenToMsg(data.eul, ypr);
+                        geometry_msgs::Vector3Stamped ypr;
+                        ypr.header.stamp = ros::Time::fromBoost(fixposition::times::GpsTimeToPtime(data.odometry.stamp));
+                        ypr.header.frame_id = "FP_POI";
+                        tf::vectorEigenToMsg(data.eul, ypr.vector);
                         eul_pub_.publish(ypr);
                     }
 
@@ -142,8 +144,10 @@ void FixpositionDriverNode::RegisterObservers() {
                     // Publish Pitch Roll based on IMU only
                     Eigen::Vector3d imu_ypr_eigen = gnss_tf::QuatToEul(data.rotation);
                     imu_ypr_eigen.x() = 0.0;  // the yaw value is not observable using IMU alone
-                    geometry_msgs::Vector3 imu_ypr;
-                    tf::vectorEigenToMsg(imu_ypr_eigen, imu_ypr);
+                    geometry_msgs::Vector3Stamped imu_ypr;
+                    imu_ypr.header.stamp = tf.header.stamp;
+                    imu_ypr.header.frame_id = "FP_POI";
+                    tf::vectorEigenToMsg(imu_ypr_eigen, imu_ypr.vector);
                     eul_imu_pub_.publish(imu_ypr);
 
                 } else {
