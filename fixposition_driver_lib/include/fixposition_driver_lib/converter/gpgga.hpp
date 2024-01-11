@@ -58,8 +58,7 @@ class GpggaConverter : public BaseAsciiConverter {
     NavSatFixData msg_;
     std::vector<GpggaObserver> obs_;
     const std::string header_ = "LLH";
-    static constexpr const int kVersion_ = 1;
-    static constexpr const int kSize_ = 14;
+    static constexpr const int kSize_ = 15;
 };
 }  // namespace fixposition
 #endif  // __FIXPOSITION_DRIVER_LIB_CONVERTER_GPGGA__

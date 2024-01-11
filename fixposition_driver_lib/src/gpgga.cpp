@@ -46,12 +46,20 @@ void GpggaConverter::ConvertTokens(const std::vector<std::string>& tokens) {
     }
 
     // Header stamps
-    msg_.stamp = ConvertGpsTime(tokens.at(time_idx), tokens.at(time_idx));
+    msg_.stamp = times::GpsTime(0, 0); // ConvertGpsTime(tokens.at(time_idx), tokens.at(time_idx));
     msg_.frame_id = "LLH";
 
     // LLH coordinates
-    msg_.latitude = StringToDouble(tokens.at(lat_idx));
-    msg_.longitude = StringToDouble(tokens.at(lon_idx));
+    const std::string _latstr = tokens.at(lat_idx);
+    double _lat = StringToDouble(_latstr.substr(0,2)) + StringToDouble((_latstr.substr(2))) / 60;
+    if (tokens.at(lat_ns_idx).compare("S") == 0) _lat *= -1;
+    msg_.latitude = _lat;
+
+    const std::string _lonstr = tokens.at(lon_idx);
+    double _lon = StringToDouble(_lonstr.substr(0,3)) + StringToDouble((_lonstr.substr(3))) / 60;
+    if (tokens.at(lon_ew_idx).compare("W") == 0) _lon *= -1;
+    msg_.longitude = _lon;
+
     msg_.altitude = StringToDouble(tokens.at(alt_idx));
 
     // Covariance diagonals

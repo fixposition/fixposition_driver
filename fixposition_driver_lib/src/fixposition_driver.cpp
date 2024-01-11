@@ -233,7 +233,7 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
     SplitMessage(tokens, msg.substr(1, star_pos - 1), ",");
 
     // if it doesn't start with FP then do nothing
-    if ((tokens.at(0) != "FP") || (tokens.at(0) != "GPGGA")) {
+    if ((tokens.at(0) != "FP") && (tokens.at(0) != "GPGGA")) {
         return;
     }
 
@@ -245,8 +245,6 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
         _header = tokens.at(1);
     }
     const std::string header = _header;
-    std::cout << "Header: " << _header << std::endl;
-    std::cout << "Header: " << header << std::endl;
 
     // If we have a converter available, convert to ros. Currently supported are "FP", "LLH", "TF", "RAWIMU", "CORRIMU"
     if (a_converters_[header] != nullptr) {
