@@ -22,6 +22,7 @@
 #include <fixposition_driver_lib/converter/llh.hpp>
 #include <fixposition_driver_lib/converter/odometry.hpp>
 #include <fixposition_driver_lib/converter/tf.hpp>
+#include <fixposition_driver_lib/converter/gpgga.hpp>
 #include <fixposition_driver_lib/fixposition_driver.hpp>
 #include <fixposition_driver_lib/helper.hpp>
 #include <fixposition_gnss_tf/gnss_tf.hpp>
@@ -41,6 +42,7 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
       navsatfix_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/navsatfix", 100)),
       navsatfix_gnss1_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss1", 100)),
       navsatfix_gnss2_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss2", 100)),
+      navsatfix_gpgga_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gpgga", 100)),
       //   ODOMETRY
       odometry_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry", 100)),
       poiimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/poiimu", 100)),
@@ -152,6 +154,15 @@ void FixpositionDriverNode::RegisterObservers() {
 
                 } else {
                     static_br_.sendTransform(tf);
+                }
+            });
+        } else if (format == "GPGGA") {
+            dynamic_cast<GpggaConverter*>(a_converters_["GPGGA"].get())->AddObserver([this](const NavSatFixData& data) {
+                // GPGGA Observer Lambda
+                if (navsatfix_gpgga_pub_.getNumSubscribers() > 0) {
+                    sensor_msgs::NavSatFix msg;
+                    NavSatFixDataToMsg(data, msg);
+                    navsatfix_gpgga_pub_.publish(msg);
                 }
             });
         }

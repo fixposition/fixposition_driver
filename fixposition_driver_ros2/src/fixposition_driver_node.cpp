@@ -24,6 +24,7 @@
 #include <fixposition_driver_lib/converter/llh.hpp>
 #include <fixposition_driver_lib/converter/odometry.hpp>
 #include <fixposition_driver_lib/converter/tf.hpp>
+#include <fixposition_driver_lib/converter/gpgga.hpp>
 #include <fixposition_driver_lib/fixposition_driver.hpp>
 #include <fixposition_driver_lib/helper.hpp>
 #include <fixposition_gnss_tf/gnss_tf.hpp>
@@ -43,6 +44,7 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
       navsatfix_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/navsatfix", 100)),
       navsatfix_gnss1_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/gnss1", 100)),
       navsatfix_gnss2_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/gnss2", 100)),
+      navsatfix_gpgga_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/gpgga", 100)),
       odometry_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry", 100)),
       poiimu_pub_(node_->create_publisher<sensor_msgs::msg::Imu>("/fixposition/poiimu", 100)),
       vrtk_pub_(node_->create_publisher<fixposition_driver_ros2::msg::VRTK>("/fixposition/vrtk", 100)),
@@ -181,6 +183,15 @@ void FixpositionDriverNode::RegisterObservers() {
 
                 } else {
                     static_br_->sendTransform(tf);
+                }
+            });
+        } else if (format == "GPGGA") {
+            dynamic_cast<GpggaConverter*>(a_converters_["GPGGA"].get())->AddObserver([this](const NavSatFixData& data) {
+                // GPGGA Observer Lambda
+                if (navsatfix_gpgga_pub_.getNumSubscribers() > 0) {
+                    sensor_msgs::NavSatFix msg;
+                    NavSatFixDataToMsg(data, msg);
+                    navsatfix_gpgga_pub_.publish(msg);
                 }
             });
         }

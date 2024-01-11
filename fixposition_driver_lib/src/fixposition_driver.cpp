@@ -22,6 +22,7 @@
 #include <fixposition_driver_lib/converter/llh.hpp>
 #include <fixposition_driver_lib/converter/odometry.hpp>
 #include <fixposition_driver_lib/converter/tf.hpp>
+#include <fixposition_driver_lib/converter/gpgga.hpp>
 #include <fixposition_driver_lib/fixposition_driver.hpp>
 #include <fixposition_driver_lib/helper.hpp>
 #include <fixposition_driver_lib/parser.hpp>
@@ -137,6 +138,8 @@ bool FixpositionDriver::InitializeConverters() {
             a_converters_["RAWIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(false));
         } else if (format == "CORRIMU") {
             a_converters_["CORRIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(true));
+        } else if (format == "GPGGA") {
+            a_converters_["GPGGA"] = std::unique_ptr<GpggaConverter>(new GpggaConverter());
         } else if (format == "TF") {
             if (a_converters_.find("TF") == a_converters_.end()) {
                 a_converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter());
@@ -230,12 +233,20 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
     SplitMessage(tokens, msg.substr(1, star_pos - 1), ",");
 
     // if it doesn't start with FP then do nothing
-    if (tokens.at(0) != "FP") {
+    if ((tokens.at(0) != "FP") || (tokens.at(0) != "GPGGA")) {
         return;
     }
 
     // Get the header of the sentence
-    const std::string header = tokens.at(1);
+    std::string _header;
+    if (tokens.at(0) == "GPGGA") {
+        _header = "GPGGA";
+    } else {
+        _header = tokens.at(1);
+    }
+    const std::string header = _header;
+    std::cout << "Header: " << _header << std::endl;
+    std::cout << "Header: " << header << std::endl;
 
     // If we have a converter available, convert to ros. Currently supported are "FP", "LLH", "TF", "RAWIMU", "CORRIMU"
     if (a_converters_[header] != nullptr) {

@@ -69,6 +69,7 @@ class FixpositionDriverNode : public FixpositionDriver {
     ros::Publisher navsatfix_pub_;
     ros::Publisher navsatfix_gnss1_pub_;
     ros::Publisher navsatfix_gnss2_pub_;
+    ros::Publisher navsatfix_gpgga_pub_;
     ros::Publisher odometry_pub_;       //!< ECEF Odometry
     ros::Publisher poiimu_pub_;         //!< Bias corrected IMU
     ros::Publisher vrtk_pub_;           //!< VRTK message
