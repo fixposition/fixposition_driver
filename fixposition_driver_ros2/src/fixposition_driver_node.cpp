@@ -25,6 +25,8 @@
 #include <fixposition_driver_lib/converter/odometry.hpp>
 #include <fixposition_driver_lib/converter/tf.hpp>
 #include <fixposition_driver_lib/converter/gpgga.hpp>
+#include <fixposition_driver_lib/converter/gpzda.hpp>
+#include <fixposition_driver_lib/converter/gprmc.hpp>
 #include <fixposition_driver_lib/fixposition_driver.hpp>
 #include <fixposition_driver_lib/helper.hpp>
 #include <fixposition_gnss_tf/gnss_tf.hpp>
@@ -44,7 +46,7 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
       navsatfix_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/navsatfix", 100)),
       navsatfix_gnss1_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/gnss1", 100)),
       navsatfix_gnss2_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/gnss2", 100)),
-      navsatfix_gpgga_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/gpgga", 100)),
+      nmea_pub_(node_->create_publisher<fixposition_driver_ros2::msg::NMEA>("/fixposition/nmea", 100)),
       odometry_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry", 100)),
       poiimu_pub_(node_->create_publisher<sensor_msgs::msg::Imu>("/fixposition/poiimu", 100)),
       vrtk_pub_(node_->create_publisher<fixposition_driver_ros2::msg::VRTK>("/fixposition/vrtk", 100)),
@@ -186,15 +188,70 @@ void FixpositionDriverNode::RegisterObservers() {
                 }
             });
         } else if (format == "GPGGA") {
-            dynamic_cast<GpggaConverter*>(a_converters_["GPGGA"].get())->AddObserver([this](const NavSatFixData& data) {
+            dynamic_cast<GpggaConverter*>(a_converters_["GPGGA"].get())->AddObserver([this](const GpggaData& data) {
                 // GPGGA Observer Lambda
-                if (navsatfix_gpgga_pub_.getNumSubscribers() > 0) {
-                    sensor_msgs::NavSatFix msg;
-                    NavSatFixDataToMsg(data, msg);
-                    navsatfix_gpgga_pub_.publish(msg);
+                if (nmea_pub_.getNumSubscribers() > 0) {
+                    nmea_message_.gpgga = data;
+                    PublishNmea(nmea_message_);
+                }
+            });
+        } else if (format == "GPZDA") {
+            dynamic_cast<GpzdaConverter*>(a_converters_["GPZDA"].get())->AddObserver([this](const GpzdaData& data) {
+                // GPZDA Observer Lambda
+                if (nmea_pub_.getNumSubscribers() > 0) {
+                    nmea_message_.gpzda = data;
+                    PublishNmea(nmea_message_);
+                }
+            });
+        } else if (format == "GPRMC") {
+            dynamic_cast<GprmcConverter*>(a_converters_["GPRMC"].get())->AddObserver([this](const GprmcData& data) {
+                // GPRMC Observer Lambda
+                if (nmea_pub_.getNumSubscribers() > 0) {
+                    nmea_message_.gprmc = data;
+                    PublishNmea(nmea_message_);
                 }
             });
         }
+    }
+}
+
+void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
+    // If epoch message is complete, generate NMEA output
+    if (data.checkEpoch()) {
+        // Generate new message
+        fixposition_driver_ros1::NMEA msg;
+        
+        // ROS Header
+        msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.gpzda.stamp));
+        msg.header.frame_id = "LLH";
+        
+        // Latitude [degrees]. Positive is north of equator; negative is south
+        msg.latitude = data.gpgga.latitude;
+        
+        // Longitude [degrees]. Positive is east of prime meridian; negative is west
+        msg.longitude = data.gpgga.longitude;
+        
+        // Altitude [m]. Positive is above the WGS 84 ellipsoid
+        msg.altitude = data.gpgga.altitude;
+
+        // Speed over ground [m/s]
+        msg.speed = data.gprmc.speed;
+        
+        // Course over ground [deg]
+        msg.course = data.gprmc.course;
+
+        // TODO: Get better position covariance from NMEA-GP-GST
+        // Position covariance [m^2]
+        Eigen::Map<Eigen::Matrix<double, 3, 3>> cov_map =
+            Eigen::Map<Eigen::Matrix<double, 3, 3>>(msg.position_covariance.data());
+        cov_map = data.gpgga.cov;
+        msg.position_covariance_type = data.gpgga.position_covariance_type;
+
+        // Positioning system mode indicator, R (RTK fixed), F (RTK float), A (no RTK), E, N
+        msg.mode = data.gprmc.mode;
+        
+        // Publish message
+        nmea_pub_.publish(msg);
     }
 }
 

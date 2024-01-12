@@ -37,6 +37,7 @@
 
 /* PACKAGE */
 #include <fixposition_driver_ros2/msg/vrtk.hpp>
+#include <fixposition_driver_ros2/msg/nmea.hpp>
 
 namespace fixposition {
 
