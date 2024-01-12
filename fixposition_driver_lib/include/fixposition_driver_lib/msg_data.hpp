@@ -151,5 +151,16 @@ struct GpzdaData {
     GpzdaData() : time(""), date("") {}
 };
 
+struct GprmcData {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    std::string time;
+    std::string mode;
+    double latitude;
+    double longitude;
+    double speed;
+    double course;
+    GprmcData() : latitude(0.0), longitude(0.0), speed(0.0), course(0.0) {}
+};
+
 }  // namespace fixposition
 #endif  //__FIXPOSITION_DRIVER_LIB_MSG_DATA__

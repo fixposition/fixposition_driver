@@ -55,10 +55,10 @@ class FixpositionDriverNode : public FixpositionDriver {
     struct NmeaMessage {
         GpggaData gpgga;
         GpzdaData gpzda;
-        NavSatFixData msg;
+        GprmcData gprmc;
         
         bool checkEpoch() {
-            if (gpgga.time.compare(gpzda.time) == 0) {
+            if ((gpgga.time.compare(gpzda.time) == 0) && (gpgga.time.compare(gprmc.time) == 0)) {
                 return true;
             } else {
                 return false;
