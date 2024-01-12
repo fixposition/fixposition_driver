@@ -23,6 +23,7 @@
 #include <fixposition_driver_lib/converter/odometry.hpp>
 #include <fixposition_driver_lib/converter/tf.hpp>
 #include <fixposition_driver_lib/converter/gpgga.hpp>
+#include <fixposition_driver_lib/converter/gpzda.hpp>
 #include <fixposition_driver_lib/fixposition_driver.hpp>
 #include <fixposition_driver_lib/helper.hpp>
 #include <fixposition_gnss_tf/gnss_tf.hpp>
@@ -42,7 +43,7 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
       navsatfix_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/navsatfix", 100)),
       navsatfix_gnss1_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss1", 100)),
       navsatfix_gnss2_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss2", 100)),
-      navsatfix_gpgga_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gpgga", 100)),
+      nmea_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/nmea", 100)),
       //   ODOMETRY
       odometry_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry", 100)),
       poiimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/poiimu", 100)),
@@ -50,9 +51,13 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
       odometry_enu0_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_enu", 100)),
       eul_pub_(nh_.advertise<geometry_msgs::Vector3Stamped>("/fixposition/ypr", 100)),
       eul_imu_pub_(nh_.advertise<geometry_msgs::Vector3Stamped>("/fixposition/imu_ypr", 100)) {
+    
     ws_sub_ = nh_.subscribe<fixposition_driver_ros1::Speed>(params_.customer_input.speed_topic, 100,
                                                             &FixpositionDriverNode::WsCallback, this,
                                                             ros::TransportHints().tcpNoDelay());
+
+    
+
     Connect();
     RegisterObservers();
 }
@@ -157,15 +162,41 @@ void FixpositionDriverNode::RegisterObservers() {
                 }
             });
         } else if (format == "GPGGA") {
-            dynamic_cast<GpggaConverter*>(a_converters_["GPGGA"].get())->AddObserver([this](const NavSatFixData& data) {
+            dynamic_cast<GpggaConverter*>(a_converters_["GPGGA"].get())->AddObserver([this](const GpggaData& data) {
                 // GPGGA Observer Lambda
-                if (navsatfix_gpgga_pub_.getNumSubscribers() > 0) {
-                    sensor_msgs::NavSatFix msg;
-                    NavSatFixDataToMsg(data, msg);
-                    navsatfix_gpgga_pub_.publish(msg);
+                if (nmea_pub_.getNumSubscribers() > 0) {
+                    nmea_message_.gpgga = data;
+                    PublishNmea(nmea_message_);
+                }
+            });
+        } else if (format == "GPZDA") {
+            dynamic_cast<GpzdaConverter*>(a_converters_["GPZDA"].get())->AddObserver([this](const GpzdaData& data) {
+                // GPZDA Observer Lambda
+                if (nmea_pub_.getNumSubscribers() > 0) {
+                    nmea_message_.gpzda = data;
+                    PublishNmea(nmea_message_);
                 }
             });
         }
+    }
+}
+
+void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
+    // If epoch message is complete, generate NMEA output
+    if (data.checkEpoch()) {
+        sensor_msgs::NavSatFix msg;
+        msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.gpzda.stamp));
+        msg.header.frame_id = "LLH";
+        msg.latitude = data.gpgga.latitude;
+        msg.longitude = data.gpgga.longitude;
+        msg.altitude = data.gpgga.altitude;
+
+        Eigen::Map<Eigen::Matrix<double, 3, 3>> cov_map =
+            Eigen::Map<Eigen::Matrix<double, 3, 3>>(msg.position_covariance.data());
+        cov_map = data.gpgga.cov;
+
+        msg.position_covariance_type = data.gpgga.position_covariance_type;
+        nmea_pub_.publish(msg);
     }
 }
 

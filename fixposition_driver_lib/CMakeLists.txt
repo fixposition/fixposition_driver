@@ -30,6 +30,7 @@ add_library(
   src/helper.cpp
   src/parser.cpp
   src/gpgga.cpp
+  src/gpzda.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} ${fixposition_gnss_tf_LIBRARIES} ${Boost_LIBRARIES} pthread)

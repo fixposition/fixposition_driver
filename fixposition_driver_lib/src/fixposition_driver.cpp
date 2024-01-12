@@ -23,6 +23,7 @@
 #include <fixposition_driver_lib/converter/odometry.hpp>
 #include <fixposition_driver_lib/converter/tf.hpp>
 #include <fixposition_driver_lib/converter/gpgga.hpp>
+#include <fixposition_driver_lib/converter/gpzda.hpp>
 #include <fixposition_driver_lib/fixposition_driver.hpp>
 #include <fixposition_driver_lib/helper.hpp>
 #include <fixposition_driver_lib/parser.hpp>
@@ -140,6 +141,8 @@ bool FixpositionDriver::InitializeConverters() {
             a_converters_["CORRIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(true));
         } else if (format == "GPGGA") {
             a_converters_["GPGGA"] = std::unique_ptr<GpggaConverter>(new GpggaConverter());
+        } else if (format == "GPZDA") {
+            a_converters_["GPZDA"] = std::unique_ptr<GpzdaConverter>(new GpzdaConverter());
         } else if (format == "TF") {
             if (a_converters_.find("TF") == a_converters_.end()) {
                 a_converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter());
@@ -233,7 +236,7 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
     SplitMessage(tokens, msg.substr(1, star_pos - 1), ",");
 
     // if it doesn't start with FP then do nothing
-    if ((tokens.at(0) != "FP") && (tokens.at(0) != "GPGGA")) {
+    if ((tokens.at(0) != "FP") && (tokens.at(0) != "GPGGA") && (tokens.at(0) != "GPZDA")) {
         return;
     }
 
@@ -241,6 +244,8 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
     std::string _header;
     if (tokens.at(0) == "GPGGA") {
         _header = "GPGGA";
+    } else if (tokens.at(0) == "GPZDA") {
+        _header = "GPZDA";
     } else {
         _header = tokens.at(1);
     }

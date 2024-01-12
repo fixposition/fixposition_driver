@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @brief Declaration of GpggaConverter
+ *  @brief Declaration of GpzdaConverter
  *
  * \verbatim
  *  ___    ___
@@ -12,8 +12,8 @@
  *
  */
 
-#ifndef __FIXPOSITION_DRIVER_LIB_CONVERTER_GPGGA__
-#define __FIXPOSITION_DRIVER_LIB_CONVERTER_GPGGA__
+#ifndef __FIXPOSITION_DRIVER_LIB_CONVERTER_GPZDA__
+#define __FIXPOSITION_DRIVER_LIB_CONVERTER_GPZDA__
 
 /* SYSTEM / STL */
 
@@ -23,25 +23,26 @@
 #include <fixposition_driver_lib/converter/base_converter.hpp>
 #include <fixposition_driver_lib/msg_data.hpp>
 #include <fixposition_driver_lib/time_conversions.hpp>
+#include <chrono>
 
 namespace fixposition {
 
-class GpggaConverter : public BaseAsciiConverter {
+class GpzdaConverter : public BaseAsciiConverter {
    public:
-    using GpggaObserver = std::function<void(const GpggaData&)>;
+    using GpzdaObserver = std::function<void(const GpzdaData&)>;
     /**
-     * @brief Construct a new GpggaConverter
+     * @brief Construct a new GpzdaConverter
      *
      */
-    GpggaConverter() {}
+    GpzdaConverter() {}
 
-    ~GpggaConverter() = default;
+    ~GpzdaConverter() = default;
 
     /**
-     * @brief Take comma-delimited tokens of GPGGA message, convert to Data structs and if available,
+     * @brief Take comma-delimited tokens of GPZDA message, convert to Data structs and if available,
      * call observers
      * Example:
-     * $GPGGA,151229.40,4723.54108,N,00826.88485,E,4,12,00.98,473.5,M,,,,*3A\r\n
+     * $GPZDA,090411.0001,10,10,2023,00,00*69\r\n
      *
      * @param[in] tokens message split in tokens
      */
@@ -52,13 +53,13 @@ class GpggaConverter : public BaseAsciiConverter {
      *
      * @param[in] ob
      */
-    void AddObserver(GpggaObserver ob) { obs_.push_back(ob); }
+    void AddObserver(GpzdaObserver ob) { obs_.push_back(ob); }
 
    private:
-    GpggaData msg_;
-    std::vector<GpggaObserver> obs_;
+    GpzdaData msg_;
+    std::vector<GpzdaObserver> obs_;
     const std::string header_ = "LLH";
-    static constexpr const int kSize_ = 15;
+    static constexpr const int kSize_ = 7;
 };
 }  // namespace fixposition
-#endif  // __FIXPOSITION_DRIVER_LIB_CONVERTER_GPGGA__
+#endif  // __FIXPOSITION_DRIVER_LIB_CONVERTER_GPZDA__

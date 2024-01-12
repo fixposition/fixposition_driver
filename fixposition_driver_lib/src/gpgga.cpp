@@ -41,13 +41,12 @@ void GpggaConverter::ConvertTokens(const std::vector<std::string>& tokens) {
     bool ok = tokens.size() == kSize_;
     if (!ok) {
         std::cout << "Error in parsing GPGGA string with " << tokens.size() << " fields! GPGGA message will be empty.\n";
-        msg_ = NavSatFixData();
+        msg_ = GpggaData();
         return;
     }
 
     // Header stamps
-    msg_.stamp = times::GpsTime(0, 0); // ConvertGpsTime(tokens.at(time_idx), tokens.at(time_idx));
-    msg_.frame_id = "LLH";
+    msg_.time = tokens.at(time_idx);
 
     // LLH coordinates
     const std::string _latstr = tokens.at(lat_idx);
