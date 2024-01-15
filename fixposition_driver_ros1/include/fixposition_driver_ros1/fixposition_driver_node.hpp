@@ -57,6 +57,9 @@ class FixpositionDriverNode : public FixpositionDriver {
         GpzdaData gpzda;
         GprmcData gprmc;
         
+        /**
+         * @brief Construct a new Fixposition Driver Node object
+         */
         bool checkEpoch() {
             if ((gpgga.time.compare(gpzda.time) == 0) && (gpgga.time.compare(gprmc.time) == 0)) {
                 return true;
@@ -75,6 +78,11 @@ class FixpositionDriverNode : public FixpositionDriver {
      */
     void BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header, const BESTGNSSPOSMem* payload);
 
+    /**
+     * @brief Observer Function to publish NMEA message from GPGGA, GPRMC, and GPZDA once the GNSS epoch transmission is complete
+     *
+     * @param[in] data
+     */
     void PublishNmea(NmeaMessage data);
 
     ros::NodeHandle nh_;
