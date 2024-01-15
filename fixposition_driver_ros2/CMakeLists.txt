@@ -26,6 +26,7 @@ find_package(fixposition_driver_lib REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   msg/VRTK.msg
   msg/Speed.msg
+  msg/NMEA.msg
   DEPENDENCIES
   std_msgs
   nav_msgs

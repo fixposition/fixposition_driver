@@ -29,6 +29,9 @@ add_library(
   src/tf.cpp
   src/helper.cpp
   src/parser.cpp
+  src/gpgga.cpp
+  src/gpzda.cpp
+  src/gprmc.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} ${fixposition_gnss_tf_LIBRARIES} ${Boost_LIBRARIES} pthread)

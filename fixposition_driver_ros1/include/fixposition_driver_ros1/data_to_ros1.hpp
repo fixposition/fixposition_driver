@@ -27,6 +27,7 @@
 
 /* PACKAGE */
 #include <fixposition_driver_ros1/VRTK.h>
+#include <fixposition_driver_ros1/NMEA.h>
 
 namespace fixposition {
 /**

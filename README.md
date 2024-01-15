@@ -176,6 +176,12 @@ The output is published on the following:
     | `/fixposition/gnss1` | `sensor_msgs/NavSatFix` | as configured on web-interface | Latitude, Longitude and Height |
     | `/fixposition/gnss2` | `sensor_msgs/NavSatFix` | as configured on web-interface | Latitude, Longitude and Height |
 
+-   The Vision-RTK2 can also output an average GNSS-based LLH position (i.e., **only GNSS, not Fusion**) and heading estimate based on speed over ground (SOG) and course over ground (COG) - (i.e., **the platform must be moving for it to be accurate**) by utilizing several NMEA messages, which serves as an auxiliary output until Fusion is fully initialized. To do this, enable the NMEA-GP-GGA_GNSS, NMEA-GP-RMC_GNSS, and NMEA-GP-ZDA_GNSS messages. This message's output frequency equals the lowest frequency of any of these three message types. **Note: This output should only be used until Fusion is fully initialized.**
+
+    | Topic                | Message Type            | Frequency                      | Description                    |
+    | -------------------- | ----------------------- | ------------------------------ | ------------------------------ |
+    | `/fixposition/nmea` | `fixposition_driver/NMEA` | as configured on web-interface | Latitude, Longitude and Height |
+
 #### Vision-RTK2 IMU data
 
 -   From RAWIMU, at 200Hz

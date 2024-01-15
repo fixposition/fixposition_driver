@@ -26,6 +26,7 @@ add_message_files(
   FILES
   VRTK.msg
   Speed.msg
+  NMEA.msg
 )
 
 generate_messages(

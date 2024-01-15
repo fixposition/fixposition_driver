@@ -132,5 +132,35 @@ struct NavSatFixData {
     NavSatFixData() : latitude(0.0), longitude(0.0), altitude(0.0), position_covariance_type(0) { cov.setZero(); }
 };
 
+struct GpggaData {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    std::string time;
+    double latitude;
+    double longitude;
+    double altitude;
+    Eigen::Matrix<double, 3, 3> cov;
+    int position_covariance_type;
+    GpggaData() : latitude(0.0), longitude(0.0), altitude(0.0), position_covariance_type(0) { cov.setZero(); }
+};
+
+struct GpzdaData {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    std::string time;
+    std::string date;
+    times::GpsTime stamp;
+    GpzdaData() : time(""), date("") {}
+};
+
+struct GprmcData {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    std::string time;
+    std::string mode;
+    double latitude;
+    double longitude;
+    double speed;
+    double course;
+    GprmcData() : latitude(0.0), longitude(0.0), speed(0.0), course(0.0) {}
+};
+
 }  // namespace fixposition
 #endif  //__FIXPOSITION_DRIVER_LIB_MSG_DATA__

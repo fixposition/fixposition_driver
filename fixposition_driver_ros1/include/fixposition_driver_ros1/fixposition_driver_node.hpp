@@ -52,6 +52,23 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     void WsCallback(const fixposition_driver_ros1::SpeedConstPtr& msg);
 
+    struct NmeaMessage {
+        GpggaData gpgga;
+        GpzdaData gpzda;
+        GprmcData gprmc;
+        
+        /**
+         * @brief Construct a new Fixposition Driver Node object
+         */
+        bool checkEpoch() {
+            if ((gpgga.time.compare(gpzda.time) == 0) && (gpgga.time.compare(gprmc.time) == 0)) {
+                return true;
+            } else {
+                return false;
+            }
+        }  
+    };
+
    private:
     /**
      * @brief Observer Functions to publish NavSatFix from BestGnssPos
@@ -61,6 +78,13 @@ class FixpositionDriverNode : public FixpositionDriver {
      */
     void BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header, const BESTGNSSPOSMem* payload);
 
+    /**
+     * @brief Observer Function to publish NMEA message from GPGGA, GPRMC, and GPZDA once the GNSS epoch transmission is complete
+     *
+     * @param[in] data
+     */
+    void PublishNmea(NmeaMessage data);
+
     ros::NodeHandle nh_;
     ros::Subscriber ws_sub_;  //!< wheelspeed message subscriber
 
@@ -69,12 +93,15 @@ class FixpositionDriverNode : public FixpositionDriver {
     ros::Publisher navsatfix_pub_;
     ros::Publisher navsatfix_gnss1_pub_;
     ros::Publisher navsatfix_gnss2_pub_;
+    ros::Publisher nmea_pub_;
     ros::Publisher odometry_pub_;       //!< ECEF Odometry
     ros::Publisher poiimu_pub_;         //!< Bias corrected IMU
     ros::Publisher vrtk_pub_;           //!< VRTK message
     ros::Publisher odometry_enu0_pub_;  //!< ENU0 Odometry
     ros::Publisher eul_pub_;            //!< Euler angles Yaw-Pitch-Roll in local ENU
     ros::Publisher eul_imu_pub_;        //!< Euler angles Pitch-Roll as estimated from the IMU in local horizontal
+
+    NmeaMessage nmea_message_;
 
     tf2_ros::TransformBroadcaster br_;
     tf2_ros::StaticTransformBroadcaster static_br_;
