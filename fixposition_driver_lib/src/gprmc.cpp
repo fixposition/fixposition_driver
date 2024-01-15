@@ -20,7 +20,7 @@
 
 namespace fixposition {
 
-// unit transformation constant
+// unit conversion constant
 static constexpr double knots_to_ms = 1852.0 / 3600.0; //!< convert knots to m/s
 
 /// msg field indices

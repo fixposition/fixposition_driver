@@ -77,6 +77,8 @@ class FixpositionDriverNode : public FixpositionDriver {
      * @param[in] payload
      */
     void BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header, const BESTGNSSPOSMem* payload);
+
+    void PublishNmea(NmeaMessage data);
     
     std::shared_ptr<rclcpp::Node> node_;
     rclcpp::Subscription<fixposition_driver_ros2::msg::Speed>::SharedPtr ws_sub_;  //!< wheelspeed message subscriber

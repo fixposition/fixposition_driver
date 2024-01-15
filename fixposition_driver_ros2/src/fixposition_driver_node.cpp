@@ -190,7 +190,7 @@ void FixpositionDriverNode::RegisterObservers() {
         } else if (format == "GPGGA") {
             dynamic_cast<GpggaConverter*>(a_converters_["GPGGA"].get())->AddObserver([this](const GpggaData& data) {
                 // GPGGA Observer Lambda
-                if (nmea_pub_.getNumSubscribers() > 0) {
+                if (nmea_pub_->get_subscription_count() > 0) {
                     nmea_message_.gpgga = data;
                     PublishNmea(nmea_message_);
                 }
@@ -198,7 +198,7 @@ void FixpositionDriverNode::RegisterObservers() {
         } else if (format == "GPZDA") {
             dynamic_cast<GpzdaConverter*>(a_converters_["GPZDA"].get())->AddObserver([this](const GpzdaData& data) {
                 // GPZDA Observer Lambda
-                if (nmea_pub_.getNumSubscribers() > 0) {
+                if (nmea_pub_->get_subscription_count() > 0) {
                     nmea_message_.gpzda = data;
                     PublishNmea(nmea_message_);
                 }
@@ -206,7 +206,7 @@ void FixpositionDriverNode::RegisterObservers() {
         } else if (format == "GPRMC") {
             dynamic_cast<GprmcConverter*>(a_converters_["GPRMC"].get())->AddObserver([this](const GprmcData& data) {
                 // GPRMC Observer Lambda
-                if (nmea_pub_.getNumSubscribers() > 0) {
+                if (nmea_pub_->get_subscription_count() > 0) {
                     nmea_message_.gprmc = data;
                     PublishNmea(nmea_message_);
                 }
@@ -219,10 +219,10 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
     // If epoch message is complete, generate NMEA output
     if (data.checkEpoch()) {
         // Generate new message
-        fixposition_driver_ros1::NMEA msg;
+        fixposition_driver_ros2::msg::NMEA msg;
         
         // ROS Header
-        msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.gpzda.stamp));
+        msg.header.stamp = GpsTimeToMsgTime(data.gpzda.stamp);
         msg.header.frame_id = "LLH";
         
         // Latitude [degrees]. Positive is north of equator; negative is south
@@ -251,7 +251,7 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
         msg.mode = data.gprmc.mode;
         
         // Publish message
-        nmea_pub_.publish(msg);
+        nmea_pub_->publish(msg);
     }
 }
 
