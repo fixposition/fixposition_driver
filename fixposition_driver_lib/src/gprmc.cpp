@@ -20,6 +20,9 @@
 
 namespace fixposition {
 
+// unit transformation constant
+static constexpr double knots_to_ms = 1852.0 / 3600.0; //!< convert knots to m/s
+
 /// msg field indices
 static constexpr const int time_idx = 1;
 static constexpr const int status_idx = 2;
@@ -57,8 +60,8 @@ void GprmcConverter::ConvertTokens(const std::vector<std::string>& tokens) {
     if (tokens.at(lon_ew_idx).compare("W") == 0) _lon *= -1;
     msg_.longitude = _lon;
 
-    // Speed and course over groung
-    msg_.speed = StringToDouble(tokens.at(speed_idx)) * 1852.0 / 3600.0;
+    // Speed [m/s] and course [deg] over ground
+    msg_.speed = StringToDouble(tokens.at(speed_idx)) * knots_to_ms;
     msg_.course = StringToDouble(tokens.at(course_idx));
 
     // Get GPS status
