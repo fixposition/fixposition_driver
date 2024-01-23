@@ -146,7 +146,7 @@ The output is published on the following:
 
 #### Vision-RTK2 Fusion
 
--   From ODOMETRY, at the configured frequency
+-   From **FP_A-ODOMETRY**, at the configured frequency (default 10Hz, output generator -> Fusion frequency):
 
     -   Messages
 
@@ -154,12 +154,11 @@ The output is published on the following:
     | --------------------------- | ------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
     | `/fixposition/odometry`     | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
     | `/fixposition/odometry_enu` | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ENU0 to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
-    | `/fixposition/ypr`          | `geometry_msgs/Vector3`   | as configured on web-interface | x = Yaw, y = Pitch, z = Roll in radian. Euler angles representation of rotation between ENU and P_POI. Only available after fusion initialization.            |
-    | `/fixposition/imu_ypr`      | `geometry_msgs/Vector3`   | 200Hz                          | x = 0.0, y = Pitch, z = Roll in radian. Euler angles representation of rotation between a local horizontal frame and P_POI. Rough estimation using IMU alone. |
     | `/fixposition/vrtk`         | `fixposition_driver/VRTK` | as configured on web-interface | Custom Message containing same Odometry information as well as status flags                                                                                   |
     | `/fixposition/poiimu`       | `sensor_msgs/Imu`         | as configured on web-interface | Bias Corrected acceleration and rotation rate in FP_POI                                                                                                       |
+    | `/fixposition/ypr`          | `geometry_msgs/Vector3`   | as configured on web-interface | x = Yaw, y = Pitch, z = Roll in radian. Euler angles representation of rotation between ENU and P_POI. Only available after fusion initialization.            |
 
--   From LLH, at the configured frequency
+-   From **FP_A-LLH**, at the configured frequency (default 10Hz, output generator -> Fusion frequency):
 
     | Topic                    | Message Type            | Frequency                      | Description                    |
     | ------------------------ | ----------------------- | ------------------------------ | ------------------------------ |
@@ -169,14 +168,14 @@ The output is published on the following:
 
 **If GNSS Antenna positions are needed, please enable this on the sensor's configuration interface.**
 
--   From NOV_B-BESTGNSSPOS, at the configured frequency, GNSS1 and GNSS2 raw antenna positions.
+-   From **NOV_B-BESTGNSSPOS_GNSS[1,2]**, at the configured frequency, GNSS1 and GNSS2 raw antenna positions (default 5Hz):
 
     | Topic                | Message Type            | Frequency                      | Description                    |
     | -------------------- | ----------------------- | ------------------------------ | ------------------------------ |
     | `/fixposition/gnss1` | `sensor_msgs/NavSatFix` | as configured on web-interface | Latitude, Longitude and Height |
     | `/fixposition/gnss2` | `sensor_msgs/NavSatFix` | as configured on web-interface | Latitude, Longitude and Height |
 
--   The Vision-RTK2 can also output an average GNSS-based LLH position (i.e., **only GNSS, not Fusion**) and heading estimate based on speed over ground (SOG) and course over ground (COG) - (i.e., **the platform must be moving for it to be accurate**) by utilizing several NMEA messages, which serves as an auxiliary output until Fusion is fully initialized. To do this, enable the NMEA-GP-GGA_GNSS, NMEA-GP-RMC_GNSS, and NMEA-GP-ZDA_GNSS messages. This message's output frequency equals the lowest frequency of any of these three message types. **Note: This output should only be used until Fusion is fully initialized.**
+-   From **NMEA-GP-GGA_GNSS**, **NMEA-GP-RMC_GNSS**, and **NMEA-GP-ZDA_GNSS**, at the configured frequency (default 5Hz): The Vision-RTK2 can also output an average GNSS-based LLH position (i.e., **only GNSS, not Fusion**) and heading estimate based on speed over ground (**SOG**) and course over ground (**COG**) - (i.e., **the platform must be moving for it to be accurate**) by utilizing several NMEA messages, which serves as an auxiliary output until Fusion is fully initialized. This message's output frequency equals the lowest frequency of any of these three message types. **Note: This output should only be used until Fusion is fully initialized.**
 
     | Topic                | Message Type            | Frequency                      | Description                    |
     | -------------------- | ----------------------- | ------------------------------ | ------------------------------ |
@@ -184,17 +183,23 @@ The output is published on the following:
 
 #### Vision-RTK2 IMU data
 
--   From RAWIMU, at 200Hz
+-   From **FP_A-RAWIMU**, at 200Hz:
 
     | Topic                 | Message Type      | Frequency | Description                                                                               |
     | --------------------- | ----------------- | --------- | ----------------------------------------------------------------------------------------- |
     | `/fixposition/rawimu` | `sensor_msgs/Imu` | 200Hz     | Raw (without bias correction) IMU acceleration and angular velocity data in FP_VRTK frame |
 
--   From CORRIMU, at 200Hz
+-   From **FP_A-CORRIMU**, at 200Hz:
 
     | Topic                  | Message Type      | Frequency | Description                                                                |
     | ---------------------- | ----------------- | --------- | -------------------------------------------------------------------------- |
     | `/fixposition/corrimu` | `sensor_msgs/Imu` | 200Hz     | Bias Corrected IMU acceleration and angular velocity data in FP_VRTK frame |
+
+-   From **FP_A-TF_POIIMUH**, at 200Hz:
+
+    | Topic                    | Message Type            | Frequency                      | Description                    |
+    | ------------------------ | ----------------------- | ------------------------------ | ------------------------------ |
+    | `/fixposition/imu_ypr`   | `geometry_msgs/Vector3` | 200Hz                          | x = 0.0, y = Pitch, z = Roll in radian. Euler angles representation of rotation between a local horizontal frame and P_POI. Rough estimation using IMU alone. |
 
 #### Transforms
 
