@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdexcept>
 
 /* PACKAGE */
 #include <fixposition_driver_lib/converter/imu.hpp>
@@ -44,7 +45,16 @@
 
 namespace fixposition {
 FixpositionDriver::FixpositionDriver(const FixpositionDriverParams& params) : params_(params) {
-    Connect();
+    // connect to the sensor
+    if (!Connect()) {
+        if (params_.fp_output.type == INPUT_TYPE::TCP) {
+            throw std::runtime_error("Unable to connect to the sensor via TCP");
+        } else if (params_.fp_output.type == INPUT_TYPE::SERIAL) {
+            throw std::runtime_error("Unable to connect to the sensor via Serial");
+        } else {
+            throw std::runtime_error("Unable to connect to the sensor, verify configuration");
+        }
+    }
 
     // static headers
     rawdmi_.head1 = 0xaa;
@@ -63,7 +73,7 @@ FixpositionDriver::FixpositionDriver(const FixpositionDriverParams& params) : pa
 
     // initialize converters
     if (!InitializeConverters()) {
-        std::cerr << "Could not initialize output converter!\n";
+        throw std::runtime_error("Could not initialize output converter!");
     }
 }
 
