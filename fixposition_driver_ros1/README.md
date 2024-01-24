@@ -7,7 +7,8 @@
 -  [Eigen3](https://eigen.tuxfamily.org/index.php?title=Main_Page), tested with version [3.3.7](https://gitlab.com/libeigen/eigen/-/releases/3.3.7)
 -  [Boost](https://www.boost.org/), tested with version [1.65.0](https://www.boost.org/users/history/version_1_65_0.html)
 -  [CMake](https://cmake.org/)
--  [Transforms] (http://wiki.ros.org/tf)
+-  [tf](http://wiki.ros.org/tf) ROS1 library
+-  [eigen_conversions](https://wiki.ros.org/eigen_conversions) ROS1 library
 -  [Catkin](http://wiki.ros.org/catkin) for ROS1
 
 -  **[fixposition_gnss_tf](https://github.com/fixposition/fixposition_gnss_tf)**: Fixposition GNSS Transformation Lib
@@ -21,6 +22,7 @@ This driver operates as a ROS node, connecting to either a TCP or serial stream 
  sudo apt update
  sudo apt install -y build-essential cmake
  sudo apt install -y libeigen3-dev
+ sudo apt install -y ros-{ROS_DISTRO}-tf ros-{ROS_DISTRO}-eigen-conversions
 ```
 
 
