@@ -131,7 +131,8 @@ void FixpositionDriver::WsCallback(const std::vector<int>& speeds) {
             send(this->client_fd_, &message[0], sizeof(message), MSG_DONTWAIT);
             break;
         case INPUT_TYPE::SERIAL:
-            write(this->client_fd_, &message[0], sizeof(message));
+            (void)!write(this->client_fd_, &message[0], sizeof(message));
+            // Suppress warning - https://stackoverflow.com/a/64407070/7944565
             break;
         default:
             std::cerr << "Unknown connection type!\n";
