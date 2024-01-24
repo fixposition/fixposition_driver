@@ -287,7 +287,11 @@ void FixpositionDriver::NovConvertAndPublish(const uint8_t* msg, int size) {
 }
 
 bool FixpositionDriver::CreateTCPSocket() {
-    struct sockaddr_in server_address;
+    if (client_fd_ != -1) {
+        std::cerr << "TCP connection already exists" << "\n";
+        return true;
+    }
+
     client_fd_ = socket(AF_INET, SOCK_STREAM, 0);
 
     if (client_fd_ < 0) {
@@ -297,6 +301,7 @@ bool FixpositionDriver::CreateTCPSocket() {
         std::cout << "Client created.\n";
     }
 
+    struct sockaddr_in server_address;
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
     server_address.sin_port = htons(std::stoi(params_.fp_output.port));
@@ -312,6 +317,11 @@ bool FixpositionDriver::CreateTCPSocket() {
 }
 
 bool FixpositionDriver::CreateSerialConnection() {
+    if (client_fd_ != -1) {
+        std::cerr << "Serial connection already exists" << "\n";
+        return true;
+    }
+
     client_fd_ = open(params_.fp_output.port.c_str(), O_RDWR | O_NOCTTY);
 
     struct termios options;
