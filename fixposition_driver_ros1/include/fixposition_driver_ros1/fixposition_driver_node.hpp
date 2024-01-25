@@ -61,8 +61,12 @@ class FixpositionDriverNode : public FixpositionDriver {
          * @brief Construct a new Fixposition Driver Node object
          */
         bool checkEpoch() {
-            if ((gpgga.time.compare(gpzda.time) == 0) && (gpgga.time.compare(gprmc.time) == 0)) {
-                return true;
+            if (gpgga.valid && gpgga.valid && gpgga.valid) {
+                if ((gpgga.time.compare(gpzda.time) == 0) && (gpgga.time.compare(gprmc.time) == 0)) {
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
                 return false;
             }

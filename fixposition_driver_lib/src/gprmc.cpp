@@ -46,6 +46,14 @@ void GprmcConverter::ConvertTokens(const std::vector<std::string>& tokens) {
         return;
     }
 
+    // Check that critical message fields are populated
+    for (int i = 1; i < 9; i++) {
+        if (tokens.at(i).empty()) {
+            msg_ = GprmcData();
+            return;
+        }
+    }
+
     // Header stamps
     msg_.time = tokens.at(time_idx);
 
@@ -66,6 +74,9 @@ void GprmcConverter::ConvertTokens(const std::vector<std::string>& tokens) {
 
     // Get GPS status
     msg_.mode = tokens.at(mode_idx);
+
+    // Set message as valid
+    msg_.valid = true;
 
     // Process all observers
     for (auto& ob : obs_) {

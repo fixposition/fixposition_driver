@@ -45,6 +45,14 @@ void GpggaConverter::ConvertTokens(const std::vector<std::string>& tokens) {
         return;
     }
 
+    // Check that critical message fields are populated
+    for (int i = 1; i < 11; i++) {
+        if (tokens.at(i).empty()) {
+            msg_ = GpggaData();
+            return;
+        }
+    }
+
     // Header stamps
     msg_.time = tokens.at(time_idx);
 
@@ -72,6 +80,9 @@ void GpggaConverter::ConvertTokens(const std::vector<std::string>& tokens) {
     msg_.cov(0, 2) = msg_.cov(2, 0) = 0.0;
     msg_.cov(1, 2) = msg_.cov(2, 1) = 0.0;
     msg_.position_covariance_type = 1; // COVARIANCE_TYPE_APPROXIMATED
+
+    // Set message as valid
+    msg_.valid = true;
 
     // Process all observers
     for (auto& ob : obs_) {

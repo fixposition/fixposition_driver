@@ -17,7 +17,12 @@
 
 namespace fixposition {
 void ImuDataToMsg(const ImuData& data, sensor_msgs::Imu& msg) {
-    msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
+    if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+        msg.header.stamp = ros::Time::now();
+    } else {
+        msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
+    }
+    
     msg.header.frame_id = data.frame_id;
     tf::vectorEigenToMsg(data.linear_acceleration, msg.linear_acceleration);
     tf::vectorEigenToMsg(data.angular_velocity, msg.angular_velocity);
@@ -29,7 +34,12 @@ void NavSatStatusDataToMsg(const NavSatStatusData& data, sensor_msgs::NavSatStat
 }
 
 void NavSatFixDataToMsg(const NavSatFixData& data, sensor_msgs::NavSatFix& msg) {
-    msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
+    if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+        msg.header.stamp = ros::Time::now();
+    } else {
+        msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
+    }
+
     msg.header.frame_id = data.frame_id;
     NavSatStatusDataToMsg(data.status, msg.status);
     msg.latitude = data.latitude;
@@ -60,7 +70,12 @@ void TwistWithCovDataToMsg(const fixposition::TwistWithCovData& data, geometry_m
 }
 
 void OdometryDataToMsg(const fixposition::OdometryData& data, nav_msgs::Odometry& msg) {
-    msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
+    if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+        msg.header.stamp = ros::Time::now();
+    } else {
+        msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
+    }
+
     msg.header.frame_id = data.frame_id;
     msg.child_frame_id = data.child_frame_id;
 
@@ -69,7 +84,12 @@ void OdometryDataToMsg(const fixposition::OdometryData& data, nav_msgs::Odometry
 }
 
 void VrtkDataToMsg(const VrtkData& data, fixposition_driver_ros1::VRTK& msg) {
-    msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
+    if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+        msg.header.stamp = ros::Time::now();
+    } else {
+        msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
+    }
+    
     msg.header.frame_id = data.frame_id;
     msg.pose_frame = data.pose_frame;
     msg.kin_frame = data.kin_frame;

@@ -115,7 +115,11 @@ void FixpositionDriverNode::RegisterObservers() {
                     }
                     if (eul_pub_->get_subscription_count() > 0) {
                         geometry_msgs::msg::Vector3Stamped ypr;
-                        ypr.header.stamp = GpsTimeToMsgTime(data.odometry.stamp);
+                        if (data.odometry.stamp.tow == 0.0 && data.odometry.stamp.wno == 0) {
+                            ypr.header.stamp = rclcpp::Clock().now();
+                        } else {
+                            ypr.header.stamp = GpsTimeToMsgTime(data.odometry.stamp);
+                        }
                         ypr.header.frame_id = "FP_POI";
                         ypr.vector.set__x(data.eul.x());
                         ypr.vector.set__y(data.eul.y());
@@ -222,7 +226,11 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
         fixposition_driver_ros2::msg::NMEA msg;
         
         // ROS Header
-        msg.header.stamp = GpsTimeToMsgTime(data.gpzda.stamp);
+        if (data.gpzda.stamp.tow == 0.0 && data.gpzda.stamp.wno == 0) {
+            msg.header.stamp = rclcpp::Clock().now();
+        } else {
+            msg.header.stamp = GpsTimeToMsgTime(data.gpzda.stamp);
+        }
         msg.header.frame_id = "LLH";
         
         // Latitude [degrees]. Positive is north of equator; negative is south
