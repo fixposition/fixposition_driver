@@ -69,7 +69,7 @@ void convertToGPSTime(const std::string& utcTimeString, std::string& gpsWeek, st
     double gpsTime = std::fmod(timeDifference, secondsInWeek);
 
     // Add milliseconds to GPS time
-    gpsTime += (18 + ms);
+    gpsTime += (fixposition::times::Constants::gps_leap_time_s + ms);
 
     // Convert results to strings
     std::ostringstream ossWeek, ossTime;
@@ -89,6 +89,14 @@ void GpzdaConverter::ConvertTokens(const std::vector<std::string>& tokens) {
         return;
     }
 
+    // Check that critical message fields are populated
+    for (int i = 1; i < 6; i++) {
+        if (tokens.at(i).empty()) {
+            msg_ = GpzdaData();
+            return;
+        }
+    }
+
     // Populate time fields
     msg_.time = tokens.at(time_idx);
     msg_.date = tokens.at(day_idx) + '/' + tokens.at(month_idx) + '/' + tokens.at(year_idx);
@@ -98,6 +106,9 @@ void GpzdaConverter::ConvertTokens(const std::vector<std::string>& tokens) {
     std::string gps_tow, gps_week;
     convertToGPSTime(utcTimeString, gps_week, gps_tow);
     msg_.stamp = ConvertGpsTime(gps_week, gps_tow);
+
+    // Set message as valid
+    msg_.valid = true;
 
     // Process all observers
     for (auto& ob : obs_) {

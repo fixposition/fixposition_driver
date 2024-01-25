@@ -140,7 +140,8 @@ struct GpggaData {
     double altitude;
     Eigen::Matrix<double, 3, 3> cov;
     int position_covariance_type;
-    GpggaData() : latitude(0.0), longitude(0.0), altitude(0.0), position_covariance_type(0) { cov.setZero(); }
+    bool valid;
+    GpggaData() : latitude(0.0), longitude(0.0), altitude(0.0), position_covariance_type(0), valid(false) { cov.setZero(); }
 };
 
 struct GpzdaData {
@@ -148,7 +149,8 @@ struct GpzdaData {
     std::string time;
     std::string date;
     times::GpsTime stamp;
-    GpzdaData() : time(""), date("") {}
+    bool valid;
+    GpzdaData() : time(""), date(""), valid(false) {}
 };
 
 struct GprmcData {
@@ -159,7 +161,8 @@ struct GprmcData {
     double longitude;
     double speed;
     double course;
-    GprmcData() : latitude(0.0), longitude(0.0), speed(0.0), course(0.0) {}
+    bool valid;
+    GprmcData() : latitude(0.0), longitude(0.0), speed(0.0), course(0.0), valid(false) {}
 };
 
 }  // namespace fixposition

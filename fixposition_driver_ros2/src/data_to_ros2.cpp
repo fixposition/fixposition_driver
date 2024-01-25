@@ -25,7 +25,11 @@
 
 namespace fixposition {
 void ImuDataToMsg(const ImuData& data, sensor_msgs::msg::Imu& msg) {
-    msg.header.stamp = GpsTimeToMsgTime(data.stamp);
+    if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+        msg.header.stamp = rclcpp::Clock().now();
+    } else {
+        msg.header.stamp = GpsTimeToMsgTime(data.stamp);
+    }
     msg.header.frame_id = data.frame_id;
 
     tf2::toMsg(data.linear_acceleration, msg.linear_acceleration);
@@ -38,7 +42,11 @@ void NavSatStatusDataToMsg(const NavSatStatusData& data, sensor_msgs::msg::NavSa
 }
 
 void NavSatFixDataToMsg(const NavSatFixData& data, sensor_msgs::msg::NavSatFix& msg) {
-    msg.header.stamp = GpsTimeToMsgTime(data.stamp);
+    if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+        msg.header.stamp = rclcpp::Clock().now();
+    } else {
+        msg.header.stamp = GpsTimeToMsgTime(data.stamp);
+    }
     msg.header.frame_id = data.frame_id;
     NavSatStatusDataToMsg(data.status, msg.status);
     msg.latitude = data.latitude;
@@ -69,7 +77,11 @@ void TwistWithCovDataToMsg(const fixposition::TwistWithCovData& data, geometry_m
 }
 
 void OdometryDataToMsg(const fixposition::OdometryData& data, nav_msgs::msg::Odometry& msg) {
-    msg.header.stamp = GpsTimeToMsgTime(data.stamp);
+    if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+        msg.header.stamp = rclcpp::Clock().now();
+    } else {
+        msg.header.stamp = GpsTimeToMsgTime(data.stamp);
+    }
     msg.header.frame_id = data.frame_id;
     msg.child_frame_id = data.child_frame_id;
 
@@ -78,7 +90,11 @@ void OdometryDataToMsg(const fixposition::OdometryData& data, nav_msgs::msg::Odo
 }
 
 void VrtkDataToMsg(const VrtkData& data, fixposition_driver_ros2::msg::VRTK& msg) {
-    msg.header.stamp = GpsTimeToMsgTime(data.stamp);
+    if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+        msg.header.stamp = rclcpp::Clock().now();
+    } else {
+        msg.header.stamp = GpsTimeToMsgTime(data.stamp);
+    }
     msg.header.frame_id = data.frame_id;
     msg.pose_frame = data.pose_frame;
     msg.kin_frame = data.kin_frame;
