@@ -45,7 +45,7 @@ make sure you have sourced the setup.bash from ros:
 `/opt/ros/{ROS_DISTRO}/setup.bash`, for example
 
 ```
-source /opt/ros/melodic/setup.bash`
+source /opt/ros/melodic/setup.bash
 ```
 
 and build it with:

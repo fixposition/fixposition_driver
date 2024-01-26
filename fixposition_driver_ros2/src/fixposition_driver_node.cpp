@@ -59,7 +59,6 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
         params_.customer_input.speed_topic, 100,
         std::bind(&FixpositionDriverNode::WsCallback, this, std::placeholders::_1));
 
-    Connect();
     RegisterObservers();
 }
 

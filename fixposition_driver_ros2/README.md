@@ -21,6 +21,7 @@ This driver operates as a ROS node, connecting to either a TCP or serial stream 
  sudo apt update
  sudo apt install -y build-essential cmake
  sudo apt install -y libeigen3-dev
+ sudo apt install -y libboost-date-time-dev 
 ```
 
 
@@ -34,7 +35,7 @@ fp_public_ws
 ├── src
 │   ├── fixposition_driver
 │   │   ├── fixposition_driver_lib
-│   │   ├── fixposition_driver_ros1 # will be ignore by colcon when building for ROS2
+│   │   ├── fixposition_driver_ros1 # will be ignored by colcon when building for ROS2
 │   │   ├── fixposition_driver_ros2
 │   ├── fixposition_gnss_tf
 ```
