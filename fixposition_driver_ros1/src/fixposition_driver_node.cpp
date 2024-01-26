@@ -52,14 +52,13 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
       odometry_enu0_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_enu", 100)),
       eul_pub_(nh_.advertise<geometry_msgs::Vector3Stamped>("/fixposition/ypr", 100)),
       eul_imu_pub_(nh_.advertise<geometry_msgs::Vector3Stamped>("/fixposition/imu_ypr", 100)) {
-    
+
     ws_sub_ = nh_.subscribe<fixposition_driver_ros1::Speed>(params_.customer_input.speed_topic, 100,
                                                             &FixpositionDriverNode::WsCallback, this,
                                                             ros::TransportHints().tcpNoDelay());
 
-    
 
-    Connect();
+
     RegisterObservers();
 }
 
@@ -199,7 +198,7 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
     if (data.checkEpoch()) {
         // Generate new message
         fixposition_driver_ros1::NMEA msg;
-        
+
         // ROS Header
         if (data.gpzda.stamp.tow == 0.0 && data.gpzda.stamp.wno == 0) {
             msg.header.stamp = ros::Time::now();
@@ -207,19 +206,19 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
             msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.gpzda.stamp));
         }
         msg.header.frame_id = "LLH";
-        
+
         // Latitude [degrees]. Positive is north of equator; negative is south
         msg.latitude = data.gpgga.latitude;
-        
+
         // Longitude [degrees]. Positive is east of prime meridian; negative is west
         msg.longitude = data.gpgga.longitude;
-        
+
         // Altitude [m]. Positive is above the WGS 84 ellipsoid
         msg.altitude = data.gpgga.altitude;
 
         // Speed over ground [m/s]
         msg.speed = data.gprmc.speed;
-        
+
         // Course over ground [deg]
         msg.course = data.gprmc.course;
 
@@ -232,7 +231,7 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
 
         // Positioning system mode indicator, R (RTK fixed), F (RTK float), A (no RTK), E, N
         msg.mode = data.gprmc.mode;
-        
+
         // Publish message
         nmea_pub_.publish(msg);
     }

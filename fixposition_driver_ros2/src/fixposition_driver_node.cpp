@@ -59,7 +59,6 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
         params_.customer_input.speed_topic, 100,
         std::bind(&FixpositionDriverNode::WsCallback, this, std::placeholders::_1));
 
-    Connect();
     RegisterObservers();
 }
 
@@ -224,7 +223,7 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
     if (data.checkEpoch()) {
         // Generate new message
         fixposition_driver_ros2::msg::NMEA msg;
-        
+
         // ROS Header
         if (data.gpzda.stamp.tow == 0.0 && data.gpzda.stamp.wno == 0) {
             msg.header.stamp = rclcpp::Clock().now();
@@ -232,19 +231,19 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
             msg.header.stamp = GpsTimeToMsgTime(data.gpzda.stamp);
         }
         msg.header.frame_id = "LLH";
-        
+
         // Latitude [degrees]. Positive is north of equator; negative is south
         msg.latitude = data.gpgga.latitude;
-        
+
         // Longitude [degrees]. Positive is east of prime meridian; negative is west
         msg.longitude = data.gpgga.longitude;
-        
+
         // Altitude [m]. Positive is above the WGS 84 ellipsoid
         msg.altitude = data.gpgga.altitude;
 
         // Speed over ground [m/s]
         msg.speed = data.gprmc.speed;
-        
+
         // Course over ground [deg]
         msg.course = data.gprmc.course;
 
@@ -257,7 +256,7 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
 
         // Positioning system mode indicator, R (RTK fixed), F (RTK float), A (no RTK), E, N
         msg.mode = data.gprmc.mode;
-        
+
         // Publish message
         nmea_pub_->publish(msg);
     }
