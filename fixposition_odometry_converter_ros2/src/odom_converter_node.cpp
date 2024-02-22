@@ -53,14 +53,14 @@ void OdomConverterNode::Subscribe() {
 
 void OdomConverterNode::ConvertAndPublish(const std::vector<double> velocities) {
     if (ws_pub_->get_subscription_count() > 0) {
-        fixposition_driver_ros2::Speed msg;
-        fixposition_driver_ros2::WheelSensor sensor;
+        fixposition_driver_ros2::msg::Speed msg;
+        fixposition_driver_ros2::msg::WheelSensor sensor;
         for (const auto velocity : velocities) {
             const int int_velocity = round(velocity * params_.multiplicative_factor);
             sensor.speeds.push_back(int_velocity);
         }
         msg.sensors.push_back(sensor);
-        ws_pub_.publish(msg);
+        ws_pub_->publish(msg);
     }
 }
 
