@@ -23,6 +23,8 @@
 /* EXTERNAL */
 
 #include <fixposition_driver_lib/converter/base_converter.hpp>
+#include <fixposition_driver_lib/fpb.hpp>
+#include <fixposition_driver_lib/fpb_measurements.hpp>
 #include <fixposition_driver_lib/params.hpp>
 #include <fixposition_driver_lib/rawdmi.hpp>
 
@@ -52,9 +54,20 @@ class FixpositionDriver {
     /**
      * @brief
      *
-     * @param[in] msg
+     * @param[in] sensors_meas vector of sensors, each sensor containing speed values
      */
-    virtual void WsCallback(const std::vector<int>& speeds);
+    virtual void WsCallback(const std::vector<std::vector<int>>& sensors_meas);
+
+    /**
+     * @brief
+     *
+     * @param[in] meas_vec measurements from one specific wheelspeed sensor
+     * @param[in] meas_loc location from the specific wheelspeed sensor
+     * @param[out] meas_fpb fpb measurement to be filled from the vector
+     * @return true if the measurement was successfully filled, false otherwise
+     */
+    virtual bool FillWsSensorMeas(const std::vector<int>& meas_vec, const FpbMeasurementsMeasLoc meas_loc,
+                                  const FpbMeasurementsMeas meas_fpb);
 
     /**
      * @brief Convert the Nmea like string using correct converter
@@ -114,6 +127,9 @@ class FixpositionDriver {
     FixpositionDriverParams params_;
 
     RAWDMI rawdmi_;  //!< RAWDMI msg struct
+    // struct FpbHeader fpb_header_;                  //!< fpb standard header
+    // struct FpbMeasurementsHeader fpb_meas_header;  //!< fpb measurements specific header
+    // // struct FpbMeasurementsMeas
 
     std::unordered_map<std::string, std::unique_ptr<BaseAsciiConverter>>
         a_converters_;  //!< ascii converters corresponding to the input formats

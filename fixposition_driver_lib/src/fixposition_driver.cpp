@@ -16,16 +16,17 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
+
 #include <stdexcept>
 
 /* PACKAGE */
+#include <fixposition_driver_lib/converter/gpgga.hpp>
+#include <fixposition_driver_lib/converter/gprmc.hpp>
+#include <fixposition_driver_lib/converter/gpzda.hpp>
 #include <fixposition_driver_lib/converter/imu.hpp>
 #include <fixposition_driver_lib/converter/llh.hpp>
 #include <fixposition_driver_lib/converter/odometry.hpp>
 #include <fixposition_driver_lib/converter/tf.hpp>
-#include <fixposition_driver_lib/converter/gpgga.hpp>
-#include <fixposition_driver_lib/converter/gpzda.hpp>
-#include <fixposition_driver_lib/converter/gprmc.hpp>
 #include <fixposition_driver_lib/fixposition_driver.hpp>
 #include <fixposition_driver_lib/helper.hpp>
 #include <fixposition_driver_lib/parser.hpp>
@@ -100,31 +101,64 @@ bool FixpositionDriver::Connect() {
     }
 }
 
-void FixpositionDriver::WsCallback(const std::vector<int>& speeds) {
-    if (speeds.size() == 1) {
-        rawdmi_.dmi1 = speeds[0];
-        rawdmi_.mask = (1 << 0) | (0 << 1) | (0 << 2) | (0 << 3);
-    } else if (speeds.size() == 2) {
-        rawdmi_.dmi1 = speeds[0];
-        rawdmi_.dmi2 = speeds[1];
-        rawdmi_.mask = (1 << 0) | (1 << 1) | (0 << 2) | (0 << 3) | (1 << 11);
-    } else if (speeds.size() == 4) {
-        rawdmi_.dmi1 = speeds[0];
-        rawdmi_.dmi2 = speeds[1];
-        rawdmi_.dmi3 = speeds[2];
-        rawdmi_.dmi4 = speeds[3];
-        rawdmi_.mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
-    } else {
+void FixpositionDriver::WsCallback(const std::vector<std::vector<int>>& speeds) {
+    const size_t num_meas = speeds.size();
+    if (num_meas != 1 && num_meas != 4) {
+        std::cerr << "Number of wheel speed sensors is invalid";
         return;
     }
 
-    // Calculate CRC
-    const uint32_t checksum = nov_crc32((const uint8_t*)&rawdmi_, sizeof(rawdmi_));
+    FpbHeader header;
+    header.sync1 = 0x66;
+    header.sync2 = 0x21;
+    header.msg_id = 2001;
+    header.payload_size = FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas);
+    header.time = 0;
 
-    // Compose entire message
-    uint8_t message[sizeof(rawdmi_) + sizeof(checksum)];
-    memcpy(&message[0], &rawdmi_, sizeof(rawdmi_));
-    memcpy(&message[sizeof(rawdmi_)], &checksum, sizeof(checksum));
+    FpbMeasurementsHeader meas_header;
+    meas_header.version = 1;
+    meas_header.num_meas = num_meas;
+    std::fill(&meas_header.reserved0[0], &meas_header.reserved0[6], 0);
+
+    std::vector<FpbMeasurementsMeas> sensor_measurements;
+
+    if (num_meas == 1) {
+        // Case where only RC is available
+        const std::vector<int>& RC = speeds[0];
+        FpbMeasurementsMeas fpb_RC;
+        FillWsSensorMeas(RC, MEASLOC_RC, fpb_RC);
+        sensor_measurements.push_back(fpb_RC);
+    } else if (num_meas == 4) {
+        // Case where FL, FR, RL, RR are available
+        FpbMeasurementsMeas fpb_FL, fpb_FR, fpb_RL, fpb_RR;
+        const std::vector<int>& FL = speeds[0];
+        const std::vector<int>& FR = speeds[1];
+        const std::vector<int>& RL = speeds[2];
+        const std::vector<int>& RR = speeds[3];
+        FillWsSensorMeas(FL, MEASLOC_FL, fpb_FL);
+        FillWsSensorMeas(FR, MEASLOC_FR, fpb_FR);
+        FillWsSensorMeas(RL, MEASLOC_RL, fpb_RL);
+        FillWsSensorMeas(RR, MEASLOC_RR, fpb_RR);
+        sensor_measurements.push_back(fpb_FL);
+        sensor_measurements.push_back(fpb_FR);
+        sensor_measurements.push_back(fpb_RL);
+        sensor_measurements.push_back(fpb_RR);
+    }
+
+    const int msg_sz =
+        FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas) + FP_B_CRC_SIZE;
+    uint8_t* message = new uint8_t[msg_sz];
+
+    memcpy(&message[0], (uint8_t*)&header, sizeof(header));
+    memcpy(&message[FP_B_HEAD_SIZE], (uint8_t*)&meas_header, sizeof(meas_header));
+    for (size_t i = 0; i < num_meas; i++) {
+        memcpy(&message[FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * i)],
+               (uint8_t*)&sensor_measurements[i], sizeof(sensor_measurements[i]));
+    }
+    uint32_t crc =
+        Crc32fpb(message, FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas));
+    memcpy(&message[FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas)], &crc,
+           sizeof(crc));
 
     switch (params_.fp_output.type) {
         case INPUT_TYPE::TCP:
@@ -138,6 +172,35 @@ void FixpositionDriver::WsCallback(const std::vector<int>& speeds) {
             std::cerr << "Unknown connection type!\n";
             break;
     }
+    delete[] message;
+}
+
+bool FixpositionDriver::FillWsSensorMeas(const std::vector<int>& meas_vec, const FpbMeasurementsMeasLoc meas_loc,
+                                         FpbMeasurementsMeas meas_fpb) {
+    const size_t num_axis = meas_vec.size();
+    if (num_axis < 1 || num_axis > 3) {
+        std::cerr << "Wheelspeed sensor has an invalid number of measurements.\n";
+        return false;
+    }
+    meas_fpb.meas_type = MEASTYPE_VELOCITY;
+    meas_fpb.meas_loc = meas_loc;
+    std::fill(&meas_fpb.reserved1[0], &meas_fpb.reserved1[4], 0);
+    meas_fpb.timestamp_type = TIME_TOA;
+    meas_fpb.gps_wno = 0;
+    meas_fpb.gps_tow = 0;
+    if (num_axis >= 1) {
+        meas_fpb.meas_x = meas_vec[0];
+        meas_fpb.meas_x_valid = 1;
+    }
+    if (num_axis >= 2) {
+        meas_fpb.meas_y = meas_vec[1];
+        meas_fpb.meas_y_valid = 1;
+    }
+    if (num_axis == 3) {
+        meas_fpb.meas_z = meas_vec[2];
+        meas_fpb.meas_z_valid = 1;
+    }
+    return true;
 }
 
 bool FixpositionDriver::InitializeConverters() {
@@ -288,7 +351,7 @@ void FixpositionDriver::NovConvertAndPublish(const uint8_t* msg, int size) {
 
 bool FixpositionDriver::CreateTCPSocket() {
     if (client_fd_ != -1) {
-        std::cerr << "TCP connection already exists" << "\n";
+        std::cerr << "TCP connection already exists.\n";
         return true;
     }
 
@@ -318,7 +381,8 @@ bool FixpositionDriver::CreateTCPSocket() {
 
 bool FixpositionDriver::CreateSerialConnection() {
     if (client_fd_ != -1) {
-        std::cerr << "Serial connection already exists" << "\n";
+        std::cerr << "Serial connection already exists"
+                  << "\n";
         return true;
     }
 
