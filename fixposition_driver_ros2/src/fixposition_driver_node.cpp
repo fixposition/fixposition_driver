@@ -263,7 +263,11 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
 }
 
 void FixpositionDriverNode::WsCallback(const fixposition_driver_ros2::msg::Speed::ConstSharedPtr msg) {
-    FixpositionDriver::WsCallback(msg->speeds);
+    std::vector<std::vector<int>> measurements;
+    for (const auto &sensor : msg->sensors) {
+        measurements.push_back(sensor.speeds);
+    }
+    FixpositionDriver::WsCallback(measurements);
 }
 
 void FixpositionDriverNode::BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header,

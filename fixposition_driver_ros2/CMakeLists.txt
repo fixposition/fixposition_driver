@@ -27,6 +27,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/VRTK.msg
   msg/Speed.msg
   msg/NMEA.msg
+  msg/WheelSensor.msg
   DEPENDENCIES
   std_msgs
   nav_msgs
