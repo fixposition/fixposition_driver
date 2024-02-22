@@ -25,6 +25,7 @@
 #include <fixposition_driver_lib/converter/base_converter.hpp>
 #include <fixposition_driver_lib/fpb.hpp>
 #include <fixposition_driver_lib/fpb_measurements.hpp>
+#include <fixposition_driver_lib/nov_type.hpp>
 #include <fixposition_driver_lib/params.hpp>
 
 namespace fixposition {
