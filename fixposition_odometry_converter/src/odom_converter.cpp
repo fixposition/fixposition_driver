@@ -45,29 +45,59 @@ void OdomConverter::Subscribe() {
     }
 }
 
-void OdomConverter::ConvertAndPublish(const double speed, const double angular, bool use_angular) {
+void OdomConverter::ConvertAndPublish(const std::vector<double> speeds) {
     if (ws_pub_.getNumSubscribers() > 0) {
-        const int int_speed = round(speed * params_.multiplicative_factor);
-        const int angular_speed = round(angular * params_.multiplicative_factor);
         fixposition_driver_ros1::Speed msg;
-        msg.speeds.push_back(int_speed);
-        if (params_.use_angular) {
-            msg.speeds.push_back(angular_speed);
+        fixposition_driver_ros1::WheelSensor sensor;
+        for (const auto speed : speeds) {
+            const int int_speed = round(speed * params_.multiplicative_factor);
+            sensor.speeds.push_back(int_speed);
         }
+        msg.sensors.push_back(sensor);
         ws_pub_.publish(msg);
     }
 }
 
 void OdomConverter::TwistWithCovCallback(const geometry_msgs::TwistWithCovarianceConstPtr& msg) {
-    ConvertAndPublish(msg->twist.linear.x, msg->twist.angular.z, params_.use_angular);
+    std::vector<double> velocities;
+    if (params_.use_dimensions >= 1) {
+        velocities.push_back(msg->twist.linear.x);
+    }
+    if (params_.use_dimensions >= 2) {
+        velocities.push_back(msg->twist.linear.y);
+    }
+    if (params_.use_dimensions >= 3) {
+        velocities.push_back(msg->twist.linear.z);
+    }
+    ConvertAndPublish(velocities);
 }
 
 void OdomConverter::OdometryCallback(const nav_msgs::OdometryConstPtr& msg) {
-    ConvertAndPublish(msg->twist.twist.linear.x, msg->twist.twist.angular.z, params_.use_angular);
+    std::vector<double> velocities;
+    if (params_.use_dimensions >= 1) {
+        velocities.push_back(msg->twist.twist.linear.x);
+    }
+    if (params_.use_dimensions >= 2) {
+        velocities.push_back(msg->twist.twist.linear.y);
+    }
+    if (params_.use_dimensions >= 3) {
+        velocities.push_back(msg->twist.twist.linear.z);
+    }
+    ConvertAndPublish(velocities);
 }
 
 void OdomConverter::TwistCallback(const geometry_msgs::TwistConstPtr& msg) {
-    ConvertAndPublish(msg->linear.x, msg->angular.z, params_.use_angular);
+    std::vector<double> velocities;
+    if (params_.use_dimensions >= 1) {
+        velocities.push_back(msg->linear.x);
+    }
+    if (params_.use_dimensions >= 2) {
+        velocities.push_back(msg->linear.y);
+    }
+    if (params_.use_dimensions >= 3) {
+        velocities.push_back(msg->linear.z);
+    }
+    ConvertAndPublish(velocities);
 }
 
 }  // namespace fixposition
