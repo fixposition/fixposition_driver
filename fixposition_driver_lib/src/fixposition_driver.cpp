@@ -104,7 +104,7 @@ bool FixpositionDriver::Connect() {
 void FixpositionDriver::WsCallback(const std::vector<std::vector<int>>& speeds) {
     const size_t num_meas = speeds.size();
     if (num_meas != 1 && num_meas != 4) {
-        std::cerr << "Number of wheel speed sensors is invalid";
+        std::cerr << "Number of wheel speed sensors is invalid.\n";
         return;
     }
 
@@ -155,7 +155,7 @@ void FixpositionDriver::WsCallback(const std::vector<std::vector<int>>& speeds) 
         memcpy(&message[FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * i)],
                (uint8_t*)&sensor_measurements[i], sizeof(sensor_measurements[i]));
     }
-    uint32_t crc =
+    const uint32_t crc =
         Crc32fpb(message.data(), FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas));
     memcpy(&message[FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas)], &crc,
            sizeof(crc));
@@ -380,8 +380,7 @@ bool FixpositionDriver::CreateTCPSocket() {
 
 bool FixpositionDriver::CreateSerialConnection() {
     if (client_fd_ != -1) {
-        std::cerr << "Serial connection already exists"
-                  << "\n";
+        std::cerr << "Serial connection already exists.\n";
         return true;
     }
 

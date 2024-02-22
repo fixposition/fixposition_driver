@@ -8,13 +8,14 @@
 #
 ####################################################################################################
 #
-# Wheel speed input to Fixposition ROS Driver
+# Individual wheelspeed measurement
 #
 #
 ####################################################################################################
 
-# Velocity values for one or several WheelSensors
-# 2 Options:
-# Option 1: One vehicle velocity, of sensor RC
-# Option 2: Four vehicle velocities, in the order of FR, FL, RR, RL
-fixposition_driver_ros2/WheelSensor[] sensors
+# Velocity values in [mm/s] as integer 32bit
+# Options:
+# Option 1: One value, will be input in the x axis
+# Option 2: Two values, will be input in the x and y axis
+# Option 2: Three values, will be input in the x, y, and z axis
+int32[] speeds
