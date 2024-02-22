@@ -28,6 +28,7 @@ struct FpbMeasurementsHeader {
     uint8_t  num_meas;      //!< Number of measurements in the body (1..FP_B_MEASUREMENTS_MAX_NUM_MEAS)
     uint8_t  reserved0[6];  //!< Reserved for future use. Set to 0.
 };
+static_assert(sizeof(FpbMeasurementsHeader) == 8, "");
 const int FP_B_MEASUREMENTS_HEAD_SIZE = 8;
 
 enum FpbMeasurementsMeasType {
@@ -64,6 +65,7 @@ struct FpbMeasurementsMeas {
     uint32_t gps_tow;         //!< GPS time of week [ms] or monotonic time [-]
 };
 
+static_assert(sizeof(FpbMeasurementsMeas) == 28, "");
 const int FP_B_MEASUREMENTS_BODY_SIZE = 28;
 
 }  // namespace fixposition

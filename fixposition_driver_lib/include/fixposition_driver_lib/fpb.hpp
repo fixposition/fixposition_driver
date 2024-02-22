@@ -82,6 +82,7 @@ struct FpbHeader {
     uint16_t payload_size;  //!< Size of the payload
     uint16_t time;          //!< Time of the message. Unused, set to 0.
 };
+static_assert(sizeof(FpbHeader) == 8, "");
 const int FP_B_HEAD_SIZE = 8;  //!< Size of FP_B frame header
 const int FP_B_CRC_SIZE = 4;   //!< Size of FP_B crc
 

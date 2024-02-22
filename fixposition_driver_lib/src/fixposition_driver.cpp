@@ -147,7 +147,7 @@ void FixpositionDriver::WsCallback(const std::vector<std::vector<int>>& speeds) 
 
     const int msg_sz =
         FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas) + FP_B_CRC_SIZE;
-    uint8_t* message = new uint8_t[msg_sz];
+    std::vector<uint8_t> message(msg_sz);
 
     memcpy(&message[0], (uint8_t*)&header, sizeof(header));
     memcpy(&message[FP_B_HEAD_SIZE], (uint8_t*)&meas_header, sizeof(meas_header));
@@ -156,27 +156,26 @@ void FixpositionDriver::WsCallback(const std::vector<std::vector<int>>& speeds) 
                (uint8_t*)&sensor_measurements[i], sizeof(sensor_measurements[i]));
     }
     uint32_t crc =
-        Crc32fpb(message, FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas));
+        Crc32fpb(message.data(), FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas));
     memcpy(&message[FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas)], &crc,
            sizeof(crc));
 
     switch (params_.fp_output.type) {
         case INPUT_TYPE::TCP:
-            send(this->client_fd_, &message[0], sizeof(message), MSG_DONTWAIT);
+            send(this->client_fd_, &message[0], message.size(), MSG_DONTWAIT);
             break;
         case INPUT_TYPE::SERIAL:
-            (void)!write(this->client_fd_, &message[0], sizeof(message));
+            (void)!write(this->client_fd_, &message[0], message.size());
             // Suppress warning - https://stackoverflow.com/a/64407070/7944565
             break;
         default:
             std::cerr << "Unknown connection type!\n";
             break;
     }
-    delete[] message;
 }
 
 bool FixpositionDriver::FillWsSensorMeas(const std::vector<int>& meas_vec, const FpbMeasurementsMeasLoc meas_loc,
-                                         FpbMeasurementsMeas meas_fpb) {
+                                         FpbMeasurementsMeas& meas_fpb) {
     const size_t num_axis = meas_vec.size();
     if (num_axis < 1 || num_axis > 3) {
         std::cerr << "Wheelspeed sensor has an invalid number of measurements.\n";

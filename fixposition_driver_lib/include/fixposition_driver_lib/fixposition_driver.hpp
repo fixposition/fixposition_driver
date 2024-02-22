@@ -67,7 +67,7 @@ class FixpositionDriver {
      * @return true if the measurement was successfully filled, false otherwise
      */
     virtual bool FillWsSensorMeas(const std::vector<int>& meas_vec, const FpbMeasurementsMeasLoc meas_loc,
-                                  const FpbMeasurementsMeas meas_fpb);
+                                  FpbMeasurementsMeas& meas_fpb);
 
     /**
      * @brief Convert the Nmea like string using correct converter
