@@ -26,7 +26,6 @@
 #include <fixposition_driver_lib/fpb.hpp>
 #include <fixposition_driver_lib/fpb_measurements.hpp>
 #include <fixposition_driver_lib/params.hpp>
-#include <fixposition_driver_lib/rawdmi.hpp>
 
 namespace fixposition {
 
@@ -125,11 +124,6 @@ class FixpositionDriver {
     virtual bool CreateSerialConnection();
 
     FixpositionDriverParams params_;
-
-    RAWDMI rawdmi_;  //!< RAWDMI msg struct
-    // struct FpbHeader fpb_header_;                  //!< fpb standard header
-    // struct FpbMeasurementsHeader fpb_meas_header;  //!< fpb measurements specific header
-    // // struct FpbMeasurementsMeas
 
     std::unordered_map<std::string, std::unique_ptr<BaseAsciiConverter>>
         a_converters_;  //!< ascii converters corresponding to the input formats

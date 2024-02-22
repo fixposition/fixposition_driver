@@ -57,21 +57,6 @@ FixpositionDriver::FixpositionDriver(const FixpositionDriverParams& params) : pa
         }
     }
 
-    // static headers
-    rawdmi_.head1 = 0xaa;
-    rawdmi_.head2 = 0x44;
-    rawdmi_.head3 = 0x13;
-    rawdmi_.payloadLen = 20;
-    rawdmi_.msgId = 2269;
-    // these to be filled by each rosmsg
-    rawdmi_.wno = 0;
-    rawdmi_.tow = 0;
-    rawdmi_.dmi1 = 0;
-    rawdmi_.dmi2 = 0;
-    rawdmi_.dmi3 = 0;
-    rawdmi_.dmi4 = 0;
-    rawdmi_.mask = 0;
-
     // initialize converters
     if (!InitializeConverters()) {
         throw std::runtime_error("Could not initialize output converter!");
