@@ -54,7 +54,7 @@ void OdomConverterNode::Subscribe() {
 void OdomConverterNode::ConvertAndPublish(const std::vector<std::pair<bool, double>> speeds) {
     if (ws_pub_->get_subscription_count() > 0) {
         if (speeds.size() != 3) {
-            ROS_ERROR("Speed vector has an invalid size!");
+            RCLCPP_ERROR(this->get_logger(), "Speed vector has an invalid size");
             return;
         }
         fixposition_driver_ros2::msg::Speed msg;
