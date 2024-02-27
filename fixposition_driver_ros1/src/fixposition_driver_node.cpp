@@ -256,9 +256,11 @@ void FixpositionDriverNode::Run() {
 }
 
 void FixpositionDriverNode::WsCallback(const fixposition_driver_ros1::SpeedConstPtr& msg) {
-    std::unordered_map<std::string, std::vector<int>> measurements;
+    std::unordered_map<std::string, std::vector<std::pair<bool, int>>> measurements;
     for (const auto &sensor : msg->sensors) {
-        measurements[sensor.location] = sensor.speeds;
+        measurements[sensor.location].push_back({sensor.vx_valid, sensor.vx});
+        measurements[sensor.location].push_back({sensor.vy_valid, sensor.vy});
+        measurements[sensor.location].push_back({sensor.vz_valid, sensor.vz});
     }
     FixpositionDriver::WsCallback(measurements);
 }

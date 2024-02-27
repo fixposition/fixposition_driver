@@ -51,59 +51,47 @@ void OdomConverterNode::Subscribe() {
     }
 }
 
-void OdomConverterNode::ConvertAndPublish(const std::vector<double> velocities) {
+void OdomConverterNode::ConvertAndPublish(const std::vector<std::pair<bool, double>> speeds) {
     if (ws_pub_->get_subscription_count() > 0) {
+        if (speeds.size() != 3) {
+            ROS_ERROR("Speed vector has an invalid size!");
+            return;
+        }
         fixposition_driver_ros2::msg::Speed msg;
         fixposition_driver_ros2::msg::WheelSensor sensor;
-        for (const auto velocity : velocities) {
-            const int int_velocity = round(velocity * params_.multiplicative_factor);
-            sensor.speeds.push_back(int_velocity);
-        }
         sensor.location = "RC";
+        sensor.vx_valid = speeds[0].first;
+        sensor.vx = round(speeds[0].second * params_.multiplicative_factor);
+        sensor.vy_valid = speeds[1].first;
+        sensor.vy = round(speeds[1].second * params_.multiplicative_factor);
+        sensor.vz_valid = speeds[2].first;
+        sensor.vz = round(speeds[2].second * params_.multiplicative_factor);
         msg.sensors.push_back(sensor);
         ws_pub_->publish(msg);
     }
 }
 
 void OdomConverterNode::TwistWithCovCallback(const geometry_msgs::msg::TwistWithCovariance::SharedPtr msg) {
-    std::vector<double> velocities;
-    if (params_.use_dimensions >= 1) {
-        velocities.push_back(msg->twist.linear.x);
-    }
-    if (params_.use_dimensions >= 2) {
-        velocities.push_back(msg->twist.linear.y);
-    }
-    if (params_.use_dimensions >= 3) {
-        velocities.push_back(msg->twist.linear.z);
-    }
+    std::vector<std::pair<bool, double>> velocities;
+    velocities.push_back({params_.use_x, msg->twist.linear.x});
+    velocities.push_back({params_.use_y, msg->twist.linear.y});
+    velocities.push_back({params_.use_z, msg->twist.linear.z});
     ConvertAndPublish(velocities);
 }
 
 void OdomConverterNode::OdometryCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
-    std::vector<double> velocities;
-    if (params_.use_dimensions >= 1) {
-        velocities.push_back(msg->twist.twist.linear.x);
-    }
-    if (params_.use_dimensions >= 2) {
-        velocities.push_back(msg->twist.twist.linear.y);
-    }
-    if (params_.use_dimensions >= 3) {
-        velocities.push_back(msg->twist.twist.linear.z);
-    }
+    std::vector<std::pair<bool, double>> velocities;
+    velocities.push_back({params_.use_x, msg->twist.twist.linear.x});
+    velocities.push_back({params_.use_y, msg->twist.twist.linear.y});
+    velocities.push_back({params_.use_z, msg->twist.twist.linear.z});
     ConvertAndPublish(velocities);
 }
 
 void OdomConverterNode::TwistCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
-    std::vector<double> velocities;
-    if (params_.use_dimensions >= 1) {
-        velocities.push_back(msg->linear.x);
-    }
-    if (params_.use_dimensions >= 2) {
-        velocities.push_back(msg->linear.y);
-    }
-    if (params_.use_dimensions >= 3) {
-        velocities.push_back(msg->linear.z);
-    }
+    std::vector<std::pair<bool, double>> velocities;
+    velocities.push_back({params_.use_x, msg->linear.x});
+    velocities.push_back({params_.use_y, msg->linear.y});
+    velocities.push_back({params_.use_z, msg->linear.z});
     ConvertAndPublish(velocities);
 }
 

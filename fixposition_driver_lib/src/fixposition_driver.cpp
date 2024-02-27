@@ -86,7 +86,8 @@ bool FixpositionDriver::Connect() {
     }
 }
 
-void FixpositionDriver::WsCallback(const std::unordered_map<std::string, std::vector<int>>& sensors_meas) {
+void FixpositionDriver::WsCallback(
+    const std::unordered_map<std::string, std::vector<std::pair<bool, int>>>& sensors_meas) {
     std::vector<FpbMeasurementsMeas> sensor_measurements;
     for (const auto& sensor : sensors_meas) {
         const FpbMeasurementsMeasLoc location = WsMeasStringToLoc(sensor.first);
@@ -95,8 +96,9 @@ void FixpositionDriver::WsCallback(const std::unordered_map<std::string, std::ve
             continue;
         }
         FpbMeasurementsMeas fpb_meas;
-        FillWsSensorMeas(sensor.second, location, fpb_meas);
-        sensor_measurements.push_back(fpb_meas);
+        if (FillWsSensorMeas(sensor.second, location, fpb_meas)) {
+            sensor_measurements.push_back(fpb_meas);
+        }
     }
 
     const size_t num_meas = sensor_measurements.size();
@@ -127,8 +129,8 @@ void FixpositionDriver::WsCallback(const std::unordered_map<std::string, std::ve
         memcpy(&message[FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * i)],
                (uint8_t*)&sensor_measurements[i], sizeof(sensor_measurements[i]));
     }
-    const uint32_t crc =
-        Crc32fpb(message.data(), FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas));
+    const uint32_t crc = Crc32fpb(
+        message.data(), FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas));
     memcpy(&message[FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas)], &crc,
            sizeof(crc));
 
@@ -146,31 +148,26 @@ void FixpositionDriver::WsCallback(const std::unordered_map<std::string, std::ve
     }
 }
 
-bool FixpositionDriver::FillWsSensorMeas(const std::vector<int>& meas_vec, const FpbMeasurementsMeasLoc meas_loc,
-                                         FpbMeasurementsMeas& meas_fpb) {
+bool FixpositionDriver::FillWsSensorMeas(const std::vector<std::pair<bool, int>>& meas_vec,
+                                         const FpbMeasurementsMeasLoc meas_loc, FpbMeasurementsMeas& meas_fpb) {
     const size_t num_axis = meas_vec.size();
-    if (num_axis < 1 || num_axis > 3) {
+    if (num_axis != 3) {
         std::cerr << "Wheelspeed sensor has an invalid number of measurements.\n";
         return false;
     }
     meas_fpb.meas_type = MEASTYPE_VELOCITY;
     meas_fpb.meas_loc = meas_loc;
     std::fill(&meas_fpb.reserved1[0], &meas_fpb.reserved1[4], 0);
+    // In the current setup, the sensor will handle the timestamping as time of arrival.
     meas_fpb.timestamp_type = TIME_TOA;
     meas_fpb.gps_wno = 0;
     meas_fpb.gps_tow = 0;
-    if (num_axis >= 1) {
-        meas_fpb.meas_x = meas_vec[0];
-        meas_fpb.meas_x_valid = 1;
-    }
-    if (num_axis >= 2) {
-        meas_fpb.meas_y = meas_vec[1];
-        meas_fpb.meas_y_valid = 1;
-    }
-    if (num_axis == 3) {
-        meas_fpb.meas_z = meas_vec[2];
-        meas_fpb.meas_z_valid = 1;
-    }
+    meas_fpb.meas_x_valid = meas_vec[0].first;
+    meas_fpb.meas_x = meas_vec[0].second;
+    meas_fpb.meas_y_valid = meas_vec[1].first;
+    meas_fpb.meas_y = meas_vec[1].second;
+    meas_fpb.meas_z_valid = meas_vec[2].first;
+    meas_fpb.meas_z = meas_vec[2].second;
     return true;
 }
 

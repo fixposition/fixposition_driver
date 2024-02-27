@@ -58,9 +58,9 @@ class OdomConverter {
     /**
      * @brief Converts the speed(s) to an integer value in [mm/s] and publishes it
      *
-     * @param speeds x, y, and z speeds
+     * @param speeds vector containing x, y, and z speeds and their validity flag
      */
-    void ConvertAndPublish(const std::vector<double> speeds);
+    void ConvertAndPublish(const std::vector<std::pair<bool, double>> speeds);
 
    private:
     /**

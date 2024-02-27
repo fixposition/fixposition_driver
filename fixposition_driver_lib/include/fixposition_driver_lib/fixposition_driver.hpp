@@ -54,25 +54,25 @@ class FixpositionDriver {
     /**
      * @brief
      *
-     * @param[in] sensors_meas map wheelspeed of sensors, each sensor containing speed values
+     * @param[in] sensors_meas map wheelspeed of sensors, each sensor containing speed values and their validity flag
      */
-    virtual void WsCallback(const std::unordered_map<std::string, std::vector<int>>& sensors_meas);
+    virtual void WsCallback(const std::unordered_map<std::string, std::vector<std::pair<bool, int>>>& sensors_meas);
 
     /**
      * @brief
      *
-     * @param[in] meas_vec measurements from one specific wheelspeed sensor
+     * @param[in] meas_vec measurements from one specific wheelspeed sensor, with their validity flag
      * @param[in] meas_loc location from the specific wheelspeed sensor
      * @param[out] meas_fpb fpb measurement to be filled from the vector
      * @return true if the measurement was successfully filled, false otherwise
      */
-    virtual bool FillWsSensorMeas(const std::vector<int>& meas_vec, const FpbMeasurementsMeasLoc meas_loc,
-                                  FpbMeasurementsMeas& meas_fpb);
+    virtual bool FillWsSensorMeas(const std::vector<std::pair<bool, int>>& meas_vec,
+                                  const FpbMeasurementsMeasLoc meas_loc, FpbMeasurementsMeas& meas_fpb);
 
     /**
      * @brief Converts the measurement location from string to the enum values
-     * 
-     * @param[in] meas_loc user input location in string format 
+     *
+     * @param[in] meas_loc user input location in string format
      * @return FpbMeasurementsMeasLoc converted measurement location
      */
     virtual FpbMeasurementsMeasLoc WsMeasStringToLoc(const std::string& meas_loc);
