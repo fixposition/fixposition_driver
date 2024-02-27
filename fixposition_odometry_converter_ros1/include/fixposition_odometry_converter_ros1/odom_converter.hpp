@@ -30,7 +30,7 @@
 /* PACKAGE */
 #include <fixposition_driver_ros1/Speed.h>
 
-#include <fixposition_odometry_converter/params.hpp>
+#include <fixposition_odometry_converter_ros1/params.hpp>
 
 namespace fixposition {
 

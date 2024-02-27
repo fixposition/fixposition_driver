@@ -13,12 +13,12 @@
  */
 
 /* PACKAGE */
-#include <fixposition_odometry_converter/odom_converter.hpp>
+#include <fixposition_odometry_converter_ros1/odom_converter.hpp>
 
 namespace fixposition {
 OdomConverter::OdomConverter(ros::NodeHandle* nh) : nh_(*nh) {
     // read parameters
-    if (!params_.LoadFromRos("/fixposition_odometry_converter")) {
+    if (!params_.LoadFromRos("/fixposition_odometry_converter_ros1")) {
         ROS_ERROR_STREAM("Parameter Loading failed, shutting down...");
         ros::shutdown();
     }

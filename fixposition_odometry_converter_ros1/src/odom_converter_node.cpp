@@ -17,7 +17,7 @@
 #include <ros/ros.h>
 
 /* PACKAGE */
-#include <fixposition_odometry_converter/odom_converter.hpp>
+#include <fixposition_odometry_converter_ros1/odom_converter.hpp>
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "fixposition_odometry_converter");

@@ -17,7 +17,7 @@
 #include <ros/ros.h>
 
 /* PACKAGE */
-#include <fixposition_odometry_converter/params.hpp>
+#include <fixposition_odometry_converter_ros1/params.hpp>
 
 namespace fixposition {
 

@@ -1,5 +1,7 @@
-topic_type: "Twist" # Twist, TwistWithCov or Odometry
+topic_type: "Odometry" # Twist, TwistWithCov or Odometry
 input_topic: "/robot/odom" # Original topic name
 fixposition_speed_topic: "/fixposition/speed" # Fixposition topic name, to be subscribed by the fixposition_driver
 multiplicative_factor: 1000 # To convert from the original unit of measurement to mm/s
-use_dimensions: 3 # 1 to use x only, 2 to use x and y, 3 to use x y z
+use_x: true # Transmit the x axis of the input velocity
+use_y: true # Transmit the y axis of the input velocity
+use_z: true # Transmit the z axis of the input velocity

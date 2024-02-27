@@ -239,16 +239,9 @@ _Please note that the corresponding messages also has to be selected on the Fixp
 
 ## Input Wheelspeed through the driver
 
-The fp_ros_driver supports inputting a Speed msg (`msg/Speed.msg`) through the `/fixposition/speed` topic. The Speed msg is defined as a vector of WheelSensor msgs (`msg/WheelSensor.msg`). This message is, in turn, defined as a vector of 32-bit integers. You are free to fill it with either 1, 2, or 3 values, corresponding to the x, y, and z axis of your wheelspeed sensor. These velocity values should be in [mm/s], to have enough precision in an integer format.
+The fp_ros_driver supports inputting a Speed msg (`msg/Speed.msg`) through the `/fixposition/speed` topic. The Speed msg is defined as a vector of WheelSensor msgs (`msg/WheelSensor.msg`). This message in turn, is intended to be a simplified version of the FP_B-MEASUREMENTS, containing three integers (vx, vy, and vz), three booleans (validity of the three velocity integers), and a string indicating the sensor from which the measurement originates. The integer velocity values should be in [mm/s], to have enough precision when being converted into an integer format.
 
-Regarding the number of sensors that are supported, there are currently 2 options:
-
--   Option 1: Only one vehicle speed, corresponding to the sensor RC.
--   Option 2: 4 Values of 4 wheels, in the order of FR, FL, RR, RL
-
-Note that if your platform has a different number of wheels, (e.g. 2), it is possible to send to the 4 wheelspeed sensor values to the sensor. This is merely thought as a generic way to get values into the sensor. You can then choose, in the normal sensor configuration, which sensors are available, respectively, which ones to use in the fusion engine. 
-
-Internally, upon arriving to the ros driver, wheelspeed measurements are converted into a FP_B-MEASUREMENTS message and sent via the TCP or serial interface to the Vision-RTK2, where they will be further processed. For more details regarding the definition FP_B-MEASUREMENTS message, please refer to the integration manual.
+Internally, upon arriving to the ros driver, wheelspeed measurements are converted into a full FP_B-MEASUREMENTS message, and sent via the TCP or serial interface to the Vision-RTK2, where they will be further processed. For more details regarding the definition FP_B-MEASUREMENTS message, please refer to [the following page](https://docs.fixposition.com/fd/fp_b-measurements), or to the VRTK2 integration manual.
 
 ## Code Documentation
 
