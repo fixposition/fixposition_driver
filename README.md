@@ -239,7 +239,7 @@ _Please note that the corresponding messages also has to be selected on the Fixp
 
 ## Input Wheelspeed through the driver
 
-The fp_ros_driver support inputing a Speed msg (`msg/Speed.msg`) through the `/fixposition/speed` topic. The Speed msg is defined as a vector of WheelSensor msgs (`msg/WheelSensor.msg`). This message is, in turn, defined as a vector of 32bit integers. You are free to fill it with either 1, 2 or 3 values, corresponding to the x, y, and z axis of your wheelspeed sensor. These velocity values should be in [mm/s], in order to have enough precision in an integer format.
+The fp_ros_driver supports inputting a Speed msg (`msg/Speed.msg`) through the `/fixposition/speed` topic. The Speed msg is defined as a vector of WheelSensor msgs (`msg/WheelSensor.msg`). This message is, in turn, defined as a vector of 32-bit integers. You are free to fill it with either 1, 2, or 3 values, corresponding to the x, y, and z axis of your wheelspeed sensor. These velocity values should be in [mm/s], to have enough precision in an integer format.
 
 Regarding the number of sensors that are supported, there are currently 2 options:
 
