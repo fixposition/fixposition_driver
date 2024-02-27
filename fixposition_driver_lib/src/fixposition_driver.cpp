@@ -86,9 +86,21 @@ bool FixpositionDriver::Connect() {
     }
 }
 
-void FixpositionDriver::WsCallback(const std::vector<std::vector<int>>& speeds) {
-    const size_t num_meas = speeds.size();
-    if (num_meas != 1 && num_meas != 4) {
+void FixpositionDriver::WsCallback(const std::unordered_map<std::string, std::vector<int>>& sensors_meas) {
+    std::vector<FpbMeasurementsMeas> sensor_measurements;
+    for (const auto& sensor : sensors_meas) {
+        const FpbMeasurementsMeasLoc location = WsMeasStringToLoc(sensor.first);
+        if (location == MEASLOC_UNSPECIFIED) {
+            std::cerr << "Unknown measurement type will not be processed!\n";
+            continue;
+        }
+        FpbMeasurementsMeas fpb_meas;
+        FillWsSensorMeas(sensor.second, location, fpb_meas);
+        sensor_measurements.push_back(fpb_meas);
+    }
+
+    const size_t num_meas = sensor_measurements.size();
+    if (num_meas == 0 || num_meas > 10) {
         std::cerr << "Number of wheel speed sensors is invalid.\n";
         return;
     }
@@ -104,31 +116,6 @@ void FixpositionDriver::WsCallback(const std::vector<std::vector<int>>& speeds) 
     meas_header.version = 1;
     meas_header.num_meas = num_meas;
     std::fill(&meas_header.reserved0[0], &meas_header.reserved0[6], 0);
-
-    std::vector<FpbMeasurementsMeas> sensor_measurements;
-
-    if (num_meas == 1) {
-        // Case where only RC is available
-        const std::vector<int>& RC = speeds[0];
-        FpbMeasurementsMeas fpb_RC;
-        FillWsSensorMeas(RC, MEASLOC_RC, fpb_RC);
-        sensor_measurements.push_back(fpb_RC);
-    } else if (num_meas == 4) {
-        // Case where FL, FR, RL, RR are available
-        FpbMeasurementsMeas fpb_FL, fpb_FR, fpb_RL, fpb_RR;
-        const std::vector<int>& FL = speeds[0];
-        const std::vector<int>& FR = speeds[1];
-        const std::vector<int>& RL = speeds[2];
-        const std::vector<int>& RR = speeds[3];
-        FillWsSensorMeas(FL, MEASLOC_FL, fpb_FL);
-        FillWsSensorMeas(FR, MEASLOC_FR, fpb_FR);
-        FillWsSensorMeas(RL, MEASLOC_RL, fpb_RL);
-        FillWsSensorMeas(RR, MEASLOC_RR, fpb_RR);
-        sensor_measurements.push_back(fpb_FL);
-        sensor_measurements.push_back(fpb_FR);
-        sensor_measurements.push_back(fpb_RL);
-        sensor_measurements.push_back(fpb_RR);
-    }
 
     const int msg_sz =
         FP_B_HEAD_SIZE + FP_B_MEASUREMENTS_HEAD_SIZE + (FP_B_MEASUREMENTS_BODY_SIZE * num_meas) + FP_B_CRC_SIZE;
@@ -185,6 +172,15 @@ bool FixpositionDriver::FillWsSensorMeas(const std::vector<int>& meas_vec, const
         meas_fpb.meas_z_valid = 1;
     }
     return true;
+}
+
+FpbMeasurementsMeasLoc FixpositionDriver::WsMeasStringToLoc(const std::string& meas_loc) {
+    if (meas_loc == "RC") return MEASLOC_RC;
+    if (meas_loc == "FR") return MEASLOC_FR;
+    if (meas_loc == "FL") return MEASLOC_FL;
+    if (meas_loc == "RR") return MEASLOC_RR;
+    if (meas_loc == "RL") return MEASLOC_RL;
+    return MEASLOC_UNSPECIFIED;
 }
 
 bool FixpositionDriver::InitializeConverters() {

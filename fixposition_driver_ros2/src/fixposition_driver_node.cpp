@@ -263,9 +263,9 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
 }
 
 void FixpositionDriverNode::WsCallback(const fixposition_driver_ros2::msg::Speed::ConstSharedPtr msg) {
-    std::vector<std::vector<int>> measurements;
+    std::unordered_map<std::string, std::vector<int>> measurements;
     for (const auto &sensor : msg->sensors) {
-        measurements.push_back(sensor.speeds);
+        measurements[sensor.location] = sensor.speeds;
     }
     FixpositionDriver::WsCallback(measurements);
 }

@@ -14,7 +14,4 @@
 ####################################################################################################
 
 # Velocity values for one or several WheelSensors
-# 2 Options:
-# Option 1: One vehicle velocity, of sensor RC
-# Option 2: Four vehicle velocities, in the order of FR, FL, RR, RL
 fixposition_driver_ros1/WheelSensor[] sensors

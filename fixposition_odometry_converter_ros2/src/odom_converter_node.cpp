@@ -59,6 +59,7 @@ void OdomConverterNode::ConvertAndPublish(const std::vector<double> velocities) 
             const int int_velocity = round(velocity * params_.multiplicative_factor);
             sensor.speeds.push_back(int_velocity);
         }
+        sensor.location = "RC";
         msg.sensors.push_back(sensor);
         ws_pub_->publish(msg);
     }

@@ -49,6 +49,7 @@ void OdomConverter::ConvertAndPublish(const std::vector<double> speeds) {
     if (ws_pub_.getNumSubscribers() > 0) {
         fixposition_driver_ros1::Speed msg;
         fixposition_driver_ros1::WheelSensor sensor;
+        sensor.location = "RC";
         for (const auto speed : speeds) {
             const int int_speed = round(speed * params_.multiplicative_factor);
             sensor.speeds.push_back(int_speed);

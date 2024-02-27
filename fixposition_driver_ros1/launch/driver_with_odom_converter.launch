@@ -1,6 +1,6 @@
 <launch>
     <!-- Select TCP or Serial Accordingly  -->
-    <include file="$(find fixposition_driver_ros1)/launch/serial.launch"/> 
+    <include file="$(find fixposition_driver_ros1)/launch/tcp.launch"/> 
     <!-- <include file="$(find fixposition_driver_ros1)/launch/tcp.launch"/>  -->
     <include file="$(find fixposition_odometry_converter)/launch/odom_converter.launch"/>
 </launch>

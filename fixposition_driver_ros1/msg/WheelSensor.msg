@@ -12,6 +12,8 @@
 #
 #
 ####################################################################################################
+# Location of the wheelspeed measurement (one of: RC, FR, FL, RR, RL)
+string location
 
 # Velocity values in [mm/s] as integer 32bit
 # Options:

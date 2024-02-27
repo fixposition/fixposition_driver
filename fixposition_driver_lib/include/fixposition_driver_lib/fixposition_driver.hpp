@@ -54,9 +54,9 @@ class FixpositionDriver {
     /**
      * @brief
      *
-     * @param[in] sensors_meas vector of sensors, each sensor containing speed values
+     * @param[in] sensors_meas map wheelspeed of sensors, each sensor containing speed values
      */
-    virtual void WsCallback(const std::vector<std::vector<int>>& sensors_meas);
+    virtual void WsCallback(const std::unordered_map<std::string, std::vector<int>>& sensors_meas);
 
     /**
      * @brief
@@ -68,6 +68,14 @@ class FixpositionDriver {
      */
     virtual bool FillWsSensorMeas(const std::vector<int>& meas_vec, const FpbMeasurementsMeasLoc meas_loc,
                                   FpbMeasurementsMeas& meas_fpb);
+
+    /**
+     * @brief Converts the measurement location from string to the enum values
+     * 
+     * @param[in] meas_loc user input location in string format 
+     * @return FpbMeasurementsMeasLoc converted measurement location
+     */
+    virtual FpbMeasurementsMeasLoc WsMeasStringToLoc(const std::string& meas_loc);
 
     /**
      * @brief Convert the Nmea like string using correct converter
