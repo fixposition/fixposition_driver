@@ -1,6 +1,6 @@
 # GENERAL ==============================================================================================================
 cmake_minimum_required(VERSION 3.5)
-project(fixposition_odometry_converter LANGUAGES CXX)
+project(fixposition_odometry_converter_ros1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=always -Wall -Wextra -Wpedantic -Wno-unused-parameter")

@@ -8,10 +8,22 @@
 #
 ####################################################################################################
 #
-# Wheel speed input to Fixposition ROS Driver
+# Individual wheelspeed measurement
 #
 #
 ####################################################################################################
+# Standard metadata
+std_msgs/Header header
 
-# Velocity values for one or several WheelSensors
-fixposition_driver_ros1/WheelSensor[] sensors
+# Location of the wheelspeed measurement (one of: RC, FR, FL, RR, RL)
+string location
+
+# Velocity values in [mm/s] as integer 32bit
+int32 vx
+int32 vy
+int32 vz
+
+# Velocity validity
+bool vx_valid
+bool vy_valid
+bool vz_valid

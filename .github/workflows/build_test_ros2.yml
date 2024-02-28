@@ -48,7 +48,7 @@ jobs:
       - name: Ignore ROS1 node
         run: |
           touch src/fixposition_driver/fixposition_driver_ros1/COLCON_IGNORE      
-          touch src/fixposition_driver/fixposition_odometry_converter/COLCON_IGNORE    
+          touch src/fixposition_driver/fixposition_odometry_converter_ros1/COLCON_IGNORE    
       - name: Build and Test
         run: |
           source /opt/ros/$ROS_DISTRO/setup.bash

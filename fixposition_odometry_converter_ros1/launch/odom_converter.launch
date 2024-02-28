@@ -1,0 +1,10 @@
+<launch>
+    <env name="ROSCONSOLE_CONFIG_FILE" value="$(find fixposition_odometry_converter_ros1)/launch/rosconsole.conf"/>
+
+
+    <node name="fixposition_odometry_converter_ros1" pkg="fixposition_odometry_converter_ros1" type="fixposition_odometry_converter_ros1" output="screen" respawn="true" respawn_delay="5">
+        <rosparam command="load" file="$(find fixposition_odometry_converter_ros1)/launch/odom_converter.yaml" />
+
+
+    </node>
+</launch>

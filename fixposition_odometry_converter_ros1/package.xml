@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-    <name>fixposition_odometry_converter</name>
+    <name>fixposition_odometry_converter_ros1</name>
     <version>1.0.0</version>
     <description>Conversion from Odometry messages to Fixposition's Speed input</description>
 

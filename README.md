@@ -239,48 +239,9 @@ _Please note that the corresponding messages also has to be selected on the Fixp
 
 ## Input Wheelspeed through the driver
 
-The fp_ros_driver support inputing a Speed msg (`msg/Speed.msg`) through the `/fixposition/speed` topic.
+The fp_ros_driver supports inputting a Speed msg (`msg/Speed.msg`) through the `/fixposition/speed` topic. The Speed msg is defined as a vector of WheelSensor msgs (`msg/WheelSensor.msg`). This message in turn, is intended to be a simplified version of the FP_B-MEASUREMENTS, containing three integers (vx, vy, and vz), three booleans (validity of the three velocity integers), and a string indicating the sensor from which the measurement originates. The integer velocity values should be in [mm/s], to have enough precision when being converted into an integer format.
 
-The input velocity values should be in [mm/s], respectively [mrad/s], as integer 32bit. There are 2 Options:
-
--   Option 1: Only one vehicle speed, then only fill a single value as the vehicle speed
--   Option 2: One vehicle speed and the rotation around the vehicle's rotation center
--   Option 3: Fill in 4 Values of 4 wheels, in the order of FR, FL, RR, RL
-
-The input values will be converted into a NOV_B-RAWDMI message and sent via the TCP interface to the Vision-RTK2, where it will be further processed and added into the positioning engine. The following protocol is used when filling the DMI messages, as per the documentation:
-
-|    # | Offset | Field         | Type           | Unit | Example | Description                                             |
-| ---: | -----: | ------------- | -------------- | ---- | ------- | ------------------------------------------------------- |
-|    - |      0 | `sync1`       | uint8_t        | -    | `0xaa`  | Sync byte 1 (always `0xaa`)                             |
-|    - |      1 | `sync2`       | uint8_t        | -    | `0x44`  | Sync byte 2 (always `0x44`)                             |
-|    - |      2 | `sync3`       | uint8_t        | -    | `0x13`  | Sync byte 3 (always `0x13`)                             |
-|    - |      3 | `payload_len` | uint8_t        | -    | `20`    | Payload length (always `20` for this message)           |
-|    - |      4 | `msg_id`      | uint16_t       | -    | `2269`  | Message ID (always `2269` for this message)             |
-|    1 |      6 | `gps_wno`     | uint16_t       | -    | `0`     | Week number, set to `0`, not supported by VRTK2         |
-|    2 |      8 | `gps_tow`     | int32_t        | ms   | `0`     | Time of week [ms], set to `0`, no supported by VRTK2    |
-|    3 |     12 | `dmi1`        | int32_t        | -    |         | Measurement value 1, for RC or FR wheel                 |
-|    4 |     16 | `dmi2`        | int32_t        | -    |         | Measurement value 2, for FL wheel or YW sensor          |
-|    5 |     20 | `dmi3`        | int32_t        | -    |         | Measurement value 3, for RR wheel                       |
-|    6 |     24 | `dmi4`        | int32_t        | -    |         | Measurement value 4, for RL wheel                       |
-|    - |     28 | `mask`        | uint32_t       | -    |         | _Bitfield:_                                             |
-|    7 |        | `dmi1_valid`  | - _bit 0_      | -    |         | Validity flag for _dmi1_ value (0 = invalid, 1 = valid) |
-|    8 |        | `dmi2_valid`  | - _bit 1_      | -    |         | Validity flag for _dmi2_ value (0 = invalid, 1 = valid) |
-|    9 |        | `dmi3_valid`  | - _bit 2_      | -    |         | Validity flag for _dmi3_ value (0 = invalid, 1 = valid) |
-|   10 |        | `dmi4_valid`  | - _bit 3_      | -    |         | Validity flag for _dmi4_ value (0 = invalid, 1 = valid) |
-|   11 |        | `dmi1_type`   | - _bits 10…4_  | -    |         | Type of measurement present in _dmi1_ value (see below) |
-|   12 |        | `dmi2_type`   | - _bits 17…11_ | -    |         | Type of measurement present in _dmi2_ value (see below) |
-|   13 |        | `dmi3_type`   | - _bits 24…18_ | -    |         | Type of measurement present in _dmi3_ value (see below) |
-|   14 |        | `dmi4_type`   | - _bits 31…25_ | -    |         | Type of measurement present in _dmi3_ value (see below) |
-|    - |     32 | `checksum`    | uint32_t       | -    |         | CRC32 checksum (see VRTK2 documentation)                |
-
-Measurement types (`dmi1_type`, `dmi2_type`, `dmi3_type` and `dmi4_type`):
-
-| Value | Description             |
-| :---: | ----------------------- |
-|  `0`  | Linear velocity (speed) |
-|  `1`  | Angular velocity        |
-
-Note: _Currently the wheelspeed input through the ROS driver is only supported in the TCP mode_
+Internally, upon arriving to the ros driver, wheelspeed measurements are converted into a full FP_B-MEASUREMENTS message, and sent via the TCP or serial interface to the Vision-RTK2, where they will be further processed. For more details regarding the definition FP_B-MEASUREMENTS message, please refer to [the following page](https://docs.fixposition.com/fd/fp_b-measurements), or to the VRTK2 integration manual.
 
 ## Code Documentation
 
@@ -560,7 +521,7 @@ Message fields:
 
 # Fixposition Odometry Converter
 
-This is an extra node is provided to help with the integration of the wheel odometry on your vehicle. For details, see the subfolder [fixposition_odometry_converter](fixposition_odometry_converter/README.md) (ROS 1) and [fixposition_odometry_converter_ros2](fixposition_odometry_converter_ros2/README.md) (ROS 2). When building the ROS 1 version add a file named 'CATKIN_IGNORE' to the `fixposition_odometry_converter_ros2` folder.
+This is an extra node is provided to help with the integration of the wheel odometry on your vehicle. For details, see the subfolder [fixposition_odometry_converter_ros1](fixposition_odometry_converter_ros1/README.md) (ROS 1) and [fixposition_odometry_converter_ros2](fixposition_odometry_converter_ros2/README.md) (ROS 2). When building the ROS 1 version add a file named 'CATKIN_IGNORE' to the `fixposition_odometry_converter_ros2` folder.
 
 # License
 

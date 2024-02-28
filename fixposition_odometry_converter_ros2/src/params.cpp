@@ -27,8 +27,14 @@ bool OdomInputParams::LoadFromRos(const rclcpp::node_interfaces::NodeParametersI
     param_itf->declare_parameter("multiplicative_factor", rclcpp::ParameterValue(1000));
     multiplicative_factor = param_itf->get_parameter("multiplicative_factor").as_int();
 
-    param_itf->declare_parameter("use_angular", rclcpp::ParameterValue(false));
-    use_angular = param_itf->get_parameter("use_angular").as_bool();
+    param_itf->declare_parameter("use_x", rclcpp::ParameterValue(true));
+    use_x = param_itf->get_parameter("use_x").as_bool();
+
+    param_itf->declare_parameter("use_y", rclcpp::ParameterValue(false));
+    use_y = param_itf->get_parameter("use_y").as_bool();
+
+    param_itf->declare_parameter("use_z", rclcpp::ParameterValue(false));
+    use_z = param_itf->get_parameter("use_z").as_bool();
 
     param_itf->declare_parameter("input_topic", rclcpp::PARAMETER_STRING);
     try {
