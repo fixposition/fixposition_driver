@@ -16,7 +16,7 @@ The `odom_converter.yaml` file exposes the necessary parameters for the correct 
 
 After the configuration is set, to launch the node simply run:
 
-   `roslaunch fixposition_odometry_converter odom_converter.launch`
+   `roslaunch fixposition_odometry_converter_ros1 odom_converter.launch`
 
 # License
 
