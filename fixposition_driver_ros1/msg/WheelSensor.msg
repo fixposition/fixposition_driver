@@ -12,6 +12,9 @@
 #
 #
 ####################################################################################################
+# Standard metadata
+std_msgs/Header header
+
 # Location of the wheelspeed measurement (one of: RC, FR, FL, RR, RL)
 string location
 
