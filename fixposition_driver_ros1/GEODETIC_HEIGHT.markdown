@@ -1,6 +1,6 @@
 ## Calculation Altitude in Mining Industry
 
-Reference
+Reference:
 ```
 https://docs.ros.org/en/kinetic/api/gtsam/html/classNETGeographicLib_1_1Geoid.html
 
@@ -26,10 +26,10 @@ To achieve this, leveraging GeographicLib is a good option. Below are the steps 
 
 ## Git Clone the Codes from the Specific Branch
 
-Clone the Repository: Use the git clone command with the -b option to specify the branch `feature/mining` branch from the fixposition_driver GitHub repository.
+Clone the Repository: Use the git clone command with the -b option to specify the branch `geodetic_height/egm2008` branch from the Jelvon GitHub repository.
 
 ```
-git clone -b feature/mining https://github.com/fixposition/fixposition_driver.git
+git clone -b geodetic_height/egm2008 https://github.com/Jelvon/fixposition_driver.git
 ```
 Then we are going to integrate GeographicLib with Fixposition driver ros 1
 
