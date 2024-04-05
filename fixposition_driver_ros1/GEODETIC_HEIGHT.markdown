@@ -1,4 +1,15 @@
-## Height Calculation
+## Calculation Altitude in Mining Industry
+
+Reference
+```
+https://docs.ros.org/en/kinetic/api/gtsam/html/classNETGeographicLib_1_1Geoid.html
+
+```
+Online tool to calculate the geodetic height (it is different from height above the geoid)
+
+```
+https://geographiclib.sourceforge.io/cgi-bin/GeodSolve
+```
 
 To calculate the height above the geoid (normal altitude used in the mining industry), use the following equation:
 
