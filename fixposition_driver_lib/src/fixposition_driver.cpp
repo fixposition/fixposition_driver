@@ -185,7 +185,7 @@ bool FixpositionDriver::InitializeConverters() {
         if (format == "ODOMETRY") {
             a_converters_["ODOMETRY"] = std::unique_ptr<OdometryConverter>(new OdometryConverter());
             a_converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter());
-        } else if (format == "LLH") {
+        } else if (format == "LLH" || format == "LLH_MINING") {
             a_converters_["LLH"] = std::unique_ptr<LlhConverter>(new LlhConverter());
         } else if (format == "RAWIMU") {
             a_converters_["RAWIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(false));
