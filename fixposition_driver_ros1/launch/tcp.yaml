@@ -1,8 +1,8 @@
 fp_output:
-    formats: ["ODOMETRY", "LLH", "RAWIMU", "CORRIMU", "GPGGA", "GPZDA", "GPRMC", "TF"]
+    formats: ["ODOMETRY", "LLH", "LLH_MINING", "RAWIMU", "CORRIMU", "GPGGA", "GPZDA", "GPRMC", "TF"]
     type: tcp
     port: "21000"
-    ip: "172.22.1.46" # change to VRTK2's IP address in the network
+    ip: "172.22.1.13" # change to VRTK2's IP address in the network
     rate: 200
     reconnect_delay: 5.0 # wait time in [s] until retry connection
 

@@ -9,6 +9,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # DEPENDENCIES =========================================================================================================
 find_package(Boost 1.65.0 REQUIRED)
+
+# GEOID APPLICATION
+list(APPEND CMAKE_MODULE_PATH "/usr/share/cmake/geographiclib")
+find_package(GeographicLib REQUIRED)
+
 find_package(Eigen3 REQUIRED)
 find_package(fixposition_gnss_tf REQUIRED)
 find_package(fixposition_driver_lib REQUIRED)
@@ -52,6 +57,7 @@ include_directories(
   ${fixposition_driver_lib_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
+  ${GeographicLib_INCLUDE_DIRS}
 )
 
 # BUILD EXECUTABLE =====================================================================================================
@@ -68,6 +74,7 @@ target_link_libraries(
   ${fixposition_gnss_tf_LIBRARIES}
   ${fixposition_driver_lib_LIBRARIES}
   ${Boost_LIBRARIES}
+  ${GeographicLib_LIBRARIES}
   pthread
 )
 
