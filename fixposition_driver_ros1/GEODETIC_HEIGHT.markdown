@@ -9,6 +9,8 @@ Online tool to calculate the geodetic height (it is different from height above 
 
 ```
 https://geographiclib.sourceforge.io/cgi-bin/GeodSolve
+
+https://support.virtual-surveyor.com/support/solutions/articles/1000261349-the-difference-between-ellipsoidal-geoid-and-orthometric-elevations-
 ```
 
 To calculate the height above the geoid (normal altitude used in the mining industry), use the following equation:
@@ -18,8 +20,8 @@ Height above the Geoid = Height above the Ellipsoid - Geodetic Height
 ```
 
 Where:
-- **Height above the Geoid** is the normal altitude used in the mining industry.
-- **Height above the Ellipsoid** is the normal height in Fixposition's output.
+- **Height above the Geoid** is the normal altitude used in the mining industry. Also called orthometric height 
+- **Height above the Ellipsoid** is the normal height in Fixposition's output. Also called ellipsoidal height
 - **Geodetic Height** is the height above the geoid model.
 
 To achieve this, leveraging GeographicLib is a good option. Below are the steps to consider for enabling this in the Fixposition driver ROS1 (Enable ROS2 is in the todo list):
