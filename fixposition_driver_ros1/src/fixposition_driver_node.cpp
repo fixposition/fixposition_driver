@@ -34,6 +34,9 @@
 #include <fixposition_driver_ros1/fixposition_driver_node.hpp>
 #include <fixposition_driver_ros1/params.hpp>
 
+/* Geoid */
+#include <GeographicLib/Geoid.hpp>
+
 namespace fixposition {
 
 FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& params)
@@ -45,6 +48,10 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
       navsatfix_gnss1_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss1", 100)),
       navsatfix_gnss2_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss2", 100)),
       nmea_pub_(nh_.advertise<fixposition_driver_ros1::NMEA>("/fixposition/nmea", 100)),
+
+      //Special LLH publish for mining industry
+      navsatfix_mining_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/navsatfix_mining", 100)),
+      
       //   ODOMETRY
       odometry_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry", 100)),
       poiimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/poiimu", 100)),
@@ -129,6 +136,25 @@ void FixpositionDriverNode::RegisterObservers() {
                 sensor_msgs::NavSatFix msg;
                 NavSatFixDataToMsg(data, msg);
                 navsatfix_pub_.publish(msg);
+            });
+        } else if (format == "LLH_MINING" && a_converters_["LLH"]) {
+            dynamic_cast<LlhConverter*>(a_converters_["LLH"].get())->AddObserver([this](const NavSatFixData& data) {
+                //LLH Observer Lambda
+                sensor_msgs::NavSatFix msg;
+                
+                GeographicLib::Geoid geoid("egm2008-1");
+                //new function for generating new llh
+                
+                NavSatFixDataToMsg(data, msg);
+                double geodetic_height = geoid(msg.latitude,msg.longitude);
+                msg.altitude = msg.altitude - geodetic_height;
+                
+                //The geoid height, N, can be used to convert a height above the ellipsoid, h, to the corresponding height above the geoid (roughly the height above mean sea level), H, using the relations
+                //h = N + H;   H = −N + h.
+                //ROS_INFO("Geodetic Height: %f meters", geodetic_height);
+                //ROS_INFO("Height Above the Geoid: %f meters", msg.altitude);
+                
+                navsatfix_mining_pub_.publish(msg);
             });
         } else if (format == "RAWIMU") {
             dynamic_cast<ImuConverter*>(a_converters_["RAWIMU"].get())->AddObserver([this](const ImuData& data) {
