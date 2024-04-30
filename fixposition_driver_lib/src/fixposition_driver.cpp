@@ -185,6 +185,8 @@ bool FixpositionDriver::InitializeConverters() {
         if (format == "ODOMETRY") {
             a_converters_["ODOMETRY"] = std::unique_ptr<OdometryConverter>(new OdometryConverter());
             a_converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter());
+        } else if (format == "ODOMSH") {
+            a_converters_["ODOMSH"] = std::unique_ptr<OdometryConverter>(new OdometryConverter());
         } else if (format == "LLH") {
             a_converters_["LLH"] = std::unique_ptr<LlhConverter>(new LlhConverter());
         } else if (format == "RAWIMU") {
@@ -307,7 +309,8 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
     }
     const std::string header = _header;
 
-    // If we have a converter available, convert to ros. Currently supported are "FP", "LLH", "TF", "RAWIMU", "CORRIMU"
+    // If we have a converter available, convert to ros.
+    // Currently supported are "FP", "LLH", "ODOMETRY", "ODOMSH", "TF", "RAWIMU", "CORRIMU"
     if (a_converters_[header] != nullptr) {
         a_converters_[header]->ConvertTokens(tokens);
     }
