@@ -312,6 +312,9 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
 
     // If we have a converter available, convert to ros.
     // Currently supported are "FP", "LLH", "ODOMETRY", "ODOMSH", "TF", "RAWIMU", "CORRIMU"
+    if (header == "ODOMSH") {
+        tokens.push_back("");
+    }
     if (a_converters_[header] != nullptr) {
         a_converters_[header]->ConvertTokens(tokens);
     }
