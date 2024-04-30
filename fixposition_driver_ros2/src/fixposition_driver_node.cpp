@@ -153,7 +153,7 @@ void FixpositionDriverNode::RegisterObservers() {
                     if (odometry_smooth_pub_->get_subscription_count() > 0) {
                         nav_msgs::msg::Odometry odometry;
                         OdometryDataToMsg(data.odometry, odometry);
-                        odometry_pub_->publish(odometry);
+                        odometry_smooth_pub_->publish(odometry);
                     }
                 });
         } else if (format == "LLH" && a_converters_["LLH"]) {
