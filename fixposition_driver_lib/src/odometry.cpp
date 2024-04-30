@@ -101,7 +101,7 @@ void OdometryConverter::ConvertTokens(const std::vector<std::string>& tokens) {
         ok = version == kVersion_;
         if (!ok) {
             // Version is wrong
-            std::cout << "Error in parsing Odometry string with verion " << version
+            std::cout << "Error in parsing Odometry string with version " << version
                       << " ! Odometry and status messages will be empty.\n";
         }
     }
