@@ -287,6 +287,7 @@ bool FixpositionDriver::ReadAndPublish() {
 
 void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
     // split the msg into tokens, removing the *XX checksum
+    std::cout << "Converting msg: " << msg << std::endl;
     std::vector<std::string> tokens;
     std::size_t star_pos = msg.find_last_of("*");
     SplitMessage(tokens, msg.substr(1, star_pos - 1), ",");
@@ -311,9 +312,7 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
 
     // If we have a converter available, convert to ros.
     // Currently supported are "FP", "LLH", "ODOMETRY", "ODOMSH", "TF", "RAWIMU", "CORRIMU"
-    std::cout << "Got message: " << header << "\n";
     if (a_converters_[header] != nullptr) {
-        std::cout << "Converting message \n";
         a_converters_[header]->ConvertTokens(tokens);
     }
 }
