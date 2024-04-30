@@ -315,7 +315,8 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
 
     // The odomsh does not seem to contain the firmware version
     if (header == "ODOMSH") {
-        tokens.push_back("2");
+        tokens[2] = "2";
+        tokens.push_back("");
     }
     if (a_converters_[header] != nullptr) {
         a_converters_[header]->ConvertTokens(tokens);
