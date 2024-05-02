@@ -48,6 +48,7 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
       navsatfix_gnss2_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/gnss2", 100)),
       nmea_pub_(node_->create_publisher<fixposition_driver_ros2::msg::NMEA>("/fixposition/nmea", 100)),
       odometry_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry", 100)),
+      odometry_smooth_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odomsh", 100)),
       poiimu_pub_(node_->create_publisher<sensor_msgs::msg::Imu>("/fixposition/poiimu", 100)),
       vrtk_pub_(node_->create_publisher<fixposition_driver_ros2::msg::VRTK>("/fixposition/vrtk", 100)),
       odometry_enu0_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry_enu", 100)),
@@ -144,6 +145,16 @@ void FixpositionDriverNode::RegisterObservers() {
                         br_->sendTransform(tf_ecef_enu);
                         br_->sendTransform(tf_ecef_poi);
                         static_br_->sendTransform(tf_ecef_enu0);
+                    }
+                });
+        } else if (format == "ODOMSH") {
+            dynamic_cast<OdometryConverter*>(a_converters_["ODOMSH"].get())
+                ->AddObserver([this](const OdometryConverter::Msgs& data) {
+                    // ODOMSH Observer Lambda
+                    if (odometry_smooth_pub_->get_subscription_count() > 0) {
+                        nav_msgs::msg::Odometry odometry;
+                        OdometryDataToMsg(data.odometry, odometry);
+                        odometry_smooth_pub_->publish(odometry);
                     }
                 });
         } else if (format == "LLH" && a_converters_["LLH"]) {

@@ -102,10 +102,11 @@ class FixpositionDriverNode : public FixpositionDriver {
     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr navsatfix_gnss2_pub_;
     rclcpp::Publisher<fixposition_driver_ros2::msg::NMEA>::SharedPtr nmea_pub_;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_smooth_pub_;
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr poiimu_pub_;             //!< Bias corrected IMU from ODOMETRY
     rclcpp::Publisher<fixposition_driver_ros2::msg::VRTK>::SharedPtr vrtk_pub_;  //!< VRTK message
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_enu0_pub_;    //!< ENU0 Odometry
-    rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr eul_pub_;  //!< Euler angles Yaw-Pitch-Roll in local ENU
+    rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr eul_pub_;   //!< Euler angles Yaw-Pitch-Roll in local ENU
     rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr
         eul_imu_pub_;  //!< Euler angles Pitch-Roll as estimated from the IMU in
                        // local horizontal
