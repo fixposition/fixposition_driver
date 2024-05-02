@@ -92,8 +92,6 @@ void OdometryConverter::ConvertTokens(const std::vector<std::string>& tokens) {
         // Size is wrong
         std::cout << "Error in parsing Odometry string with " << tokens.size()
                   << " fields! Odometry and status messages will be empty.\n";
-        
-
     } else {
         // If size is ok, check version
         const int version = std::stoi(tokens.at(msg_version_idx));

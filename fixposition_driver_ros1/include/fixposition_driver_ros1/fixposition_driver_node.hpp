@@ -98,12 +98,13 @@ class FixpositionDriverNode : public FixpositionDriver {
     ros::Publisher navsatfix_gnss1_pub_;
     ros::Publisher navsatfix_gnss2_pub_;
     ros::Publisher nmea_pub_;
-    ros::Publisher odometry_pub_;       //!< ECEF Odometry
-    ros::Publisher poiimu_pub_;         //!< Bias corrected IMU
-    ros::Publisher vrtk_pub_;           //!< VRTK message
-    ros::Publisher odometry_enu0_pub_;  //!< ENU0 Odometry
-    ros::Publisher eul_pub_;            //!< Euler angles Yaw-Pitch-Roll in local ENU
-    ros::Publisher eul_imu_pub_;        //!< Euler angles Pitch-Roll as estimated from the IMU in local horizontal
+    ros::Publisher odometry_pub_;        //!< ECEF Odometry
+    ros::Publisher odometry_smooth_pub_; //!< ECEF Smooth Odometry
+    ros::Publisher poiimu_pub_;          //!< Bias corrected IMU
+    ros::Publisher vrtk_pub_;            //!< VRTK message
+    ros::Publisher odometry_enu0_pub_;   //!< ENU0 Odometry
+    ros::Publisher eul_pub_;             //!< Euler angles Yaw-Pitch-Roll in local ENU
+    ros::Publisher eul_imu_pub_;         //!< Euler angles Pitch-Roll as estimated from the IMU in local horizontal
 
     NmeaMessage nmea_message_;
 

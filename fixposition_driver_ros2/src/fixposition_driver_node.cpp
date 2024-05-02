@@ -150,6 +150,7 @@ void FixpositionDriverNode::RegisterObservers() {
         } else if (format == "ODOMSH") {
             dynamic_cast<OdometryConverter*>(a_converters_["ODOMSH"].get())
                 ->AddObserver([this](const OdometryConverter::Msgs& data) {
+                    // ODOMSH Observer Lambda
                     if (odometry_smooth_pub_->get_subscription_count() > 0) {
                         nav_msgs::msg::Odometry odometry;
                         OdometryDataToMsg(data.odometry, odometry);

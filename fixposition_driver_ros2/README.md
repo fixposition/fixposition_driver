@@ -85,6 +85,7 @@ To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections,
    /fixposition/corrimu
    /fixposition/navsatfix
    /fixposition/odometry
+   /fixposition/odomsh
    /fixposition/odometry_enu
    /fixposition/poiimu
    /fixposition/rawimu
@@ -110,6 +111,7 @@ The output is published on the following:
     | Topic                       | Message Type              | Frequency                      | Description                                                                                                                                                   |
     | --------------------------- | ------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
     | `/fixposition/odometry`     | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
+    | `/fixposition/odomsh`       | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POI, Velocity and Angular Velocity in FP_POI. Based on smooth odometry output.                                          |
     | `/fixposition/odometry_enu` | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ENU0 to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
     | `/fixposition/vrtk`         | `fixposition_driver/VRTK` | as configured on web-interface | Custom Message containing same Odometry information as well as status flags                                                                                   |
     | `/fixposition/poiimu`       | `sensor_msgs/Imu`         | as configured on web-interface | Bias Corrected acceleration and rotation rate in FP_POI                                                                                                       |

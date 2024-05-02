@@ -310,11 +310,13 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
     const std::string header = _header;
 
     // If we have a converter available, convert to ros.
-    // Currently supported are "FP", "LLH", "ODOMETRY", "ODOMSH", "TF", "RAWIMU", "CORRIMU"
+    // Currently supported are "FP", "LLH", "ODOMETRY", "ODOMSH", "TF", "RAWIMU", "CORRIMU", "GPGGA", "GPZDA", "GPRMC"
 
-    // The odomsh does not seem to contain the firmware version, and has the wrong number of fields.
+    // Adapt ODOMSH message to be compatible with the ODOMETRY message
     if (header == "ODOMSH") {
+        // Change software version
         tokens[2] = "2";
+        // Add missing software field
         tokens.push_back("");
     }
     if (a_converters_[header] != nullptr) {
