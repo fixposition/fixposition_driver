@@ -117,6 +117,7 @@ struct NavSatStatusData {
     };
     int8_t status;
     uint16_t service;
+    NavSatStatusData() : status(static_cast<int8_t>(Status::STATUS_NO_FIX)), service(0) {}
 };
 
 struct NavSatFixData {
