@@ -22,7 +22,8 @@
 /* FIXPOSITION */
 #include <fixposition_driver_lib/converter/imu.hpp>
 #include <fixposition_driver_lib/converter/odometry.hpp>
-#include <fixposition_driver_lib/converter/odometry_sh.hpp>
+#include <fixposition_driver_lib/converter/odomenu.hpp>
+#include <fixposition_driver_lib/converter/odomsh.hpp>
 #include <fixposition_driver_lib/converter/tf.hpp>
 #include <fixposition_driver_lib/converter/gpgga.hpp>
 #include <fixposition_driver_lib/converter/gpzda.hpp>
@@ -102,29 +103,10 @@ void FixpositionDriverNode::RegisterObservers() {
                         odometry_pub_->publish(odometry);
                     }
 
-                    if (odometry_enu0_pub_->get_subscription_count() > 0) {
-                        nav_msgs::msg::Odometry odometry_enu0;
-                        OdometryDataToMsg(data.odometry_enu0, odometry_enu0);
-                        odometry_enu0_pub_->publish(odometry_enu0);
-                    }
-
                     if (vrtk_pub_->get_subscription_count() > 0) {
                         fixposition_driver_ros2::msg::VRTK vrtk;
                         VrtkDataToMsg(data.vrtk, vrtk);
                         vrtk_pub_->publish(vrtk);
-                    }
-                    if (eul_pub_->get_subscription_count() > 0) {
-                        geometry_msgs::msg::Vector3Stamped ypr;
-                        if (data.odometry.stamp.tow == 0.0 && data.odometry.stamp.wno == 0) {
-                            ypr.header.stamp = rclcpp::Clock().now();
-                        } else {
-                            ypr.header.stamp = GpsTimeToMsgTime(data.odometry.stamp);
-                        }
-                        ypr.header.frame_id = "FP_POI";
-                        ypr.vector.set__x(data.eul.x());
-                        ypr.vector.set__y(data.eul.y());
-                        ypr.vector.set__z(data.eul.z());
-                        eul_pub_->publish(ypr);
                     }
 
                     if (poiimu_pub_->get_subscription_count() > 0) {
@@ -133,8 +115,8 @@ void FixpositionDriverNode::RegisterObservers() {
                         poiimu_pub_->publish(poiimu);
                     }
 
-                    if (navsatfix_pub_.get_subscription_count() > 0) {
-                        sensor_msgs::NavSatFix msg;
+                    if (navsatfix_pub_->get_subscription_count() > 0) {
+                        sensor_msgs::msg::NavSatFix msg;
                         NavSatFixDataToMsg(data.odom_llh, msg);
                         navsatfix_pub_->publish(msg);
                     }
@@ -142,15 +124,32 @@ void FixpositionDriverNode::RegisterObservers() {
                     // TFs
                     if (data.vrtk.fusion_status > 0) {
                         geometry_msgs::msg::TransformStamped tf_ecef_poi;
-                        geometry_msgs::msg::TransformStamped tf_ecef_enu;
-                        geometry_msgs::msg::TransformStamped tf_ecef_enu0;
                         TfDataToMsg(data.tf_ecef_poi, tf_ecef_poi);
-                        TfDataToMsg(data.tf_ecef_enu, tf_ecef_enu);
-                        TfDataToMsg(data.tf_ecef_enu0, tf_ecef_enu0);
-
-                        br_->sendTransform(tf_ecef_enu);
                         br_->sendTransform(tf_ecef_poi);
-                        static_br_->sendTransform(tf_ecef_enu0);
+                    }
+                });
+        } else if (format == "ODOMENU") {
+            dynamic_cast<OdomenuConverter*>(a_converters_["ODOMENU"].get())
+                ->AddObserver([this](const OdomenuConverter::Msgs& data) {
+                    // ODOMENU Observer Lambda
+                    if (odometry_enu0_pub_->get_subscription_count() > 0) {
+                        nav_msgs::msg::Odometry odometry_enu0;
+                        OdometryDataToMsg(data.odometry, odometry_enu0);
+                        odometry_enu0_pub_->publish(odometry_enu0);
+                    }
+
+                    if (eul_pub_->get_subscription_count() > 0) {
+                        geometry_msgs::msg::Vector3Stamped ypr;
+                        if (data.odometry.stamp.tow == 0.0 && data.odometry.stamp.wno == 0) {
+                            ypr.header.stamp = rclcpp::Clock().now();
+                        } else {
+                            ypr.header.stamp = GpsTimeToMsgTime(data.odometry.stamp);
+                        }
+                        ypr.header.frame_id = "FP_ENU";
+                        ypr.vector.set__x(data.eul.x());
+                        ypr.vector.set__y(data.eul.y());
+                        ypr.vector.set__z(data.eul.z());
+                        eul_pub_->publish(ypr);
                     }
                 });
         } else if (format == "ODOMSH") {
@@ -197,7 +196,7 @@ void FixpositionDriverNode::RegisterObservers() {
                     eul_imu_pub_->publish(imu_ypr);
 
                 } else if (tf.child_frame_id == "FP_POISH" && tf.header.frame_id == "FP_POI") {
-                    br_.sendTransform(tf);
+                    br_->sendTransform(tf);
                 } else {
                     static_br_->sendTransform(tf);
                 }
