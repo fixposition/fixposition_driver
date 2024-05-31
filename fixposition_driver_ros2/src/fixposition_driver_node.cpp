@@ -21,8 +21,8 @@
 
 /* FIXPOSITION */
 #include <fixposition_driver_lib/converter/imu.hpp>
-#include <fixposition_driver_lib/converter/llh.hpp>
 #include <fixposition_driver_lib/converter/odometry.hpp>
+#include <fixposition_driver_lib/converter/odometry_sh.hpp>
 #include <fixposition_driver_lib/converter/tf.hpp>
 #include <fixposition_driver_lib/converter/gpgga.hpp>
 #include <fixposition_driver_lib/converter/gpzda.hpp>
@@ -133,6 +133,12 @@ void FixpositionDriverNode::RegisterObservers() {
                         poiimu_pub_->publish(poiimu);
                     }
 
+                    if (navsatfix_pub_.get_subscription_count() > 0) {
+                        sensor_msgs::NavSatFix msg;
+                        NavSatFixDataToMsg(data.odom_llh, msg);
+                        navsatfix_pub_->publish(msg);
+                    }
+
                     // TFs
                     if (data.vrtk.fusion_status > 0) {
                         geometry_msgs::msg::TransformStamped tf_ecef_poi;
@@ -148,8 +154,8 @@ void FixpositionDriverNode::RegisterObservers() {
                     }
                 });
         } else if (format == "ODOMSH") {
-            dynamic_cast<OdometryConverter*>(a_converters_["ODOMSH"].get())
-                ->AddObserver([this](const OdometryConverter::Msgs& data) {
+            dynamic_cast<OdomshConverter*>(a_converters_["ODOMSH"].get())
+                ->AddObserver([this](const OdomshConverter::Msgs& data) {
                     // ODOMSH Observer Lambda
                     if (odometry_smooth_pub_->get_subscription_count() > 0) {
                         nav_msgs::msg::Odometry odometry;
@@ -157,13 +163,6 @@ void FixpositionDriverNode::RegisterObservers() {
                         odometry_smooth_pub_->publish(odometry);
                     }
                 });
-        } else if (format == "LLH" && a_converters_["LLH"]) {
-            dynamic_cast<LlhConverter*>(a_converters_["LLH"].get())->AddObserver([this](const NavSatFixData& data) {
-                // LLH Observer Lambda
-                sensor_msgs::msg::NavSatFix msg;
-                NavSatFixDataToMsg(data, msg);
-                navsatfix_pub_->publish(msg);
-            });
         } else if (format == "RAWIMU") {
             dynamic_cast<ImuConverter*>(a_converters_["RAWIMU"].get())->AddObserver([this](const ImuData& data) {
                 // RAWIMU Observer Lambda
@@ -197,6 +196,8 @@ void FixpositionDriverNode::RegisterObservers() {
                     imu_ypr.vector.set__z(imu_ypr_eigen.z());
                     eul_imu_pub_->publish(imu_ypr);
 
+                } else if (tf.child_frame_id == "FP_POISH" && tf.header.frame_id == "FP_POI") {
+                    br_.sendTransform(tf);
                 } else {
                     static_br_->sendTransform(tf);
                 }
@@ -241,7 +242,7 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
         } else {
             msg.header.stamp = GpsTimeToMsgTime(data.gpzda.stamp);
         }
-        msg.header.frame_id = "LLH";
+        msg.header.frame_id = "FP_POI";
 
         // Latitude [degrees]. Positive is north of equator; negative is south
         msg.latitude = data.gpgga.latitude;

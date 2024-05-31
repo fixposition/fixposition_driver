@@ -38,12 +38,9 @@ class OdometryConverter : public BaseAsciiConverter {
     struct Msgs {
         OdometryData odometry;
         ImuData imu;
-        OdometryData odometry_enu0;
         VrtkData vrtk;
-        Eigen::Vector3d eul;
         TfData tf_ecef_poi;
-        TfData tf_ecef_enu;
-        TfData tf_ecef_enu0;
+        NavSatFixData odom_llh;
     };
 
     using OdometryObserver = std::function<void(const Msgs&)>;
@@ -52,10 +49,7 @@ class OdometryConverter : public BaseAsciiConverter {
      * @brief Construct a new Fixposition Msg Converter object
      *
      */
-    OdometryConverter() : BaseAsciiConverter(), tf_ecef_enu0_set_(false) {
-        msgs_.tf_ecef_enu0.frame_id = "ECEF";
-        msgs_.tf_ecef_enu0.child_frame_id = "FP_ENU0";
-    }
+    OdometryConverter() : BaseAsciiConverter() {}
 
     ~OdometryConverter() = default;
 
@@ -85,61 +79,9 @@ class OdometryConverter : public BaseAsciiConverter {
     static constexpr const int kVersion_ = 2;
     static constexpr const int kSize_ = 45;
 
-    //! transform between ECEF and ENU0
-    bool tf_ecef_enu0_set_;  //!< flag to indicate if the tf is already set
-    Eigen::Vector3d t_ecef_enu0_;
-    Eigen::Quaterniond q_ecef_enu0_;
-
     Msgs msgs_;
     std::vector<OdometryObserver> obs_;
 };
-
-/**
- * @brief Build a 6x6 covariance matrix which is 2 independent 3x3 matrices
- *
- * [xx, xy, xz, 0, 0, 0,
- *  xy, yy, yz, 0, 0, 0,
- *  xz, yz, zz, 0, 0, 0,
- *  0, 0, 0, xx1, xy1, xz1,
- *  0, 0, 0, xy1, yy1, yz1,
- *  0, 0, 0, xz1, yz1, zz1]
- *
- * @param[in] xx
- * @param[in] yy
- * @param[in] zz
- * @param[in] xy
- * @param[in] yz
- * @param[in] xz
- * @param[in] xx1
- * @param[in] yy1
- * @param[in] zz1
- * @param[in] xy1
- * @param[in] yz1
- * @param[in] xz1
- * @return Eigen::Matrix<double, 6, 6> the 6x6 matrix
- */
-inline Eigen::Matrix<double, 6, 6> BuildCovMat6D(const double xx, const double yy, const double zz, const double xy,
-                                                 const double yz, const double xz, double xx1, const double yy1,
-                                                 const double zz1, const double xy1, const double yz1, double xz1) {
-    Eigen::Matrix<double, 6, 6> cov;
-    // Diagonals
-    cov(0, 0) = xx;   // 0
-    cov(1, 1) = yy;   // 7
-    cov(2, 2) = zz;   // 14
-    cov(3, 3) = xx1;  // 21
-    cov(4, 4) = yy1;  // 28
-    cov(5, 5) = zz1;  // 35
-
-    // Rest of values
-    cov(1, 0) = cov(0, 1) = xy;   // 1 = 6
-    cov(2, 1) = cov(1, 2) = yz;   // 8 = 13
-    cov(2, 0) = cov(0, 2) = xz;   // 2 = 12
-    cov(4, 3) = cov(3, 4) = xy1;  // 22 = 27
-    cov(5, 4) = cov(4, 5) = yz1;  // 29 = 34
-    cov(5, 3) = cov(3, 5) = xz1;  // 23 = 33
-
-    return cov;
-}
 
 }  // namespace fixposition
 #endif  // __FIXPOSITION_DRIVER_LIB_CONVERTER_ODOMETRY__

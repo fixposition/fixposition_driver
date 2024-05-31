@@ -24,8 +24,9 @@
 #include <fixposition_driver_lib/converter/gprmc.hpp>
 #include <fixposition_driver_lib/converter/gpzda.hpp>
 #include <fixposition_driver_lib/converter/imu.hpp>
-#include <fixposition_driver_lib/converter/llh.hpp>
+#include <fixposition_driver_lib/converter/odomenu.hpp>
 #include <fixposition_driver_lib/converter/odometry.hpp>
+#include <fixposition_driver_lib/converter/odomsh.hpp>
 #include <fixposition_driver_lib/converter/tf.hpp>
 #include <fixposition_driver_lib/fixposition_driver.hpp>
 #include <fixposition_driver_lib/helper.hpp>
@@ -185,10 +186,10 @@ bool FixpositionDriver::InitializeConverters() {
         if (format == "ODOMETRY") {
             a_converters_["ODOMETRY"] = std::unique_ptr<OdometryConverter>(new OdometryConverter());
             a_converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter());
+        } else if (format == "ODOMENU") {
+            a_converters_["ODOMENU"] = std::unique_ptr<OdomenuConverter>(new OdomenuConverter());
         } else if (format == "ODOMSH") {
-            a_converters_["ODOMSH"] = std::unique_ptr<OdometryConverter>(new OdometryConverter());
-        } else if (format == "LLH") {
-            a_converters_["LLH"] = std::unique_ptr<LlhConverter>(new LlhConverter());
+            a_converters_["ODOMSH"] = std::unique_ptr<OdomshConverter>(new OdomshConverter());
         } else if (format == "RAWIMU") {
             a_converters_["RAWIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(false));
         } else if (format == "CORRIMU") {
@@ -310,15 +311,7 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
     const std::string header = _header;
 
     // If we have a converter available, convert to ros.
-    // Currently supported are "FP", "LLH", "ODOMETRY", "ODOMSH", "TF", "RAWIMU", "CORRIMU", "GPGGA", "GPZDA", "GPRMC"
-
-    // Adapt ODOMSH message to be compatible with the ODOMETRY message
-    if (header == "ODOMSH") {
-        // Change software version
-        tokens[2] = "2";
-        // Add missing software field
-        tokens.push_back("");
-    }
+    // Currently supported are "FP", "ODOMETRY", "ODOMENU", "ODOMSH", "TF", "RAWIMU", "CORRIMU", "GPGGA", "GPZDA", "GPRMC"
     if (a_converters_[header] != nullptr) {
         a_converters_[header]->ConvertTokens(tokens);
     }

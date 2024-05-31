@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @brief Implementation of OdometryConverter
+ *  @brief Implementation of OdomenuConverter
  *
  * \verbatim
  *  ___    ___
@@ -20,7 +20,7 @@
 #include <fixposition_gnss_tf/gnss_tf.hpp>
 
 /* PACKAGE */
-#include <fixposition_driver_lib/converter/odometry.hpp>
+#include <fixposition_driver_lib/converter/odomenu.hpp>
 #include <fixposition_driver_lib/time_conversions.hpp>
 
 namespace fixposition {
@@ -69,7 +69,6 @@ static constexpr const int vel_cov_zz_idx = 40;
 static constexpr const int vel_cov_xy_idx = 41;
 static constexpr const int vel_cov_yz_idx = 42;
 static constexpr const int vel_cov_xz_idx = 43;
-static constexpr const int sw_version_idx = 44;
 
 /**
  * @brief Parse status flag field
@@ -78,7 +77,7 @@ static constexpr const int sw_version_idx = 44;
  * @param[in] idx status flag index
  * @return int
  */
-int ParseStatusFlag(const std::vector<std::string>& tokens, const int idx) {
+int ParseEnuStatusFlag(const std::vector<std::string>& tokens, const int idx) {
     if (tokens.at(idx).empty()) {
         return -1;
     } else {
@@ -86,12 +85,12 @@ int ParseStatusFlag(const std::vector<std::string>& tokens, const int idx) {
     }
 }
 
-void OdometryConverter::ConvertTokens(const std::vector<std::string>& tokens) {
+void OdomenuConverter::ConvertTokens(const std::vector<std::string>& tokens) {
     bool ok = tokens.size() == kSize_;
     if (!ok) {
         // Size is wrong
-        std::cout << "Error in parsing Odometry string with " << tokens.size()
-                  << " fields! Odometry and status messages will be empty.\n";
+        std::cout << "Error in parsing Odomenu string with " << tokens.size()
+                  << " fields! Odomenu message will be empty.\n";
     } else {
         // If size is ok, check version
         const int version = std::stoi(tokens.at(msg_version_idx));
@@ -99,8 +98,8 @@ void OdometryConverter::ConvertTokens(const std::vector<std::string>& tokens) {
         ok = version == kVersion_;
         if (!ok) {
             // Version is wrong
-            std::cout << "Error in parsing Odometry string with version " << version
-                      << " ! Odometry and status messages will be empty.\n";
+            std::cout << "Error in parsing Odomenu string with version " << version
+                      << " ! Odomenu message will be empty.\n";
         }
     }
 
@@ -110,67 +109,25 @@ void OdometryConverter::ConvertTokens(const std::vector<std::string>& tokens) {
         return;
     }
 
-    const int fusion_status = ParseStatusFlag(tokens, fusion_status_idx);
+    const int fusion_status = ParseEnuStatusFlag(tokens, fusion_status_idx);
 
     const bool fusion_init = fusion_status >= 3;
 
     // common data
     const auto stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
-    const Eigen::Vector3d t_ecef_body =
+    const Eigen::Vector3d t_enu0_enu =
         Vector3ToEigen(tokens.at(pos_x_idx), tokens.at(pos_y_idx), tokens.at(pos_z_idx));
-    const Eigen::Quaterniond q_ecef_body = Vector4ToEigen(tokens.at(orientation_w_idx), tokens.at(orientation_x_idx),
-                                                          tokens.at(orientation_y_idx), tokens.at(orientation_z_idx));
-    
-    // Msgs
-    //!<  Odometry msg ECEF - FP_POI
-
-    // Status, regardless of fusion_init
-    msgs_.vrtk.fusion_status = fusion_status;
-    msgs_.vrtk.imu_bias_status = ParseStatusFlag(tokens, imu_bias_status_idx);
-    msgs_.vrtk.gnss1_status = ParseStatusFlag(tokens, gnss1_fix_type_idx);
-    msgs_.vrtk.gnss2_status = ParseStatusFlag(tokens, gnss2_fix_type_idx);
-    msgs_.vrtk.wheelspeed_status = ParseStatusFlag(tokens, wheelspeed_status_idx);
-    msgs_.vrtk.version = tokens.at(sw_version_idx).empty() ? "UNKNOWN" : tokens.at(sw_version_idx);
-
-    // POI IMU Message
-    msgs_.imu.stamp = stamp;
-    msgs_.imu.frame_id = "FP_POI";
-    // Omega
-    msgs_.imu.angular_velocity = msgs_.odometry.twist.angular;
-    // Acceleration
-    msgs_.imu.linear_acceleration = Vector3ToEigen(tokens.at(acc_x_idx), tokens.at(acc_y_idx), tokens.at(acc_z_idx));
-    
+    const Eigen::Quaterniond q_enu0_enu = Vector4ToEigen(tokens.at(orientation_w_idx), tokens.at(orientation_x_idx),
+                                                         tokens.at(orientation_y_idx), tokens.at(orientation_z_idx));
     if (fusion_init) {
-        // Populate TF message header
-        msgs_.tf_ecef_poi.stamp = stamp;
-        msgs_.tf_ecef_poi.frame_id = "FP_ECEF";
-        msgs_.tf_ecef_poi.child_frame_id = "FP_POI";
-
         // Populate odometry message header
         msgs_.odometry.stamp = stamp;
-        msgs_.odometry.frame_id = "FP_ECEF";
+        msgs_.odometry.frame_id = "FP_ENU0";
         msgs_.odometry.child_frame_id = "FP_POI";
 
-        // Populate VRTK message header
-        msgs_.vrtk.stamp = stamp;
-        msgs_.vrtk.frame_id = "FP_ECEF";
-        msgs_.vrtk.pose_frame = "FP_POI";
-        msgs_.vrtk.kin_frame = "FP_POI";
-
-        // Populate LLH message header
-        msgs_.odom_llh.stamp = stamp;
-        msgs_.odom_llh.frame_id = "FP_POI";
-
-        // TF ECEF POI is basically the same as the odometry, containing the Pose of the POI in the ECEF Frame
-        msgs_.tf_ecef_poi.translation = (t_ecef_body);
-        msgs_.tf_ecef_poi.rotation = (q_ecef_body);
-        
-        // Send TFs
-        if (CheckQuat(msgs_.tf_ecef_poi.rotation)) {}
-
         // Pose & Cov
-        msgs_.odometry.pose.position = (t_ecef_body);
-        msgs_.odometry.pose.orientation = (q_ecef_body);
+        msgs_.odometry.pose.position = (t_enu0_enu);
+        msgs_.odometry.pose.orientation = (q_enu0_enu);
         msgs_.odometry.pose.cov = BuildCovMat6D(
             StringToDouble(tokens.at(pos_cov_xx_idx)), StringToDouble(tokens.at(pos_cov_yy_idx)),
             StringToDouble(tokens.at(pos_cov_zz_idx)), StringToDouble(tokens.at(pos_cov_xy_idx)),
@@ -178,7 +135,6 @@ void OdometryConverter::ConvertTokens(const std::vector<std::string>& tokens) {
             StringToDouble(tokens.at(orientation_cov_xx_idx)), StringToDouble(tokens.at(orientation_cov_yy_idx)),
             StringToDouble(tokens.at(orientation_cov_zz_idx)), StringToDouble(tokens.at(orientation_cov_xy_idx)),
             StringToDouble(tokens.at(orientation_cov_yz_idx)), StringToDouble(tokens.at(orientation_cov_xz_idx)));
-        msgs_.vrtk.pose = msgs_.odometry.pose;
 
         // Twist & Cov
         // Linear
@@ -189,37 +145,9 @@ void OdometryConverter::ConvertTokens(const std::vector<std::string>& tokens) {
             StringToDouble(tokens.at(vel_cov_xx_idx)), StringToDouble(tokens.at(vel_cov_yy_idx)),
             StringToDouble(tokens.at(vel_cov_zz_idx)), StringToDouble(tokens.at(vel_cov_xy_idx)),
             StringToDouble(tokens.at(vel_cov_yz_idx)), StringToDouble(tokens.at(vel_cov_xz_idx)), 0, 0, 0, 0, 0, 0);
-        msgs_.vrtk.velocity = msgs_.odometry.twist;
 
-        // Populate LLH message
-        const Eigen::Vector3d llh_pos = gnss_tf::TfWgs84LlhEcef(t_ecef_body);
-        msgs_.odom_llh.latitude = fixposition::RadToDeg(llh_pos(0));
-        msgs_.odom_llh.longitude = fixposition::RadToDeg(llh_pos(1));
-        msgs_.odom_llh.altitude = llh_pos(2);
-
-        // Populate LLH covariance
-        const Eigen::Matrix3d p_cov_e = msgs_.odometry.pose.cov.topLeftCorner(3, 3);
-        const Eigen::Matrix3d C_l_e = gnss_tf::RotEnuEcef(t_ecef_body);
-        const Eigen::Matrix3d p_cov_l = C_l_e * p_cov_e * C_l_e.transpose();
-        msgs_.odom_llh.cov = p_cov_l;
-        msgs_.odom_llh.position_covariance_type = 3;
-
-        // Populate LLH status
-        int status_flag = std::max(msgs_.vrtk.gnss1_status, msgs_.vrtk.gnss2_status);
-
-        if (status_flag < 4) {
-            msgs_.odom_llh.status.status = -1;
-            msgs_.odom_llh.status.service = 0;
-        } else if (status_flag >= 4 || status_flag < 7) {
-            msgs_.odom_llh.status.status = 0;
-            msgs_.odom_llh.status.service = 15;
-        } else if (status_flag >= 7) {
-            msgs_.odom_llh.status.status = 2;
-            msgs_.odom_llh.status.service = 15;
-        } else {
-            msgs_.odom_llh.status.status = -1;
-            msgs_.odom_llh.status.service = 0;
-        }
+        // Euler angle wrt. ENU frame in the order of Yaw Pitch Roll
+        msgs_.eul = gnss_tf::RotToEul(q_enu0_enu.toRotationMatrix());
     }
 
     // process all observers
