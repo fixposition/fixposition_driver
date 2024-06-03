@@ -53,7 +53,7 @@ bool LoadParamsFromRos1(const std::string& ns, FpOutputParams& params) {
     }
 
     if (!ros::param::get(FORMATS, params.formats)) {
-        params.formats = {"ODOMETRY", "LLH", "RAWIMU", "CORRIMU", "TF"};
+        params.formats = {"ODOMETRY", "RAWIMU", "CORRIMU", "TF"};
     }
 
     for (size_t i = 0; i < params.formats.size(); i++) {

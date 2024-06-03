@@ -1,7 +1,7 @@
 fixposition_driver_ros2:
   ros__parameters:
     fp_output:
-      formats: ["ODOMETRY", "ODOMSH", "LLH", "RAWIMU", "CORRIMU", "GPGGA", "GPZDA", "GPRMC", "TF"]
+      formats: ["ODOMETRY", "ODOMENU", "ODOMSH", "RAWIMU", "CORRIMU", "GPGGA", "GPZDA", "GPRMC", "TF"]
       type: "tcp"
       port: "21000"
       ip: "10.0.2.1" # change to VRTK2's IP address in the network

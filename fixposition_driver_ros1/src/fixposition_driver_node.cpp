@@ -19,8 +19,9 @@
 
 /* FIXPOSITION */
 #include <fixposition_driver_lib/converter/imu.hpp>
-#include <fixposition_driver_lib/converter/llh.hpp>
 #include <fixposition_driver_lib/converter/odometry.hpp>
+#include <fixposition_driver_lib/converter/odomenu.hpp>
+#include <fixposition_driver_lib/converter/odomsh.hpp>
 #include <fixposition_driver_lib/converter/tf.hpp>
 #include <fixposition_driver_lib/converter/gpgga.hpp>
 #include <fixposition_driver_lib/converter/gpzda.hpp>
@@ -79,27 +80,10 @@ void FixpositionDriverNode::RegisterObservers() {
                         odometry_pub_.publish(odometry);
                     }
 
-                    if (odometry_enu0_pub_.getNumSubscribers() > 0) {
-                        nav_msgs::Odometry odometry_enu0;
-                        OdometryDataToMsg(data.odometry_enu0, odometry_enu0);
-                        odometry_enu0_pub_.publish(odometry_enu0);
-                    }
-
                     if (vrtk_pub_.getNumSubscribers() > 0) {
                         fixposition_driver_ros1::VRTK vrtk;
                         VrtkDataToMsg(data.vrtk, vrtk);
                         vrtk_pub_.publish(vrtk);
-                    }
-                    if (eul_pub_.getNumSubscribers() > 0) {
-                        geometry_msgs::Vector3Stamped ypr;
-                        if (data.odometry.stamp.tow == 0.0 && data.odometry.stamp.wno == 0) {
-                            ypr.header.stamp = ros::Time::now();
-                        } else {
-                            ypr.header.stamp = ros::Time::fromBoost(fixposition::times::GpsTimeToPtime(data.odometry.stamp));
-                        }
-                        ypr.header.frame_id = "FP_POI";
-                        tf::vectorEigenToMsg(data.eul, ypr.vector);
-                        eul_pub_.publish(ypr);
                     }
 
                     if (poiimu_pub_.getNumSubscribers() > 0) {
@@ -108,23 +92,44 @@ void FixpositionDriverNode::RegisterObservers() {
                         poiimu_pub_.publish(poiimu);
                     }
 
+                    if (navsatfix_pub_.getNumSubscribers() > 0) {
+                        sensor_msgs::NavSatFix msg;
+                        NavSatFixDataToMsg(data.odom_llh, msg);
+                        navsatfix_pub_.publish(msg);
+                    }
+
                     // TFs
                     if (data.vrtk.fusion_status > 0) {
                         geometry_msgs::TransformStamped tf_ecef_poi;
-                        geometry_msgs::TransformStamped tf_ecef_enu;
-                        geometry_msgs::TransformStamped tf_ecef_enu0;
                         TfDataToMsg(data.tf_ecef_poi, tf_ecef_poi);
-                        TfDataToMsg(data.tf_ecef_enu, tf_ecef_enu);
-                        TfDataToMsg(data.tf_ecef_enu0, tf_ecef_enu0);
-
-                        br_.sendTransform(tf_ecef_enu);
                         br_.sendTransform(tf_ecef_poi);
-                        static_br_.sendTransform(tf_ecef_enu0);
+                    }
+                });
+        } else if (format == "ODOMENU") {
+            dynamic_cast<OdomenuConverter*>(a_converters_["ODOMENU"].get())
+                ->AddObserver([this](const OdomenuConverter::Msgs& data) {
+                    // ODOMENU Observer Lambda
+                    if (odometry_enu0_pub_.getNumSubscribers() > 0) {
+                        nav_msgs::Odometry odometry_enu0;
+                        OdometryDataToMsg(data.odometry, odometry_enu0);
+                        odometry_enu0_pub_.publish(odometry_enu0);
+                    }
+
+                    if (eul_pub_.getNumSubscribers() > 0) {
+                        geometry_msgs::Vector3Stamped ypr;
+                        if (data.odometry.stamp.tow == 0.0 && data.odometry.stamp.wno == 0) {
+                            ypr.header.stamp = ros::Time::now();
+                        } else {
+                            ypr.header.stamp = ros::Time::fromBoost(fixposition::times::GpsTimeToPtime(data.odometry.stamp));
+                        }
+                        ypr.header.frame_id = "FP_ENU";
+                        tf::vectorEigenToMsg(data.eul, ypr.vector);
+                        eul_pub_.publish(ypr);
                     }
                 });
         } else if (format == "ODOMSH") {
-            dynamic_cast<OdometryConverter*>(a_converters_["ODOMSH"].get())
-                ->AddObserver([this](const OdometryConverter::Msgs& data) {
+            dynamic_cast<OdomshConverter*>(a_converters_["ODOMSH"].get())
+                ->AddObserver([this](const OdomshConverter::Msgs& data) {
                     // ODOMSH Observer Lambda
                     if (odometry_smooth_pub_.getNumSubscribers() > 0) {
                         nav_msgs::Odometry odometry;
@@ -132,13 +137,6 @@ void FixpositionDriverNode::RegisterObservers() {
                         odometry_smooth_pub_.publish(odometry);
                     }
                 });
-        } else if (format == "LLH" && a_converters_["LLH"]) {
-            dynamic_cast<LlhConverter*>(a_converters_["LLH"].get())->AddObserver([this](const NavSatFixData& data) {
-                // LLH Observer Lambda
-                sensor_msgs::NavSatFix msg;
-                NavSatFixDataToMsg(data, msg);
-                navsatfix_pub_.publish(msg);
-            });
         } else if (format == "RAWIMU") {
             dynamic_cast<ImuConverter*>(a_converters_["RAWIMU"].get())->AddObserver([this](const ImuData& data) {
                 // RAWIMU Observer Lambda
@@ -170,6 +168,8 @@ void FixpositionDriverNode::RegisterObservers() {
                     tf::vectorEigenToMsg(imu_ypr_eigen, imu_ypr.vector);
                     eul_imu_pub_.publish(imu_ypr);
 
+                } else if (tf.child_frame_id == "FP_POISH" && tf.header.frame_id == "FP_POI") {
+                    br_.sendTransform(tf);
                 } else {
                     static_br_.sendTransform(tf);
                 }
@@ -214,7 +214,7 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
         } else {
             msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.gpzda.stamp));
         }
-        msg.header.frame_id = "LLH";
+        msg.header.frame_id = "FP_POI";
 
         // Latitude [degrees]. Positive is north of equator; negative is south
         msg.latitude = data.gpgga.latitude;

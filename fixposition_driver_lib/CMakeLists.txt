@@ -24,8 +24,9 @@ include_directories(include
 add_library(
   ${PROJECT_NAME} SHARED
   src/fixposition_driver.cpp
+  src/odomenu.cpp
   src/odometry.cpp
-  src/llh.cpp
+  src/odomsh.cpp
   src/imu.cpp
   src/tf.cpp
   src/helper.cpp
