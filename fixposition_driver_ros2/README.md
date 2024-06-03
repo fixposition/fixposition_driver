@@ -82,14 +82,14 @@ To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections,
 
    there should be topics under the `/fixposition` namespace, for example:
    ```bash
-   /fixposition/corrimu
-   /fixposition/navsatfix
-   /fixposition/odometry
-   /fixposition/odomsh
-   /fixposition/odometry_enu
+   /fixposition/odom_ecef
+   /fixposition/odom_llh
+   /fixposition/odom_enu
+   /fixposition/odom_smooth
+   /fixposition/vrtk
    /fixposition/poiimu
    /fixposition/rawimu
-   /fixposition/vrtk
+   /fixposition/corrimu
    ```
 
 - Check published message in the topic, for example the VRTK message:
@@ -110,13 +110,13 @@ The output is published on the following:
 
     | Topic                       | Message Type              | Frequency                      | Description                                                                                                                                                   |
     | --------------------------- | ------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-    | `/fixposition/odometry`     | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
-    | `/fixposition/odomsh`       | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POISH, Velocity and Angular Velocity in FP_POI. Based on smooth odometry output.                                        |
-    | `/fixposition/navsatfix`    | `sensor_msgs/NavSatFix`   | as configured on web-interface | Position from LLH (Latitude, Longitude and Height) to FP_POI. Based on WGS-84 ellipsoid.                                                                      |
-    | `/fixposition/odometry_enu` | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ENU0 to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
+    | `/fixposition/odom_ecef`    | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
+    | `/fixposition/odom_llh`     | `sensor_msgs/NavSatFix`   | as configured on web-interface | Position from LLH (Latitude, Longitude and Height) to FP_POI. Based on WGS-84 ellipsoid                                                                       |
+    | `/fixposition/odom_enu`     | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ENU0 to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
+    | `/fixposition/odom_smooth`  | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POISH, Velocity and Angular Velocity in FP_POI. Based on smooth odometry output                                         |
     | `/fixposition/vrtk`         | `fixposition_driver/VRTK` | as configured on web-interface | Custom Message containing same Odometry information as well as status flags                                                                                   |
     | `/fixposition/poiimu`       | `sensor_msgs/Imu`         | as configured on web-interface | Bias Corrected acceleration and rotation rate in FP_POI                                                                                                       |
-    | `/fixposition/ypr`          | `geometry_msgs/Vector3`   | as configured on web-interface | x = Yaw, y = Pitch, z = Roll in radian. Euler angles representation of rotation between ENU and FP_POI. Only available after fusion initialization.           |    
+    | `/fixposition/ypr`          | `geometry_msgs/Vector3`   | as configured on web-interface | x = Yaw, y = Pitch, z = Roll in radian. Euler angles representation of rotation between ENU and FP_POI. Only available after fusion initialization            |
 
 #### Vision-RTK2 GNSS Antenna Positions
 
@@ -131,23 +131,23 @@ The output is published on the following:
 
 -   From **NMEA-GP-GGA_GNSS**, **NMEA-GP-RMC_GNSS**, and **NMEA-GP-ZDA_GNSS**, at the configured frequency (default 5Hz): The Vision-RTK2 can also output an average GNSS-based LLH position (i.e., **only GNSS, not Fusion**) and heading estimate based on speed over ground (**SOG**) and course over ground (**COG**) - (i.e., **the platform must be moving for it to be accurate**) by utilizing several NMEA messages, which serves as an auxiliary output until Fusion is fully initialized. This message's output frequency equals the lowest frequency of any of these three message types. **Note: This output should only be used until Fusion is fully initialized.** Warning: This topic will only be populated when the sampling rate of all required NMEA messages is 1 (i.e., the default output frequency of the messages).
 
-    | Topic                | Message Type            | Frequency                      | Description                    |
-    | -------------------- | ----------------------- | ------------------------------ | ------------------------------ |
-    | `/fixposition/nmea` | `fixposition_driver/NMEA` | as configured on web-interface | Latitude, Longitude and Height |
+    | Topic                | Message Type              | Frequency                      | Description                     |
+    | -------------------- | ------------------------- | ------------------------------ | ------------------------------- |
+    | `/fixposition/nmea`  | `fixposition_driver/NMEA` | as configured on web-interface | Latitude, Longitude and Height. |
 
 #### Vision-RTK2 IMU data
 
 -   From **FP_A-RAWIMU**, at 200Hz:
 
-    | Topic                 | Message Type      | Frequency | Description                                                                               |
-    | --------------------- | ----------------- | --------- | ----------------------------------------------------------------------------------------- |
-    | `/fixposition/rawimu` | `sensor_msgs/Imu` | 200Hz     | Raw (without bias correction) IMU acceleration and angular velocity data in FP_VRTK frame |
+    | Topic                 | Message Type      | Frequency | Description                                                                                |
+    | --------------------- | ----------------- | --------- | ------------------------------------------------------------------------------------------ |
+    | `/fixposition/rawimu` | `sensor_msgs/Imu` | 200Hz     | Raw (without bias correction) IMU acceleration and angular velocity data in FP_VRTK frame. |
 
 -   From **FP_A-CORRIMU**, at 200Hz:
 
-    | Topic                  | Message Type      | Frequency | Description                                                                |
-    | ---------------------- | ----------------- | --------- | -------------------------------------------------------------------------- |
-    | `/fixposition/corrimu` | `sensor_msgs/Imu` | 200Hz     | Bias Corrected IMU acceleration and angular velocity data in FP_VRTK frame |
+    | Topic                  | Message Type      | Frequency | Description                                                                 |
+    | ---------------------- | ----------------- | --------- | --------------------------------------------------------------------------- |
+    | `/fixposition/corrimu` | `sensor_msgs/Imu` | 200Hz     | Bias Corrected IMU acceleration and angular velocity data in FP_VRTK frame. |
 
 -   From **FP_A-TF_POIIMUH**, at 200Hz:
 

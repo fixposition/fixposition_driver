@@ -24,6 +24,20 @@
 
 namespace fixposition {
 
+enum class GnssStatus : int {
+    FIX_TYPE_UNKNOWN = 0,
+    FIX_TYPE_NOFIX = 1,
+    FIX_TYPE_DRONLY = 2,
+    FIX_TYPE_TIME = 3,
+    FIX_TYPE_S2D = 4,
+    FIX_TYPE_S3D = 5,
+    FIX_TYPE_S3D_DR = 6,
+    FIX_TYPE_RTK_FLOAT = 7,
+    FIX_TYPE_RTK_FIXED = 8,
+    FIX_TYPE_RTK_FLOAT_DR = 9,
+    FIX_TYPE_RTK_FIXED_DR = 10,
+};
+
 struct ImuData {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     times::GpsTime stamp;
@@ -110,11 +124,21 @@ struct VrtkData {
 
 struct NavSatStatusData {
     enum class Status : int8_t {
-        STATUS_NO_FIX = -1,   // # unable to fix position
-        STATUS_FIX = 0,       // # unaugmented fix
-        STATUS_SBAS_FIX = 1,  // # with satellite-based augmentation
-        STATUS_GBAS_FIX = 2,  // # with ground-based augmentation
+        STATUS_NO_FIX   = -1, // Unable to fix position
+        STATUS_FIX      =  0, // Unaugmented fix
+        STATUS_SBAS_FIX =  1, // With satellite-based augmentation
+        STATUS_GBAS_FIX =  2, // With ground-based augmentation
     };
+
+    enum class Service : uint16_t {
+        SERVICE_NONE    =  0,
+        SERVICE_GPS     =  1,
+        SERVICE_GLONASS =  2,
+        SERVICE_COMPASS =  4, // includes BeiDou.
+        SERVICE_GALILEO =  8,
+        SERVICE_ALL     = 15,
+    };
+    
     int8_t status;
     uint16_t service;
     NavSatStatusData() : status(static_cast<int8_t>(Status::STATUS_NO_FIX)), service(0) {}

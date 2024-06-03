@@ -82,14 +82,14 @@ To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections,
 
    there should be topics under the `/fixposition` namespace, for example:
    ```bash
-   /fixposition/corrimu
-   /fixposition/navsatfix
-   /fixposition/odometry
-   /fixposition/odomsh
-   /fixposition/odometry_enu
+   /fixposition/odom_ecef
+   /fixposition/odom_llh
+   /fixposition/odom_enu
+   /fixposition/odom_smooth
+   /fixposition/vrtk
    /fixposition/poiimu
    /fixposition/rawimu
-   /fixposition/vrtk
+   /fixposition/corrimu
    ```
 
 - Check published message in the topic, for example the VRTK message:
@@ -110,13 +110,13 @@ The output is published on the following:
 
     | Topic                       | Message Type              | Frequency                      | Description                                                                                                                                                   |
     | --------------------------- | ------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-    | `/fixposition/odometry`     | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
-    | `/fixposition/odomsh`       | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POISH, Velocity and Angular Velocity in FP_POI. Based on smooth odometry output.                                        |
-    | `/fixposition/navsatfix`    | `sensor_msgs/NavSatFix`   | as configured on web-interface | Position from LLH (Latitude, Longitude and Height) to FP_POI. Based on WGS-84 ellipsoid.                                                                      |
-    | `/fixposition/odometry_enu` | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ENU0 to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
+    | `/fixposition/odom_ecef`    | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
+    | `/fixposition/odom_llh`     | `sensor_msgs/NavSatFix`   | as configured on web-interface | Position from LLH (Latitude, Longitude and Height) to FP_POI. Based on WGS-84 ellipsoid.                                                                      |
+    | `/fixposition/odom_enu`     | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ENU0 to FP_POI, Velocity and Angular Velocity in FP_POI                                                                            |
+    | `/fixposition/odom_smooth`  | `nav_msgs/Odometry`       | as configured on web-interface | Position, Orientation from ECEF to FP_POISH, Velocity and Angular Velocity in FP_POI. Based on smooth odometry output.                                        |
     | `/fixposition/vrtk`         | `fixposition_driver/VRTK` | as configured on web-interface | Custom Message containing same Odometry information as well as status flags                                                                                   |
     | `/fixposition/poiimu`       | `sensor_msgs/Imu`         | as configured on web-interface | Bias Corrected acceleration and rotation rate in FP_POI                                                                                                       |
-    | `/fixposition/ypr`          | `geometry_msgs/Vector3`   | as configured on web-interface | x = Yaw, y = Pitch, z = Roll in radian. Euler angles representation of rotation between ENU and FP_POI. Only available after fusion initialization.           |    
+    | `/fixposition/ypr`          | `geometry_msgs/Vector3`   | as configured on web-interface | x = Yaw, y = Pitch, z = Roll in radian. Euler angles representation of rotation between ENU and FP_POI. Only available after fusion initialization.           |
 
 #### Vision-RTK2 GNSS Antenna Positions
 

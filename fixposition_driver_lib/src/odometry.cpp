@@ -165,7 +165,7 @@ void OdometryConverter::ConvertTokens(const std::vector<std::string>& tokens) {
         msgs_.tf_ecef_poi.translation = (t_ecef_body);
         msgs_.tf_ecef_poi.rotation = (q_ecef_body);
         
-        // Send TFs
+        // Ensure that the TF's rotation is a unit quaternion
         if (CheckQuat(msgs_.tf_ecef_poi.rotation)) {}
 
         // Pose & Cov
@@ -193,8 +193,8 @@ void OdometryConverter::ConvertTokens(const std::vector<std::string>& tokens) {
 
         // Populate LLH message
         const Eigen::Vector3d llh_pos = gnss_tf::TfWgs84LlhEcef(t_ecef_body);
-        msgs_.odom_llh.latitude = fixposition::RadToDeg(llh_pos(0));
-        msgs_.odom_llh.longitude = fixposition::RadToDeg(llh_pos(1));
+        msgs_.odom_llh.latitude = RadToDeg(llh_pos(0));
+        msgs_.odom_llh.longitude = RadToDeg(llh_pos(1));
         msgs_.odom_llh.altitude = llh_pos(2);
 
         // Populate LLH covariance
@@ -207,18 +207,21 @@ void OdometryConverter::ConvertTokens(const std::vector<std::string>& tokens) {
         // Populate LLH status
         int status_flag = std::max(msgs_.vrtk.gnss1_status, msgs_.vrtk.gnss2_status);
 
-        if (status_flag < 4) {
-            msgs_.odom_llh.status.status = -1;
-            msgs_.odom_llh.status.service = 0;
-        } else if (status_flag >= 4 || status_flag < 7) {
-            msgs_.odom_llh.status.status = 0;
-            msgs_.odom_llh.status.service = 15;
-        } else if (status_flag >= 7) {
-            msgs_.odom_llh.status.status = 2;
-            msgs_.odom_llh.status.service = 15;
+        if (status_flag < static_cast<int8_t>(GnssStatus::FIX_TYPE_S2D)) {
+            msgs_.odom_llh.status.status = static_cast<int8_t>(NavSatStatusData::Status::STATUS_NO_FIX);
+            msgs_.odom_llh.status.service = static_cast<uint16_t>(NavSatStatusData::Service::SERVICE_NONE);
+
+        } else if (status_flag >= static_cast<int8_t>(GnssStatus::FIX_TYPE_S2D) || status_flag < static_cast<int8_t>(GnssStatus::FIX_TYPE_RTK_FLOAT)) {
+            msgs_.odom_llh.status.status = static_cast<int8_t>(NavSatStatusData::Status::STATUS_FIX);
+            msgs_.odom_llh.status.service = static_cast<uint16_t>(NavSatStatusData::Service::SERVICE_ALL);
+
+        } else if (status_flag >= static_cast<int8_t>(GnssStatus::FIX_TYPE_RTK_FLOAT)) {
+            msgs_.odom_llh.status.status = static_cast<int8_t>(NavSatStatusData::Status::STATUS_GBAS_FIX);
+            msgs_.odom_llh.status.service = static_cast<uint16_t>(NavSatStatusData::Service::SERVICE_ALL);
+            
         } else {
-            msgs_.odom_llh.status.status = -1;
-            msgs_.odom_llh.status.service = 0;
+            msgs_.odom_llh.status.status = static_cast<int8_t>(NavSatStatusData::Status::STATUS_NO_FIX);
+            msgs_.odom_llh.status.service = static_cast<uint16_t>(NavSatStatusData::Service::SERVICE_NONE);
         }
     }
 
