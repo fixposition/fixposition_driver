@@ -14,20 +14,13 @@
 
 #ifndef __FIXPOSITION_DRIVER_ROS1_DATA_TO_ROS1__
 #define __FIXPOSITION_DRIVER_ROS1_DATA_TO_ROS1__
-/* ROS */
-#include <eigen_conversions/eigen_msg.h>
-#include <geometry_msgs/Vector3Stamped.h>
-#include <geometry_msgs/TransformStamped.h>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/Imu.h>
-#include <sensor_msgs/NavSatFix.h>
 
 /* FIXPOSITION DRIVER LIB */
-#include <fixposition_driver_lib/msg_data.hpp>
+#include <fixposition_driver_lib/messages/msg_data.hpp>
+#include <fixposition_driver_lib/fixposition_driver.hpp>
 
 /* PACKAGE */
-#include <fixposition_driver_ros1/VRTK.h>
-#include <fixposition_driver_ros1/NMEA.h>
+#include <fixposition_driver_ros1/fixposition_driver_node.hpp>
 
 namespace fixposition {
 /**
@@ -77,6 +70,14 @@ void TwistWithCovDataToMsg(const TwistWithCovData& data, geometry_msgs::TwistWit
  * @param[out] msg
  */
 void OdometryDataToMsg(const OdometryData& data, nav_msgs::Odometry& msg);
+
+/**
+ * @brief
+ *
+ * @param[in] data
+ * @param[out] msg
+ */
+void OdomDataToMsg(const fixposition::FP_ODOMETRY& data, nav_msgs::Odometry& msg);
 
 /**
  * @brief

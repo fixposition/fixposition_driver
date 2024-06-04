@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @brief Implementation of TfConverter
+ *  @brief Implementation of FP_A-TF parser
  *
  * \verbatim
  *  ___    ___
@@ -16,7 +16,8 @@
 #include <iostream>
 
 /* PACKAGE */
-#include <fixposition_driver_lib/converter/tf.hpp>
+#include <fixposition_driver_lib/messages/fpa_type.hpp>
+#include <fixposition_driver_lib/messages/base_converter.hpp>
 
 namespace fixposition {
 
@@ -35,7 +36,7 @@ static constexpr const int orientation_x_idx = 11;
 static constexpr const int orientation_y_idx = 12;
 static constexpr const int orientation_z_idx = 13;
 
-void TfConverter::ConvertTokens(const std::vector<std::string>& tokens) {
+void FP_TF::ConvertFromTokens(const std::vector<std::string>& tokens) {
     bool ok = tokens.size() == kSize_;
     if (!ok) {
         // Size is wrong
@@ -54,24 +55,20 @@ void TfConverter::ConvertTokens(const std::vector<std::string>& tokens) {
 
     if (!ok) {
         // Reset message and return
-        msg_ = TfData();
+        ResetData();
         return;
     }
 
     // header stamps
-    msg_.stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
-    msg_.frame_id = "FP_" + tokens.at(from_frame_idx);
-    msg_.child_frame_id = "FP_" + tokens.at(to_frame_idx);
+    tf.stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
+    tf.frame_id = "FP_" + tokens.at(from_frame_idx);
+    tf.child_frame_id = "FP_" + tokens.at(to_frame_idx);
 
-    msg_.translation =
-        Vector3ToEigen(tokens.at(translation_x_idx), tokens.at(translation_y_idx), tokens.at(translation_z_idx));
-    msg_.rotation = Vector4ToEigen(tokens.at(orientation_w_idx), tokens.at(orientation_x_idx),
-                                   tokens.at(orientation_y_idx), tokens.at(orientation_z_idx));
-
-    // process all observers
-    for (auto& ob : obs_) {
-        ob(msg_);
-    }
+    tf.translation = Vector3ToEigen(tokens.at(translation_x_idx), 
+                                    tokens.at(translation_y_idx),
+                                    tokens.at(translation_z_idx));
+    tf.rotation = Vector4ToEigen(tokens.at(orientation_w_idx), tokens.at(orientation_x_idx),
+                                 tokens.at(orientation_y_idx), tokens.at(orientation_z_idx));
 }
 
 }  // namespace fixposition

@@ -13,10 +13,14 @@
  */
 
 /* SYSTEM / STL */
+#include <ctime>
+#include <iomanip>
 #include <iostream>
 
 /* PACKAGE */
-#include <fixposition_driver_lib/converter/gpzda.hpp>
+#include <fixposition_driver_lib/messages/nmea_type.hpp>
+#include <fixposition_driver_lib/messages/base_converter.hpp>
+#include <fixposition_driver_lib/time_conversions.hpp>
 
 namespace fixposition {
 
@@ -27,10 +31,6 @@ static constexpr const int month_idx = 3;
 static constexpr const int year_idx = 4;
 static constexpr const int local_hr_idx = 5;
 static constexpr const int local_min_idx = 6;
-
-#include <iostream>
-#include <ctime>
-#include <iomanip>
 
 // Function to convert UTC time with milliseconds to GPS time
 void convertToGPSTime(const std::string& utcTimeString, std::string& gpsWeek, std::string& gpsTimeOfWeek) {
@@ -80,40 +80,36 @@ void convertToGPSTime(const std::string& utcTimeString, std::string& gpsWeek, st
     gpsTimeOfWeek = ossTime.str();
 }
 
-void GpzdaConverter::ConvertTokens(const std::vector<std::string>& tokens) {
+void GP_ZDA::ConvertFromTokens(const std::vector<std::string>& tokens) {
     // Check if message size is wrong
     bool ok = tokens.size() == kSize_;
     if (!ok) {
         std::cout << "Error in parsing GPZDA string with " << tokens.size() << " fields! GPZDA message will be empty.\n";
-        msg_ = GpzdaData();
+        ResetData();
         return;
     }
 
     // Check that critical message fields are populated
     for (int i = 1; i < 6; i++) {
         if (tokens.at(i).empty()) {
-            msg_ = GpzdaData();
+            ResetData();
             return;
         }
     }
 
     // Populate time fields
-    msg_.time = tokens.at(time_idx);
-    msg_.date = tokens.at(day_idx) + '/' + tokens.at(month_idx) + '/' + tokens.at(year_idx);
+    time = tokens.at(time_idx);
+    date = tokens.at(day_idx) + '/' + tokens.at(month_idx) + '/' + tokens.at(year_idx);
 
     // Generate GPS timestamp
-    std::string utcTimeString = msg_.date + " " + msg_.time.substr(0,2) + ":" + msg_.time.substr(2,2) + ":" + msg_.time.substr(4);
+    std::string utcTimeString = date + " " + time.substr(0,2) + ":" + time.substr(2,2) + ":" + time.substr(4);
     std::string gps_tow, gps_week;
     convertToGPSTime(utcTimeString, gps_week, gps_tow);
-    msg_.stamp = ConvertGpsTime(gps_week, gps_tow);
+    stamp = ConvertGpsTime(gps_week, gps_tow);
 
-    // Set message as valid
-    msg_.valid = true;
-
-    // Process all observers
-    for (auto& ob : obs_) {
-        ob(msg_);
-    }
+    // Get local time
+    local_hr = StringToDouble(tokens.at(local_hr_idx));
+    local_min = StringToDouble(tokens.at(local_min_idx));
 }
 
 }  // namespace fixposition

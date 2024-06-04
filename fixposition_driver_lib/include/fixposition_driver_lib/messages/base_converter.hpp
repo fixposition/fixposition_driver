@@ -26,21 +26,76 @@
 #include <fixposition_driver_lib/time_conversions.hpp>
 
 namespace fixposition {
+
 class BaseAsciiConverter {
-   public:
-    BaseAsciiConverter() = default;
-    ~BaseAsciiConverter() = default;
+    public:
+        BaseAsciiConverter() = default;
+        ~BaseAsciiConverter() = default;
 
-    /**
-     * @brief Virtual interface to convert the split tokens into ros messages
-     *
-     * @param[in] tokens vector of strings split by comma
-     */
-    virtual void ConvertTokens(const std::vector<std::string>& tokens) = 0;
+        /**
+         * @brief Virtual interface to convert the split tokens into ros messages
+         *
+         * @param[in] tokens vector of strings split by comma
+         */
+        virtual void ConvertTokens(const std::vector<std::string>& tokens) = 0;
+};
 
+template <typename MessageType> class NmeaConverter : public BaseAsciiConverter {
+    public:
+        using Observer = std::function<void(const MessageType&)>;
+
+        /**
+         * @brief Construct a new Fixposition Msg Converter object
+         *
+         */
+        
+        NmeaConverter() : BaseAsciiConverter() {}
+
+        ~NmeaConverter() = default;
+
+        /**
+         * @brief Comma Delimited FP_A message, convert to Data structs and, if available, call observers
+         *
+         * @param[in] state state message as string
+         * @return FP_A message struct
+         */
+        void ConvertTokens(const std::vector<std::string>& tokens) {
+            msg_.ConvertFromTokens(tokens);
+
+            // process all observers
+            for (auto& ob : obs_) {
+                ob(msg_);
+            }
+        };
+
+        /**
+         * @brief Add Observer to call at the end of ConvertTokens()
+         *
+         * @param[in] ob
+         */
+        void AddObserver(Observer ob) { obs_.push_back(ob); }
+
+    private:
+        MessageType msg_;
+        std::vector<Observer> obs_;
 };
 
 //===================================================
+
+/**
+ * @brief Parse status flag field
+ *
+ * @param[in] tokens list of tokens
+ * @param[in] idx status flag index
+ * @return int
+ */
+inline int ParseStatusFlag(const std::vector<std::string>& tokens, const int idx) {
+    if (tokens.at(idx).empty()) {
+        return -1;
+    } else {
+        return std::stoi(tokens.at(idx));
+    }
+}
 
 /**
  * @brief Helper function to convert string into double. If string is empty then 0.0 is returned

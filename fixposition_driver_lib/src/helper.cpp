@@ -14,7 +14,7 @@
 
 /* PACKAGE */
 #include <fixposition_driver_lib/helper.hpp>
-#include <fixposition_driver_lib/nov_type.hpp>
+#include <fixposition_driver_lib/messages/nov_type.hpp>
 
 namespace fixposition {
 

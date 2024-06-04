@@ -19,7 +19,7 @@
 #include <stdint.h>
 
 /* PACKAGE */
-#include <fixposition_driver_lib/fpb.hpp>
+#include <fixposition_driver_lib/messages/fpb_type.hpp>
 
 namespace fixposition {
 

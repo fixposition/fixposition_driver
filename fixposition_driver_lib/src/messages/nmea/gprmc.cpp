@@ -16,7 +16,9 @@
 #include <iostream>
 
 /* PACKAGE */
-#include <fixposition_driver_lib/converter/gprmc.hpp>
+#include <fixposition_driver_lib/messages/nmea_type.hpp>
+#include <fixposition_driver_lib/messages/base_converter.hpp>
+#include <fixposition_driver_lib/time_conversions.hpp>
 
 namespace fixposition {
 
@@ -37,51 +39,47 @@ static constexpr const int magvar_idx = 10;
 static constexpr const int magvar_ew = 11;
 static constexpr const int mode_idx = 12;
 
-void GprmcConverter::ConvertTokens(const std::vector<std::string>& tokens) {
+void GP_RMC::ConvertFromTokens(const std::vector<std::string>& tokens) {
     // Check if message size is wrong
     bool ok = tokens.size() == kSize_;
     if (!ok) {
         std::cout << "Error in parsing GPRMC string with " << tokens.size() << " fields! GPRMC message will be empty.\n";
-        msg_ = GprmcData();
+        ResetData();
         return;
     }
 
     // Check that critical message fields are populated
     for (int i = 1; i < 9; i++) {
         if (tokens.at(i).empty()) {
-            msg_ = GprmcData();
+            ResetData();
             return;
         }
     }
 
-    // Header stamps
-    msg_.time = tokens.at(time_idx);
+    // Time string
+    date_str = tokens.at(date_idx);
+    time_str = tokens.at(time_idx);
 
     // LLH coordinates
     const std::string _latstr = tokens.at(lat_idx);
     double _lat = StringToDouble(_latstr.substr(0,2)) + StringToDouble((_latstr.substr(2))) / 60;
     if (tokens.at(lat_ns_idx).compare("S") == 0) _lat *= -1;
-    msg_.latitude = _lat;
 
     const std::string _lonstr = tokens.at(lon_idx);
     double _lon = StringToDouble(_lonstr.substr(0,3)) + StringToDouble((_lonstr.substr(3))) / 60;
     if (tokens.at(lon_ew_idx).compare("W") == 0) _lon *= -1;
-    msg_.longitude = _lon;
 
-    // Speed [m/s] and course [deg] over ground
-    msg_.speed = StringToDouble(tokens.at(speed_idx)) * knots_to_ms;
-    msg_.course = StringToDouble(tokens.at(course_idx));
+    latlon = Eigen::Vector2d(_lat, _lon);
 
-    // Get GPS status
-    msg_.mode = tokens.at(mode_idx);
+    // LLH indicators
+    status = tokens.at(status_idx)[0];
+    lat_ns = tokens.at(lat_ns_idx)[0];
+    lon_ew = tokens.at(lon_ew_idx)[0];
+    mode   = tokens.at(mode_idx)[0];
 
-    // Set message as valid
-    msg_.valid = true;
-
-    // Process all observers
-    for (auto& ob : obs_) {
-        ob(msg_);
-    }
+    // Speed and course over ground
+    speed  = StringToDouble(tokens.at(speed_idx)) * knots_to_ms;
+    course = StringToDouble(tokens.at(course_idx));
 }
 
 }  // namespace fixposition

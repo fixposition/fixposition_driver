@@ -12,26 +12,11 @@
  *
  */
 
-/* ROS */
-#include <eigen_conversions/eigen_msg.h>
-#include <ros/console.h>
-#include <ros/ros.h>
-
 /* FIXPOSITION */
-#include <fixposition_driver_lib/converter/imu.hpp>
-#include <fixposition_driver_lib/converter/odometry.hpp>
-#include <fixposition_driver_lib/converter/odomenu.hpp>
-#include <fixposition_driver_lib/converter/odomsh.hpp>
-#include <fixposition_driver_lib/converter/tf.hpp>
-#include <fixposition_driver_lib/converter/gpgga.hpp>
-#include <fixposition_driver_lib/converter/gpzda.hpp>
-#include <fixposition_driver_lib/converter/gprmc.hpp>
-#include <fixposition_driver_lib/fixposition_driver.hpp>
 #include <fixposition_driver_lib/helper.hpp>
 #include <fixposition_gnss_tf/gnss_tf.hpp>
 
 /* PACKAGE */
-#include <fixposition_driver_ros1/data_to_ros1.hpp>
 #include <fixposition_driver_ros1/fixposition_driver_node.hpp>
 #include <fixposition_driver_ros1/params.hpp>
 
@@ -42,13 +27,13 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
       nh_("~"),
       rawimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/rawimu", 100)),
       corrimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/corrimu", 100)),
-      navsatfix_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/navsatfix", 100)),
+      navsatfix_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/odometry_llh", 100)),
       navsatfix_gnss1_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss1", 100)),
       navsatfix_gnss2_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss2", 100)),
       nmea_pub_(nh_.advertise<fixposition_driver_ros1::NMEA>("/fixposition/nmea", 100)),
       //   ODOMETRY
-      odometry_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry", 100)),
-      odometry_smooth_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odomsh", 100)),
+      odometry_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_ecef", 100)),
+      odometry_smooth_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_smooth", 100)),
       poiimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/poiimu", 100)),
       vrtk_pub_(nh_.advertise<fixposition_driver_ros1::VRTK>("/fixposition/vrtk", 100)),
       odometry_enu0_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_enu", 100)),
@@ -70,97 +55,97 @@ void FixpositionDriverNode::RegisterObservers() {
     // FP_A
     for (const auto& format : params_.fp_output.formats) {
         if (format == "ODOMETRY") {
-            dynamic_cast<OdometryConverter*>(a_converters_["ODOMETRY"].get())
-                ->AddObserver([this](const OdometryConverter::Msgs& data) {
+            dynamic_cast<NmeaConverter<FP_ODOMETRY>*>(a_converters_["ODOMETRY"].get())
+                ->AddObserver([this](const FP_ODOMETRY& data) {
                     // ODOMETRY Observer Lambda
                     // Msgs
                     if (odometry_pub_.getNumSubscribers() > 0) {
                         nav_msgs::Odometry odometry;
-                        OdometryDataToMsg(data.odometry, odometry);
+                        OdometryDataToMsg(data.odom, odometry);
                         odometry_pub_.publish(odometry);
                     }
 
-                    if (vrtk_pub_.getNumSubscribers() > 0) {
-                        fixposition_driver_ros1::VRTK vrtk;
-                        VrtkDataToMsg(data.vrtk, vrtk);
-                        vrtk_pub_.publish(vrtk);
-                    }
+                    // if (vrtk_pub_.getNumSubscribers() > 0) {
+                    //     fixposition_driver_ros1::VRTK vrtk;
+                    //     VrtkDataToMsg(data, vrtk);
+                    //     vrtk_pub_.publish(vrtk);
+                    // }
 
-                    if (poiimu_pub_.getNumSubscribers() > 0) {
-                        sensor_msgs::Imu poiimu;
-                        ImuDataToMsg(data.imu, poiimu);
-                        poiimu_pub_.publish(poiimu);
-                    }
+                    // if (poiimu_pub_.getNumSubscribers() > 0) {
+                    //     sensor_msgs::Imu poiimu;
+                    //     ImuDataToMsg(data, poiimu);
+                    //     poiimu_pub_.publish(poiimu);
+                    // }
 
-                    if (navsatfix_pub_.getNumSubscribers() > 0) {
-                        sensor_msgs::NavSatFix msg;
-                        NavSatFixDataToMsg(data.odom_llh, msg);
-                        navsatfix_pub_.publish(msg);
-                    }
+                    // if (navsatfix_pub_.getNumSubscribers() > 0) {
+                    //     sensor_msgs::NavSatFix msg;
+                    //     NavSatFixDataToMsg(data, msg);
+                    //     navsatfix_pub_.publish(msg);
+                    // }
 
-                    // TFs
-                    if (data.vrtk.fusion_status > 0) {
-                        geometry_msgs::TransformStamped tf_ecef_poi;
-                        TfDataToMsg(data.tf_ecef_poi, tf_ecef_poi);
-                        br_.sendTransform(tf_ecef_poi);
-                    }
+                    // // TFs
+                    // if (data.vrtk.fusion_status > 0) {
+                    //     geometry_msgs::TransformStamped tf_ecef_poi;
+                    //     TfDataToMsg(data, tf_ecef_poi);
+                    //     br_.sendTransform(tf_ecef_poi);
+                    // }
                 });
         } else if (format == "ODOMENU") {
-            dynamic_cast<OdomenuConverter*>(a_converters_["ODOMENU"].get())
-                ->AddObserver([this](const OdomenuConverter::Msgs& data) {
+            dynamic_cast<NmeaConverter<FP_ODOMENU>*>(a_converters_["ODOMENU"].get())
+                ->AddObserver([this](const FP_ODOMENU& data) {
                     // ODOMENU Observer Lambda
                     if (odometry_enu0_pub_.getNumSubscribers() > 0) {
                         nav_msgs::Odometry odometry_enu0;
-                        OdometryDataToMsg(data.odometry, odometry_enu0);
+                        OdometryDataToMsg(data.odom, odometry_enu0);
                         odometry_enu0_pub_.publish(odometry_enu0);
                     }
 
-                    if (eul_pub_.getNumSubscribers() > 0) {
-                        geometry_msgs::Vector3Stamped ypr;
-                        if (data.odometry.stamp.tow == 0.0 && data.odometry.stamp.wno == 0) {
-                            ypr.header.stamp = ros::Time::now();
-                        } else {
-                            ypr.header.stamp = ros::Time::fromBoost(fixposition::times::GpsTimeToPtime(data.odometry.stamp));
-                        }
-                        ypr.header.frame_id = "FP_ENU";
-                        tf::vectorEigenToMsg(data.eul, ypr.vector);
-                        eul_pub_.publish(ypr);
-                    }
+                    // if (eul_pub_.getNumSubscribers() > 0) {
+                    //     geometry_msgs::Vector3Stamped ypr;
+                    //     if (data.odometry.stamp.tow == 0.0 && data.odometry.stamp.wno == 0) {
+                    //         ypr.header.stamp = ros::Time::now();
+                    //     } else {
+                    //         ypr.header.stamp = ros::Time::fromBoost(fixposition::times::GpsTimeToPtime(data.odometry.stamp));
+                    //     }
+                    //     ypr.header.frame_id = "FP_ENU";
+                    //     tf::vectorEigenToMsg(data.eul, ypr.vector);
+                    //     eul_pub_.publish(ypr);
+                    // }
                 });
         } else if (format == "ODOMSH") {
-            dynamic_cast<OdomshConverter*>(a_converters_["ODOMSH"].get())
-                ->AddObserver([this](const OdomshConverter::Msgs& data) {
+            dynamic_cast<NmeaConverter<FP_ODOMSH>*>(a_converters_["ODOMSH"].get())
+                ->AddObserver([this](const FP_ODOMSH& data) {
                     // ODOMSH Observer Lambda
                     if (odometry_smooth_pub_.getNumSubscribers() > 0) {
                         nav_msgs::Odometry odometry;
-                        OdometryDataToMsg(data.odometry, odometry);
+                        OdometryDataToMsg(data.odom, odometry);
                         odometry_smooth_pub_.publish(odometry);
                     }
                 });
         } else if (format == "RAWIMU") {
-            dynamic_cast<ImuConverter*>(a_converters_["RAWIMU"].get())->AddObserver([this](const ImuData& data) {
+            dynamic_cast<NmeaConverter<FP_RAWIMU>*>(a_converters_["RAWIMU"].get())->AddObserver([this](const FP_RAWIMU& data) {
                 // RAWIMU Observer Lambda
                 sensor_msgs::Imu msg;
-                ImuDataToMsg(data, msg);
+                ImuDataToMsg(data.imu, msg);
                 rawimu_pub_.publish(msg);
             });
         } else if (format == "CORRIMU") {
-            dynamic_cast<ImuConverter*>(a_converters_["CORRIMU"].get())->AddObserver([this](const ImuData& data) {
+            dynamic_cast<NmeaConverter<FP_CORRIMU>*>(a_converters_["CORRIMU"].get())->AddObserver([this](const FP_CORRIMU& data) {
                 // CORRIMU Observer Lambda
                 sensor_msgs::Imu msg;
-                ImuDataToMsg(data, msg);
+                ImuDataToMsg(data.imu, msg);
                 corrimu_pub_.publish(msg);
             });
         } else if (format == "TF") {
-            dynamic_cast<TfConverter*>(a_converters_["TF"].get())->AddObserver([this](const TfData& data) {
+            dynamic_cast<NmeaConverter<FP_TF>*>(a_converters_["TF"].get())->AddObserver([this](const FP_TF& data) {
                 // TF Observer Lambda
                 geometry_msgs::TransformStamped tf;
-                TfDataToMsg(data, tf);
+                TfDataToMsg(data.tf, tf);
                 if (tf.child_frame_id == "FP_IMUH" && tf.header.frame_id == "FP_POI") {
                     br_.sendTransform(tf);
 
                     // Publish Pitch Roll based on IMU only
-                    Eigen::Vector3d imu_ypr_eigen = gnss_tf::QuatToEul(data.rotation);
+                    Eigen::Vector3d imu_ypr_eigen = gnss_tf::QuatToEul(data.tf.rotation);
                     imu_ypr_eigen.x() = 0.0;  // the yaw value is not observable using IMU alone
                     geometry_msgs::Vector3Stamped imu_ypr;
                     imu_ypr.header.stamp = tf.header.stamp;
@@ -174,31 +159,32 @@ void FixpositionDriverNode::RegisterObservers() {
                     static_br_.sendTransform(tf);
                 }
             });
-        } else if (format == "GPGGA") {
-            dynamic_cast<GpggaConverter*>(a_converters_["GPGGA"].get())->AddObserver([this](const GpggaData& data) {
-                // GPGGA Observer Lambda
-                if (nmea_pub_.getNumSubscribers() > 0) {
-                    nmea_message_.gpgga = data;
-                    PublishNmea(nmea_message_);
-                }
-            });
-        } else if (format == "GPZDA") {
-            dynamic_cast<GpzdaConverter*>(a_converters_["GPZDA"].get())->AddObserver([this](const GpzdaData& data) {
-                // GPZDA Observer Lambda
-                if (nmea_pub_.getNumSubscribers() > 0) {
-                    nmea_message_.gpzda = data;
-                    PublishNmea(nmea_message_);
-                }
-            });
-        } else if (format == "GPRMC") {
-            dynamic_cast<GprmcConverter*>(a_converters_["GPRMC"].get())->AddObserver([this](const GprmcData& data) {
-                // GPRMC Observer Lambda
-                if (nmea_pub_.getNumSubscribers() > 0) {
-                    nmea_message_.gprmc = data;
-                    PublishNmea(nmea_message_);
-                }
-            });
-        }
+        } // Delete
+        // } else if (format == "GPGGA") {
+        //     dynamic_cast<GpggaConverter*>(a_converters_["GPGGA"].get())->AddObserver([this](const GpggaData& data) {
+        //         // GPGGA Observer Lambda
+        //         if (nmea_pub_.getNumSubscribers() > 0) {
+        //             nmea_message_.gpgga = data;
+        //             PublishNmea(nmea_message_);
+        //         }
+        //     });
+        // } else if (format == "GPZDA") {
+        //     dynamic_cast<GpzdaConverter*>(a_converters_["GPZDA"].get())->AddObserver([this](const GpzdaData& data) {
+        //         // GPZDA Observer Lambda
+        //         if (nmea_pub_.getNumSubscribers() > 0) {
+        //             nmea_message_.gpzda = data;
+        //             PublishNmea(nmea_message_);
+        //         }
+        //     });
+        // } else if (format == "GPRMC") {
+        //     dynamic_cast<GprmcConverter*>(a_converters_["GPRMC"].get())->AddObserver([this](const GprmcData& data) {
+        //         // GPRMC Observer Lambda
+        //         if (nmea_pub_.getNumSubscribers() > 0) {
+        //             nmea_message_.gprmc = data;
+        //             PublishNmea(nmea_message_);
+        //         }
+        //     });
+        // }
     }
 }
 

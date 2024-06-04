@@ -65,7 +65,7 @@ static uint32_t const k_crc32_fpb[] = {
     0xb0821a7e, 0x82421ce7, 0xd502174c, 0xe7c211d5
 };
 
-uint32_t Crc32fpb(const uint8_t* data, const int size) {
+inline uint32_t Crc32fpb(const uint8_t* data, const int size) {
     uint32_t crc = 0;
     if (data != nullptr) {
         for (int ix = 0; ix < size; ix++) {

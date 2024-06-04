@@ -17,24 +17,13 @@
 
 /* SYSTEM / STL */
 #include <termios.h>
-
 #include <unordered_map>
 
 /* ROS */
-#include <nav_msgs/Odometry.h>
-#include <ros/ros.h>
-#include <sensor_msgs/Imu.h>
-#include <sensor_msgs/NavSatFix.h>
-#include <tf2_ros/static_transform_broadcaster.h>
-#include <tf2_ros/transform_broadcaster.h>
-#include <tf2_ros/transform_listener.h>
-
-/* FIXPOSITION */
-#include <fixposition_driver_lib/fixposition_driver.hpp>
+#include <fixposition_driver_ros1/ros_msgs.hpp>
 
 /* PACKAGE */
-#include <fixposition_driver_ros1/Speed.h>
-#include <fixposition_driver_ros1/VRTK.h>
+#include <fixposition_driver_ros1/data_to_ros1.hpp>
 
 namespace fixposition {
 class FixpositionDriverNode : public FixpositionDriver {

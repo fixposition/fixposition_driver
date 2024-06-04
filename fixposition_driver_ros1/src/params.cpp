@@ -12,10 +12,6 @@
  *
  */
 
-/* ROS */
-#include <ros/console.h>
-#include <ros/ros.h>
-
 /* PACKAGE */
 #include <fixposition_driver_ros1/params.hpp>
 

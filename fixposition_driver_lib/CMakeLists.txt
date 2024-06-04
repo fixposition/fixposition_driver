@@ -24,16 +24,19 @@ include_directories(include
 add_library(
   ${PROJECT_NAME} SHARED
   src/fixposition_driver.cpp
-  src/odomenu.cpp
-  src/odometry.cpp
-  src/odomsh.cpp
-  src/imu.cpp
-  src/tf.cpp
+  src/messages/fpa/odomenu.cpp
+  src/messages/fpa/odometry.cpp
+  src/messages/fpa/odomsh.cpp
+  src/messages/fpa/rawimu.cpp
+  src/messages/fpa/corrimu.cpp
+  src/messages/fpa/tf.cpp
+  
+  src/messages/nmea/gpgga.cpp
+  src/messages/nmea/gpzda.cpp
+  src/messages/nmea/gprmc.cpp
+
   src/helper.cpp
   src/parser.cpp
-  src/gpgga.cpp
-  src/gpzda.cpp
-  src/gprmc.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} ${fixposition_gnss_tf_LIBRARIES} ${Boost_LIBRARIES} pthread)

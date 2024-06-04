@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @brief Implementation of ImuConverter converter
+ *  @brief Implementation of FP_A-RAWIMU parser
  *
  * \verbatim
  *  ___    ___
@@ -16,7 +16,9 @@
 #include <iostream>
 
 /* PACKAGE */
-#include <fixposition_driver_lib/converter/imu.hpp>
+#include <fixposition_driver_lib/messages/fpa_type.hpp>
+#include <fixposition_driver_lib/messages/base_converter.hpp>
+#include <fixposition_driver_lib/time_conversions.hpp>
 
 namespace fixposition {
 
@@ -32,7 +34,7 @@ static constexpr const int rot_x_idx = 8;
 static constexpr const int rot_y_idx = 9;
 static constexpr const int rot_z_idx = 10;
 
-void ImuConverter::ConvertTokens(const std::vector<std::string>& tokens) {
+void FP_RAWIMU::ConvertFromTokens(const std::vector<std::string>& tokens) {
     bool ok = tokens.size() == kSize_;
     if (!ok) {
         // Size is wrong
@@ -51,19 +53,15 @@ void ImuConverter::ConvertTokens(const std::vector<std::string>& tokens) {
 
     if (!ok) {
         // Reset message and return
-        msg_ = ImuData();
+        ResetData();
         return;
     }
-    // header stamps
-    msg_.stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
-    msg_.linear_acceleration = Vector3ToEigen(tokens.at(acc_x_idx), tokens.at(acc_y_idx), tokens.at(acc_z_idx));
-    msg_.angular_velocity = Vector3ToEigen(tokens.at(rot_x_idx), tokens.at(rot_y_idx), tokens.at(rot_z_idx));
-    msg_.frame_id = "FP_VRTK";
     
-    // process all observers
-    for (auto& ob : obs_) {
-        ob(msg_);
-    }
+    // header stamps
+    imu.stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
+    imu.linear_acceleration = Vector3ToEigen(tokens.at(acc_x_idx), tokens.at(acc_y_idx), tokens.at(acc_z_idx));
+    imu.angular_velocity = Vector3ToEigen(tokens.at(rot_x_idx), tokens.at(rot_y_idx), tokens.at(rot_z_idx));
+    imu.frame_id = "FP_VRTK";
 }
 
 }  // namespace fixposition
