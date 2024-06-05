@@ -12,14 +12,6 @@
  *
  */
 
-/* ROS */
-#if __has_include(<tf2_eigen/tf2_eigen.hpp>)
-#include <tf2_eigen/tf2_eigen.hpp>
-#else
-// This header was deprecated as of ROS2 Humble, but is still required in order to support Foxy.
-#include <tf2_eigen/tf2_eigen.h>
-#endif
-
 /* PACKAGE */
 #include <fixposition_driver_ros2/data_to_ros2.hpp>
 
@@ -87,6 +79,100 @@ void OdometryDataToMsg(const fixposition::OdometryData& data, nav_msgs::msg::Odo
 
     PoseWithCovDataToMsg(data.pose, msg.pose);
     TwistWithCovDataToMsg(data.twist, msg.twist);
+}
+
+void OdometryDataToTf(const OdometryData& data, geometry_msgs::msg::TransformStamped& msg) {
+    msg.header.frame_id = data.frame_id;
+    msg.child_frame_id = data.child_frame_id;
+
+    if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+        msg.header.stamp = rclcpp::Clock().now();
+    } else {
+        msg.header.stamp = GpsTimeToMsgTime(data.stamp);
+    }
+
+    msg.transform.rotation = tf2::toMsg(data.pose.orientation);
+    tf2::toMsg(data.pose.position, msg.transform.translation);
+}
+
+void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, sensor_msgs::msg::NavSatFix& msg) {
+    // Populate message header
+    if (data.odom.stamp.tow == 0.0 && data.odom.stamp.wno == 0) {
+        msg.header.stamp = rclcpp::Clock().now();
+    } else {
+        msg.header.stamp = GpsTimeToMsgTime(data.odom.stamp);
+    }
+    msg.header.frame_id = data.odom.frame_id;
+    
+    // Populate LLH position
+    const Eigen::Vector3d llh_pos = gnss_tf::TfWgs84LlhEcef(data.odom.pose.position);
+    msg.latitude  = RadToDeg(llh_pos(0));
+    msg.longitude = RadToDeg(llh_pos(1));
+    msg.altitude  = llh_pos(2);
+
+    // Populate LLH covariance
+    const Eigen::Matrix3d p_cov_e = data.odom.pose.cov.topLeftCorner(3, 3);
+    const Eigen::Matrix3d C_l_e = gnss_tf::RotEnuEcef(data.odom.pose.position);
+    const Eigen::Matrix3d p_cov_l = C_l_e * p_cov_e * C_l_e.transpose();
+    
+    Eigen::Map<Eigen::Matrix<double, 3, 3>> cov_map =
+        Eigen::Map<Eigen::Matrix<double, 3, 3>>(msg.position_covariance.data());
+    cov_map = p_cov_l;
+    msg.position_covariance_type = 3;
+
+    // Populate LLH status
+    int status_flag = std::max(data.gnss1_status, data.gnss2_status);
+
+    if (status_flag < static_cast<int8_t>(GnssStatus::FIX_TYPE_S2D)) {
+        msg.status.status = static_cast<int8_t>(NavSatStatusData::Status::STATUS_NO_FIX);
+        msg.status.service = static_cast<uint16_t>(NavSatStatusData::Service::SERVICE_NONE);
+
+    } else if (status_flag >= static_cast<int8_t>(GnssStatus::FIX_TYPE_S2D) || status_flag < static_cast<int8_t>(GnssStatus::FIX_TYPE_RTK_FLOAT)) {
+        msg.status.status = static_cast<int8_t>(NavSatStatusData::Status::STATUS_FIX);
+        msg.status.service = static_cast<uint16_t>(NavSatStatusData::Service::SERVICE_ALL);
+
+    } else if (status_flag >= static_cast<int8_t>(GnssStatus::FIX_TYPE_RTK_FLOAT)) {
+        msg.status.status = static_cast<int8_t>(NavSatStatusData::Status::STATUS_GBAS_FIX);
+        msg.status.service = static_cast<uint16_t>(NavSatStatusData::Service::SERVICE_ALL);
+
+    } else {
+        msg.status.status = static_cast<int8_t>(NavSatStatusData::Status::STATUS_NO_FIX);
+        msg.status.service = static_cast<uint16_t>(NavSatStatusData::Service::SERVICE_NONE);
+    }
+}
+
+void OdomToVrtkMsg(const fixposition::FP_ODOMETRY& data, fixposition_driver_ros2::msg::VRTK& msg) {
+    if (data.odom.stamp.tow == 0.0 && data.odom.stamp.wno == 0) {
+        msg.header.stamp = rclcpp::Clock().now();
+    } else {
+        msg.header.stamp = GpsTimeToMsgTime(data.odom.stamp);
+    }
+    
+    msg.header.frame_id = data.odom.frame_id;
+    msg.pose_frame = data.odom.child_frame_id;
+    msg.kin_frame = data.odom.child_frame_id;
+
+    PoseWithCovDataToMsg(data.odom.pose, msg.pose);
+    TwistWithCovDataToMsg(data.odom.twist, msg.velocity);
+    tf2::toMsg(data.acceleration, msg.acceleration);
+    msg.fusion_status = data.fusion_status;
+    msg.imu_bias_status = data.imu_bias_status;
+    msg.gnss1_status = data.gnss1_status;
+    msg.gnss2_status = data.gnss2_status;
+    msg.wheelspeed_status = data.wheelspeed_status;
+    msg.version = data.version;
+}
+
+void OdomToImuMsg(const fixposition::FP_ODOMETRY& data, sensor_msgs::msg::Imu& msg) {
+    if (data.odom.stamp.tow == 0.0 && data.odom.stamp.wno == 0) {
+        msg.header.stamp = rclcpp::Clock().now();
+    } else {
+        msg.header.stamp = GpsTimeToMsgTime(data.odom.stamp);
+    }
+    
+    msg.header.frame_id = data.odom.frame_id;
+    tf2::toMsg(data.acceleration, msg.linear_acceleration);
+    tf2::toMsg(data.odom.twist.angular, msg.angular_velocity);
 }
 
 void VrtkDataToMsg(const VrtkData& data, fixposition_driver_ros2::msg::VRTK& msg) {

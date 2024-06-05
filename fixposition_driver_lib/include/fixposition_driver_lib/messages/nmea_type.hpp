@@ -45,10 +45,10 @@ struct GP_GGA {
     std::string diff_sta;
     
     // Message structure
-    const std::string frame_id = "LLH";
-    const std::string child_frame_id = "FP_POI";
-    const std::string header_ = "GPGGA";
-    static constexpr const int kSize_ = 15;
+    static constexpr char frame_id[] = "LLH";
+    static constexpr char child_frame_id[] = "FP_POI";
+    static constexpr char header_[] = "GPGGA";
+    static constexpr int kSize_ = 15;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -238,10 +238,10 @@ struct GP_RMC {
     char mode;
     
     // Message structure
-    const std::string frame_id = "LLH";
-    const std::string child_frame_id = "FP_POI";
-    const std::string header_ = "GPRMC";
-    static constexpr const int kSize_ = 13;
+    static constexpr char frame_id[] = "LLH";
+    static constexpr char child_frame_id[] = "FP_POI";
+    static constexpr char header_[] = "GPRMC";
+    static constexpr int kSize_ = 13;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -274,10 +274,10 @@ struct GP_VTG {
     char mode;
     
     // Message structure
-    const std::string frame_id = "LLH";
-    const std::string child_frame_id = "FP_POI";
-    const std::string header_ = "GPVTG";
-    static constexpr const int kSize_ = 10;
+    static constexpr char frame_id[] = "LLH";
+    static constexpr char child_frame_id[] = "FP_POI";
+    static constexpr char header_[] = "GPVTG";
+    static constexpr int kSize_ = 10;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -300,17 +300,17 @@ struct GP_ZDA {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Message fields
-    std::string date;
-    std::string time;
+    std::string date_str;
+    std::string time_str;
     times::GpsTime stamp;
     uint8_t local_hr;
     uint8_t local_min;
     
     // Message structure
-    const std::string frame_id = "LLH";
-    const std::string child_frame_id = "FP_POI";
-    const std::string header_ = "GPZDA";
-    static constexpr const int kSize_ = 10;
+    static constexpr char frame_id[] = "LLH";
+    static constexpr char child_frame_id[] = "FP_POI";
+    static constexpr char header_[] = "GPZDA";
+    static constexpr int kSize_ = 7;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -318,6 +318,24 @@ struct GP_ZDA {
         stamp = fixposition::times::GpsTime();
         local_hr = 0;
         local_min = 0;
+    }
+};
+
+struct NmeaMessage {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    GP_GGA gpgga;
+    GP_ZDA gpzda;
+    GP_RMC gprmc;
+    
+    /**
+     * @brief Check if GNSS epoch is complete
+     */
+    bool checkEpoch() {
+        if ((gpgga.time_str.compare(gpzda.time_str) == 0) && (gpgga.time_str.compare(gprmc.time_str) == 0)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 };
 

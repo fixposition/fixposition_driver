@@ -15,29 +15,12 @@
 #ifndef __FIXPOSITION_DRIVER_ROS2_DATA_TO_ROS2__
 #define __FIXPOSITION_DRIVER_ROS2_DATA_TO_ROS2__
 
-/* EXTERNAL */
-#include <eigen3/Eigen/Core>
-
-/* ROS */
-
-#include <tf2_ros/static_transform_broadcaster.h>
-#include <tf2_ros/transform_broadcaster.h>
-#include <tf2_ros/transform_listener.h>
-
-#include <geometry_msgs/msg/transform_stamped.hpp>
-#include <geometry_msgs/msg/vector3_stamped.hpp>
-#include <nav_msgs/msg/odometry.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/imu.hpp>
-#include <sensor_msgs/msg/nav_sat_fix.hpp>
-
-/* FIXPOSITION */
-#include <fixposition_driver_lib/msg_data.hpp>
-#include <fixposition_driver_lib/time_conversions.hpp>
+/* FIXPOSITION DRIVER LIB */
+#include <fixposition_driver_lib/messages/msg_data.hpp>
+#include <fixposition_driver_lib/fixposition_driver.hpp>
 
 /* PACKAGE */
-#include <fixposition_driver_ros2/msg/vrtk.hpp>
-#include <fixposition_driver_ros2/msg/nmea.hpp>
+#include <fixposition_driver_ros2/fixposition_driver_node.hpp>
 
 namespace fixposition {
 
@@ -109,6 +92,38 @@ void TwistWithCovDataToMsg(const TwistWithCovData& data, geometry_msgs::msg::Twi
  * @param[out] msg
  */
 void OdometryDataToMsg(const OdometryData& data, nav_msgs::msg::Odometry& msg);
+
+/**
+ * @brief
+ *
+ * @param[in] data
+ * @param[out] msg
+ */
+void OdometryDataToTf(const OdometryData& data, geometry_msgs::msg::TransformStamped& msg);
+
+/**
+ * @brief
+ *
+ * @param[in] data
+ * @param[out] msg
+ */
+void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, sensor_msgs::msg::NavSatFix& msg);
+
+/**
+ * @brief
+ *
+ * @param[in] data
+ * @param[out] msg
+ */
+void OdomToVrtkMsg(const fixposition::FP_ODOMETRY& data, fixposition_driver_ros2::msg::VRTK& msg);
+
+/**
+ * @brief
+ *
+ * @param[in] data
+ * @param[out] msg
+ */
+void OdomToImuMsg(const fixposition::FP_ODOMETRY& data, sensor_msgs::msg::Imu& msg);
 
 /**
  * @brief

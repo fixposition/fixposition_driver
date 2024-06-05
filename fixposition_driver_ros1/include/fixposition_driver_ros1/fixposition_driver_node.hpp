@@ -46,27 +46,6 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     void WsCallback(const fixposition_driver_ros1::SpeedConstPtr& msg);
 
-    struct NmeaMessage {
-        GpggaData gpgga;
-        GpzdaData gpzda;
-        GprmcData gprmc;
-        
-        /**
-         * @brief Construct a new Fixposition Driver Node object
-         */
-        bool checkEpoch() {
-            if (gpgga.valid && gpgga.valid && gpgga.valid) {
-                if ((gpgga.time.compare(gpzda.time) == 0) && (gpgga.time.compare(gprmc.time) == 0)) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }  
-    };
-
    private:
     /**
      * @brief Observer Functions to publish NavSatFix from BestGnssPos
@@ -100,10 +79,10 @@ class FixpositionDriverNode : public FixpositionDriver {
     ros::Publisher eul_pub_;             //!< Euler angles Yaw-Pitch-Roll in local ENU
     ros::Publisher eul_imu_pub_;         //!< Euler angles Pitch-Roll as estimated from the IMU in local horizontal
 
-    NmeaMessage nmea_message_;
-
     tf2_ros::TransformBroadcaster br_;
     tf2_ros::StaticTransformBroadcaster static_br_;
+
+    NmeaMessage nmea_message_;
 };
 
 }  // namespace fixposition

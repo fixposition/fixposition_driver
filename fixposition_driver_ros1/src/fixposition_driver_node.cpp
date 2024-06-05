@@ -53,7 +53,6 @@ void FixpositionDriverNode::RegisterObservers() {
             dynamic_cast<NmeaConverter<FP_ODOMETRY>*>(a_converters_["ODOMETRY"].get())
                 ->AddObserver([this](const FP_ODOMETRY& data) {
                     // ODOMETRY Observer Lambda
-                    // Msgs
                     if (odometry_ecef_pub_.getNumSubscribers() > 0) {
                         nav_msgs::Odometry odometry;
                         OdometryDataToMsg(data.odom, odometry);
@@ -157,32 +156,31 @@ void FixpositionDriverNode::RegisterObservers() {
                     static_br_.sendTransform(tf);
                 }
             });
-        } // Delete
-        // } else if (format == "GPGGA") {
-        //     dynamic_cast<GpggaConverter*>(a_converters_["GPGGA"].get())->AddObserver([this](const GpggaData& data) {
-        //         // GPGGA Observer Lambda
-        //         if (nmea_pub_.getNumSubscribers() > 0) {
-        //             nmea_message_.gpgga = data;
-        //             PublishNmea(nmea_message_);
-        //         }
-        //     });
-        // } else if (format == "GPZDA") {
-        //     dynamic_cast<GpzdaConverter*>(a_converters_["GPZDA"].get())->AddObserver([this](const GpzdaData& data) {
-        //         // GPZDA Observer Lambda
-        //         if (nmea_pub_.getNumSubscribers() > 0) {
-        //             nmea_message_.gpzda = data;
-        //             PublishNmea(nmea_message_);
-        //         }
-        //     });
-        // } else if (format == "GPRMC") {
-        //     dynamic_cast<GprmcConverter*>(a_converters_["GPRMC"].get())->AddObserver([this](const GprmcData& data) {
-        //         // GPRMC Observer Lambda
-        //         if (nmea_pub_.getNumSubscribers() > 0) {
-        //             nmea_message_.gprmc = data;
-        //             PublishNmea(nmea_message_);
-        //         }
-        //     });
-        // }
+        } else if (format == "GPGGA") {
+            dynamic_cast<NmeaConverter<GP_GGA>*>(a_converters_["GPGGA"].get())->AddObserver([this](const GP_GGA& data) {
+                // GPGGA Observer Lambda
+                if (nmea_pub_.getNumSubscribers() > 0) {
+                    nmea_message_.gpgga = data;
+                    PublishNmea(nmea_message_);
+                }
+            });
+        } else if (format == "GPRMC") {
+            dynamic_cast<NmeaConverter<GP_RMC>*>(a_converters_["GPRMC"].get())->AddObserver([this](const GP_RMC& data) {
+                // GPRMC Observer Lambda
+                if (nmea_pub_.getNumSubscribers() > 0) {
+                    nmea_message_.gprmc = data;
+                    PublishNmea(nmea_message_);
+                }
+            });
+        } else if (format == "GPZDA") {
+            dynamic_cast<NmeaConverter<GP_ZDA>*>(a_converters_["GPZDA"].get())->AddObserver([this](const GP_ZDA& data) {
+                // GPZDA Observer Lambda
+                if (nmea_pub_.getNumSubscribers() > 0) {
+                    nmea_message_.gpzda = data;
+                    PublishNmea(nmea_message_);
+                }
+            });
+        }
     }
 }
 
@@ -201,13 +199,13 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
         msg.header.frame_id = "FP_POI";
 
         // Latitude [degrees]. Positive is north of equator; negative is south
-        msg.latitude = data.gpgga.latitude;
+        msg.latitude = data.gpgga.llh(0);
 
         // Longitude [degrees]. Positive is east of prime meridian; negative is west
-        msg.longitude = data.gpgga.longitude;
+        msg.longitude = data.gpgga.llh(1);
 
         // Altitude [m]. Positive is above the WGS 84 ellipsoid
-        msg.altitude = data.gpgga.altitude;
+        msg.altitude = data.gpgga.llh(2);
 
         // Speed over ground [m/s]
         msg.speed = data.gprmc.speed;
@@ -219,8 +217,21 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
         // Position covariance [m^2]
         Eigen::Map<Eigen::Matrix<double, 3, 3>> cov_map =
             Eigen::Map<Eigen::Matrix<double, 3, 3>>(msg.position_covariance.data());
-        cov_map = data.gpgga.cov;
-        msg.position_covariance_type = data.gpgga.position_covariance_type;
+        
+        // Covariance diagonals
+        Eigen::Matrix<double, 3, 3> gpgga_cov;
+        const double hdop = data.gpgga.hdop;
+        gpgga_cov(0, 0) = hdop * hdop;
+        gpgga_cov(1, 1) = hdop * hdop;
+        gpgga_cov(2, 2) = 4 * hdop * hdop;
+
+        // Rest of covariance fields
+        gpgga_cov(0, 1) = gpgga_cov(1, 0) = 0.0;
+        gpgga_cov(0, 2) = gpgga_cov(2, 0) = 0.0;
+        gpgga_cov(1, 2) = gpgga_cov(2, 1) = 0.0;
+        
+        cov_map = gpgga_cov;
+        msg.position_covariance_type = 1; // COVARIANCE_TYPE_APPROXIMATED
 
         // Positioning system mode indicator, R (RTK fixed), F (RTK float), A (no RTK), E, N
         msg.mode = data.gprmc.mode;

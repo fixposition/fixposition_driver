@@ -12,9 +12,6 @@
  *
  */
 
-/* ROS */
-#include <rclcpp/rclcpp.hpp>
-
 /* PACKAGE */
 #include <fixposition_driver_ros2/params.hpp>
 

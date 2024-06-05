@@ -198,8 +198,8 @@ bool FixpositionDriver::InitializeConverters() {
         //     a_converters_["TEXT"] = std::unique_ptr<NmeaConverter<FP_TEXT>>(new NmeaConverter<FP_TEXT>());
         
         // // NMEA messages
-        // } else if (format == "GPGGA") {
-        //     a_converters_["GPGGA"] = std::unique_ptr<NmeaConverter<GP_GGA>>(new NmeaConverter<GP_GGA>());
+        } else if (format == "GPGGA") {
+            a_converters_["GPGGA"] = std::unique_ptr<NmeaConverter<GP_GGA>>(new NmeaConverter<GP_GGA>());
         // } else if (format == "GPGLL") {
         //     a_converters_["GPGLL"] = std::unique_ptr<NmeaConverter<GP_GLL>>(new NmeaConverter<GP_GLL>());
         // } else if (format == "GPGSA") {
@@ -210,12 +210,12 @@ bool FixpositionDriver::InitializeConverters() {
         //     a_converters_["GPGSV"] = std::unique_ptr<NmeaConverter<GP_GSV>>(new NmeaConverter<GP_GSV>());
         // } else if (format == "GPHDT") {
         //     a_converters_["GPHDT"] = std::unique_ptr<NmeaConverter<GP_HDT>>(new NmeaConverter<GP_HDT>());
-        // } else if (format == "GPRMC") {
-        //     a_converters_["GPRMC"] = std::unique_ptr<NmeaConverter<GP_RMC>>(new NmeaConverter<GP_RMC>());
+        } else if (format == "GPRMC") {
+            a_converters_["GPRMC"] = std::unique_ptr<NmeaConverter<GP_RMC>>(new NmeaConverter<GP_RMC>());
         // } else if (format == "GPVTG") {
         //     a_converters_["GPVTG"] = std::unique_ptr<NmeaConverter<GP_VTG>>(new NmeaConverter<GP_VTG>());
-        // } else if (format == "GPZDA") {
-        //     a_converters_["GPZDA"] = std::unique_ptr<NmeaConverter<GP_ZDA>>(new NmeaConverter<GP_ZDA>());
+        } else if (format == "GPZDA") {
+            a_converters_["GPZDA"] = std::unique_ptr<NmeaConverter<GP_ZDA>>(new NmeaConverter<GP_ZDA>());
         } else {
             std::cerr << "Unknown input format: " << format << "\n";
         }

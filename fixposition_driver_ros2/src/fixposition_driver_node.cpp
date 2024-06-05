@@ -12,30 +12,8 @@
  *
  */
 
-/* SYSTEM / STL */
-#include <memory>
-
-/* ROS */
-#include <rclcpp/logging.hpp>
-#include <rclcpp/rclcpp.hpp>
-
-/* FIXPOSITION */
-#include <fixposition_driver_lib/converter/imu.hpp>
-#include <fixposition_driver_lib/converter/odometry.hpp>
-#include <fixposition_driver_lib/converter/odomenu.hpp>
-#include <fixposition_driver_lib/converter/odomsh.hpp>
-#include <fixposition_driver_lib/converter/tf.hpp>
-#include <fixposition_driver_lib/converter/gpgga.hpp>
-#include <fixposition_driver_lib/converter/gpzda.hpp>
-#include <fixposition_driver_lib/converter/gprmc.hpp>
-#include <fixposition_driver_lib/fixposition_driver.hpp>
-#include <fixposition_driver_lib/helper.hpp>
-#include <fixposition_gnss_tf/gnss_tf.hpp>
-
 /* PACKAGE */
-#include <fixposition_driver_ros2/data_to_ros2.hpp>
 #include <fixposition_driver_ros2/fixposition_driver_node.hpp>
-#include <fixposition_driver_ros2/params.hpp>
 
 namespace fixposition {
 
@@ -93,99 +71,101 @@ void FixpositionDriverNode::RegisterObservers() {
     // FP_A
     for (const auto& format : params_.fp_output.formats) {
         if (format == "ODOMETRY") {
-            dynamic_cast<OdometryConverter*>(a_converters_["ODOMETRY"].get())
-                ->AddObserver([this](const OdometryConverter::Msgs& data) {
+            dynamic_cast<NmeaConverter<FP_ODOMETRY>*>(a_converters_["ODOMETRY"].get())
+                ->AddObserver([this](const FP_ODOMETRY& data) {
                     // ODOMETRY Observer Lambda
-                    // Msgs
                     if (odometry_pub_->get_subscription_count() > 0) {
                         nav_msgs::msg::Odometry odometry;
-                        OdometryDataToMsg(data.odometry, odometry);
+                        OdometryDataToMsg(data.odom, odometry);
                         odometry_pub_->publish(odometry);
                     }
 
                     if (vrtk_pub_->get_subscription_count() > 0) {
                         fixposition_driver_ros2::msg::VRTK vrtk;
-                        VrtkDataToMsg(data.vrtk, vrtk);
+                        OdomToVrtkMsg(data, vrtk);
                         vrtk_pub_->publish(vrtk);
                     }
 
                     if (poiimu_pub_->get_subscription_count() > 0) {
                         sensor_msgs::msg::Imu poiimu;
-                        ImuDataToMsg(data.imu, poiimu);
+                        OdomToImuMsg(data, poiimu);
                         poiimu_pub_->publish(poiimu);
                     }
 
                     if (navsatfix_pub_->get_subscription_count() > 0) {
                         sensor_msgs::msg::NavSatFix msg;
-                        NavSatFixDataToMsg(data.odom_llh, msg);
+                        OdomToNavSatFix(data, msg);
                         navsatfix_pub_->publish(msg);
                     }
 
                     // TFs
-                    if (data.vrtk.fusion_status > 0) {
+                    if (data.fusion_status > 0) {
                         geometry_msgs::msg::TransformStamped tf_ecef_poi;
-                        TfDataToMsg(data.tf_ecef_poi, tf_ecef_poi);
+                        OdometryDataToTf(data.odom, tf_ecef_poi);
                         br_->sendTransform(tf_ecef_poi);
                     }
                 });
         } else if (format == "ODOMENU") {
-            dynamic_cast<OdomenuConverter*>(a_converters_["ODOMENU"].get())
-                ->AddObserver([this](const OdomenuConverter::Msgs& data) {
+            dynamic_cast<NmeaConverter<FP_ODOMENU>*>(a_converters_["ODOMENU"].get())
+                ->AddObserver([this](const FP_ODOMENU& data) {
                     // ODOMENU Observer Lambda
                     if (odometry_enu0_pub_->get_subscription_count() > 0) {
                         nav_msgs::msg::Odometry odometry_enu0;
-                        OdometryDataToMsg(data.odometry, odometry_enu0);
+                        OdometryDataToMsg(data.odom, odometry_enu0);
                         odometry_enu0_pub_->publish(odometry_enu0);
                     }
 
                     if (eul_pub_->get_subscription_count() > 0) {
                         geometry_msgs::msg::Vector3Stamped ypr;
-                        if (data.odometry.stamp.tow == 0.0 && data.odometry.stamp.wno == 0) {
+                        if (data.odom.stamp.tow == 0.0 && data.odom.stamp.wno == 0) {
                             ypr.header.stamp = rclcpp::Clock().now();
                         } else {
-                            ypr.header.stamp = GpsTimeToMsgTime(data.odometry.stamp);
+                            ypr.header.stamp = GpsTimeToMsgTime(data.odom.stamp);
                         }
                         ypr.header.frame_id = "FP_ENU";
-                        ypr.vector.set__x(data.eul.x());
-                        ypr.vector.set__y(data.eul.y());
-                        ypr.vector.set__z(data.eul.z());
+
+                        // Euler angle wrt. ENU frame in the order of Yaw Pitch Roll
+                        Eigen::Vector3d enu_euler = gnss_tf::RotToEul(data.odom.pose.orientation.toRotationMatrix());
+                        ypr.vector.set__x(enu_euler.x());
+                        ypr.vector.set__y(enu_euler.y());
+                        ypr.vector.set__z(enu_euler.z());
                         eul_pub_->publish(ypr);
                     }
                 });
         } else if (format == "ODOMSH") {
-            dynamic_cast<OdomshConverter*>(a_converters_["ODOMSH"].get())
-                ->AddObserver([this](const OdomshConverter::Msgs& data) {
+            dynamic_cast<NmeaConverter<FP_ODOMSH>*>(a_converters_["ODOMSH"].get())
+                ->AddObserver([this](const FP_ODOMSH& data) {
                     // ODOMSH Observer Lambda
                     if (odometry_smooth_pub_->get_subscription_count() > 0) {
                         nav_msgs::msg::Odometry odometry;
-                        OdometryDataToMsg(data.odometry, odometry);
+                        OdometryDataToMsg(data.odom, odometry);
                         odometry_smooth_pub_->publish(odometry);
                     }
                 });
         } else if (format == "RAWIMU") {
-            dynamic_cast<ImuConverter*>(a_converters_["RAWIMU"].get())->AddObserver([this](const ImuData& data) {
+            dynamic_cast<NmeaConverter<FP_RAWIMU>*>(a_converters_["RAWIMU"].get())->AddObserver([this](const FP_RAWIMU& data) {
                 // RAWIMU Observer Lambda
                 sensor_msgs::msg::Imu msg;
-                ImuDataToMsg(data, msg);
+                ImuDataToMsg(data.imu, msg);
                 rawimu_pub_->publish(msg);
             });
         } else if (format == "CORRIMU") {
-            dynamic_cast<ImuConverter*>(a_converters_["CORRIMU"].get())->AddObserver([this](const ImuData& data) {
+            dynamic_cast<NmeaConverter<FP_CORRIMU>*>(a_converters_["CORRIMU"].get())->AddObserver([this](const FP_CORRIMU& data) {
                 // CORRIMU Observer Lambda
                 sensor_msgs::msg::Imu msg;
-                ImuDataToMsg(data, msg);
+                ImuDataToMsg(data.imu, msg);
                 corrimu_pub_->publish(msg);
             });
         } else if (format == "TF") {
-            dynamic_cast<TfConverter*>(a_converters_["TF"].get())->AddObserver([this](const TfData& data) {
+            dynamic_cast<NmeaConverter<FP_TF>*>(a_converters_["TF"].get())->AddObserver([this](const FP_TF& data) {
                 // TF Observer Lambda
                 geometry_msgs::msg::TransformStamped tf;
-                TfDataToMsg(data, tf);
+                TfDataToMsg(data.tf, tf);
                 if (tf.child_frame_id == "FP_IMUH" && tf.header.frame_id == "FP_POI") {
                     br_->sendTransform(tf);
 
                     // Publish Pitch Roll based on IMU only
-                    Eigen::Vector3d imu_ypr_eigen = gnss_tf::QuatToEul(data.rotation);
+                    Eigen::Vector3d imu_ypr_eigen = gnss_tf::QuatToEul(data.tf.rotation);
                     imu_ypr_eigen.x() = 0.0;  // the yaw value is not observable using IMU alone
                     geometry_msgs::msg::Vector3Stamped imu_ypr;
                     imu_ypr.header.stamp = tf.header.stamp;
@@ -202,26 +182,26 @@ void FixpositionDriverNode::RegisterObservers() {
                 }
             });
         } else if (format == "GPGGA") {
-            dynamic_cast<GpggaConverter*>(a_converters_["GPGGA"].get())->AddObserver([this](const GpggaData& data) {
+            dynamic_cast<NmeaConverter<GP_GGA>*>(a_converters_["GPGGA"].get())->AddObserver([this](const GP_GGA& data) {
                 // GPGGA Observer Lambda
                 if (nmea_pub_->get_subscription_count() > 0) {
                     nmea_message_.gpgga = data;
                     PublishNmea(nmea_message_);
                 }
             });
-        } else if (format == "GPZDA") {
-            dynamic_cast<GpzdaConverter*>(a_converters_["GPZDA"].get())->AddObserver([this](const GpzdaData& data) {
-                // GPZDA Observer Lambda
-                if (nmea_pub_->get_subscription_count() > 0) {
-                    nmea_message_.gpzda = data;
-                    PublishNmea(nmea_message_);
-                }
-            });
         } else if (format == "GPRMC") {
-            dynamic_cast<GprmcConverter*>(a_converters_["GPRMC"].get())->AddObserver([this](const GprmcData& data) {
+            dynamic_cast<NmeaConverter<GP_RMC>*>(a_converters_["GPRMC"].get())->AddObserver([this](const GP_RMC& data) {
                 // GPRMC Observer Lambda
                 if (nmea_pub_->get_subscription_count() > 0) {
                     nmea_message_.gprmc = data;
+                    PublishNmea(nmea_message_);
+                }
+            });
+        } else if (format == "GPZDA") {
+            dynamic_cast<NmeaConverter<GP_ZDA>*>(a_converters_["GPZDA"].get())->AddObserver([this](const GP_ZDA& data) {
+                // GPZDA Observer Lambda
+                if (nmea_pub_->get_subscription_count() > 0) {
+                    nmea_message_.gpzda = data;
                     PublishNmea(nmea_message_);
                 }
             });
@@ -244,13 +224,13 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
         msg.header.frame_id = "FP_POI";
 
         // Latitude [degrees]. Positive is north of equator; negative is south
-        msg.latitude = data.gpgga.latitude;
+        msg.latitude = data.gpgga.llh(0);
 
         // Longitude [degrees]. Positive is east of prime meridian; negative is west
-        msg.longitude = data.gpgga.longitude;
+        msg.longitude = data.gpgga.llh(1);
 
         // Altitude [m]. Positive is above the WGS 84 ellipsoid
-        msg.altitude = data.gpgga.altitude;
+        msg.altitude = data.gpgga.llh(2);
 
         // Speed over ground [m/s]
         msg.speed = data.gprmc.speed;
@@ -262,8 +242,21 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
         // Position covariance [m^2]
         Eigen::Map<Eigen::Matrix<double, 3, 3>> cov_map =
             Eigen::Map<Eigen::Matrix<double, 3, 3>>(msg.position_covariance.data());
-        cov_map = data.gpgga.cov;
-        msg.position_covariance_type = data.gpgga.position_covariance_type;
+        
+        // Covariance diagonals
+        Eigen::Matrix<double, 3, 3> gpgga_cov;
+        const double hdop = data.gpgga.hdop;
+        gpgga_cov(0, 0) = hdop * hdop;
+        gpgga_cov(1, 1) = hdop * hdop;
+        gpgga_cov(2, 2) = 4 * hdop * hdop;
+
+        // Rest of covariance fields
+        gpgga_cov(0, 1) = gpgga_cov(1, 0) = 0.0;
+        gpgga_cov(0, 2) = gpgga_cov(2, 0) = 0.0;
+        gpgga_cov(1, 2) = gpgga_cov(2, 1) = 0.0;
+        
+        cov_map = gpgga_cov;
+        msg.position_covariance_type = 1; // COVARIANCE_TYPE_APPROXIMATED
 
         // Positioning system mode indicator, R (RTK fixed), F (RTK float), A (no RTK), E, N
         msg.mode = data.gprmc.mode;
