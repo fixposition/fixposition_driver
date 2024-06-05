@@ -77,7 +77,31 @@ void OdometryDataToMsg(const OdometryData& data, nav_msgs::Odometry& msg);
  * @param[in] data
  * @param[out] msg
  */
-void OdomDataToMsg(const fixposition::FP_ODOMETRY& data, nav_msgs::Odometry& msg);
+void OdometryDataToTf(const OdometryData& data, geometry_msgs::TransformStamped& msg);
+
+/**
+ * @brief
+ *
+ * @param[in] data
+ * @param[out] msg
+ */
+void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, sensor_msgs::NavSatFix& msg);
+
+/**
+ * @brief
+ *
+ * @param[in] data
+ * @param[out] msg
+ */
+void OdomToVrtkMsg(const fixposition::FP_ODOMETRY& data, fixposition_driver_ros1::VRTK& msg);
+
+/**
+ * @brief
+ *
+ * @param[in] data
+ * @param[out] msg
+ */
+void OdomToImuMsg(const fixposition::FP_ODOMETRY& data, sensor_msgs::Imu& msg);
 
 /**
  * @brief

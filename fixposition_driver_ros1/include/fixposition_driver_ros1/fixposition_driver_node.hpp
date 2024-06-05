@@ -21,6 +21,11 @@
 
 /* ROS */
 #include <fixposition_driver_ros1/ros_msgs.hpp>
+#include <fixposition_driver_ros1/params.hpp>
+
+/* FIXPOSITION */
+#include <fixposition_driver_lib/helper.hpp>
+#include <fixposition_gnss_tf/gnss_tf.hpp>
 
 /* PACKAGE */
 #include <fixposition_driver_ros1/data_to_ros1.hpp>
@@ -83,11 +88,11 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     ros::Publisher rawimu_pub_;
     ros::Publisher corrimu_pub_;
-    ros::Publisher navsatfix_pub_;
     ros::Publisher navsatfix_gnss1_pub_;
     ros::Publisher navsatfix_gnss2_pub_;
     ros::Publisher nmea_pub_;
-    ros::Publisher odometry_pub_;        //!< ECEF Odometry
+    ros::Publisher odometry_ecef_pub_;   //!< ECEF Odometry
+    ros::Publisher odometry_llh_pub_;    //!< LLH Odometry
     ros::Publisher odometry_smooth_pub_; //!< ECEF Smooth Odometry
     ros::Publisher poiimu_pub_;          //!< Bias corrected IMU
     ros::Publisher vrtk_pub_;            //!< VRTK message

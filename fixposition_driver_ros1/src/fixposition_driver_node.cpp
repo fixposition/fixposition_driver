@@ -12,13 +12,8 @@
  *
  */
 
-/* FIXPOSITION */
-#include <fixposition_driver_lib/helper.hpp>
-#include <fixposition_gnss_tf/gnss_tf.hpp>
-
 /* PACKAGE */
 #include <fixposition_driver_ros1/fixposition_driver_node.hpp>
-#include <fixposition_driver_ros1/params.hpp>
 
 namespace fixposition {
 
@@ -27,12 +22,12 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
       nh_("~"),
       rawimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/rawimu", 100)),
       corrimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/corrimu", 100)),
-      navsatfix_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/odometry_llh", 100)),
       navsatfix_gnss1_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss1", 100)),
       navsatfix_gnss2_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss2", 100)),
       nmea_pub_(nh_.advertise<fixposition_driver_ros1::NMEA>("/fixposition/nmea", 100)),
       //   ODOMETRY
-      odometry_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_ecef", 100)),
+      odometry_ecef_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_ecef", 100)),
+      odometry_llh_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/odometry_llh", 100)),
       odometry_smooth_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_smooth", 100)),
       poiimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/poiimu", 100)),
       vrtk_pub_(nh_.advertise<fixposition_driver_ros1::VRTK>("/fixposition/vrtk", 100)),
@@ -59,36 +54,36 @@ void FixpositionDriverNode::RegisterObservers() {
                 ->AddObserver([this](const FP_ODOMETRY& data) {
                     // ODOMETRY Observer Lambda
                     // Msgs
-                    if (odometry_pub_.getNumSubscribers() > 0) {
+                    if (odometry_ecef_pub_.getNumSubscribers() > 0) {
                         nav_msgs::Odometry odometry;
                         OdometryDataToMsg(data.odom, odometry);
-                        odometry_pub_.publish(odometry);
+                        odometry_ecef_pub_.publish(odometry);
                     }
 
-                    // if (vrtk_pub_.getNumSubscribers() > 0) {
-                    //     fixposition_driver_ros1::VRTK vrtk;
-                    //     VrtkDataToMsg(data, vrtk);
-                    //     vrtk_pub_.publish(vrtk);
-                    // }
+                    if (vrtk_pub_.getNumSubscribers() > 0) {
+                        fixposition_driver_ros1::VRTK vrtk;
+                        OdomToVrtkMsg(data, vrtk);
+                        vrtk_pub_.publish(vrtk);
+                    }
 
-                    // if (poiimu_pub_.getNumSubscribers() > 0) {
-                    //     sensor_msgs::Imu poiimu;
-                    //     ImuDataToMsg(data, poiimu);
-                    //     poiimu_pub_.publish(poiimu);
-                    // }
+                    if (poiimu_pub_.getNumSubscribers() > 0) {
+                        sensor_msgs::Imu poiimu;
+                        OdomToImuMsg(data, poiimu);
+                        poiimu_pub_.publish(poiimu);
+                    }
 
-                    // if (navsatfix_pub_.getNumSubscribers() > 0) {
-                    //     sensor_msgs::NavSatFix msg;
-                    //     NavSatFixDataToMsg(data, msg);
-                    //     navsatfix_pub_.publish(msg);
-                    // }
+                    if (odometry_llh_pub_.getNumSubscribers() > 0) {
+                        sensor_msgs::NavSatFix msg;
+                        OdomToNavSatFix(data, msg);
+                        odometry_llh_pub_.publish(msg);
+                    }
 
-                    // // TFs
-                    // if (data.vrtk.fusion_status > 0) {
-                    //     geometry_msgs::TransformStamped tf_ecef_poi;
-                    //     TfDataToMsg(data, tf_ecef_poi);
-                    //     br_.sendTransform(tf_ecef_poi);
-                    // }
+                    // TFs
+                    if (data.fusion_status > 0) {
+                        geometry_msgs::TransformStamped tf_ecef_poi;
+                        OdometryDataToTf(data.odom, tf_ecef_poi);
+                        br_.sendTransform(tf_ecef_poi);
+                    }
                 });
         } else if (format == "ODOMENU") {
             dynamic_cast<NmeaConverter<FP_ODOMENU>*>(a_converters_["ODOMENU"].get())
@@ -100,17 +95,20 @@ void FixpositionDriverNode::RegisterObservers() {
                         odometry_enu0_pub_.publish(odometry_enu0);
                     }
 
-                    // if (eul_pub_.getNumSubscribers() > 0) {
-                    //     geometry_msgs::Vector3Stamped ypr;
-                    //     if (data.odometry.stamp.tow == 0.0 && data.odometry.stamp.wno == 0) {
-                    //         ypr.header.stamp = ros::Time::now();
-                    //     } else {
-                    //         ypr.header.stamp = ros::Time::fromBoost(fixposition::times::GpsTimeToPtime(data.odometry.stamp));
-                    //     }
-                    //     ypr.header.frame_id = "FP_ENU";
-                    //     tf::vectorEigenToMsg(data.eul, ypr.vector);
-                    //     eul_pub_.publish(ypr);
-                    // }
+                    if (eul_pub_.getNumSubscribers() > 0) {
+                        geometry_msgs::Vector3Stamped ypr;
+                        if (data.odom.stamp.tow == 0.0 && data.odom.stamp.wno == 0) {
+                            ypr.header.stamp = ros::Time::now();
+                        } else {
+                            ypr.header.stamp = ros::Time::fromBoost(fixposition::times::GpsTimeToPtime(data.odom.stamp));
+                        }
+                        ypr.header.frame_id = "FP_ENU";
+
+                        // Euler angle wrt. ENU frame in the order of Yaw Pitch Roll
+                        Eigen::Vector3d enu_euler = gnss_tf::RotToEul(data.odom.pose.orientation.toRotationMatrix());
+                        tf::vectorEigenToMsg(enu_euler, ypr.vector);
+                        eul_pub_.publish(ypr);
+                    }
                 });
         } else if (format == "ODOMSH") {
             dynamic_cast<NmeaConverter<FP_ODOMSH>*>(a_converters_["ODOMSH"].get())
