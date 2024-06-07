@@ -62,27 +62,38 @@ class FixpositionDriverNode : public FixpositionDriver {
      */
     void PublishNmea(NmeaMessage data);
 
+    // ROS node handler
     ros::NodeHandle nh_;
+    
+    // ROS subscribers
     ros::Subscriber ws_sub_;  //!< wheelspeed message subscriber
 
-    ros::Publisher rawimu_pub_;
-    ros::Publisher corrimu_pub_;
-    ros::Publisher navsatfix_gnss1_pub_;
-    ros::Publisher navsatfix_gnss2_pub_;
-    ros::Publisher nmea_pub_;
+    // ROS publishers
+    // ODOMETRY
     ros::Publisher odometry_ecef_pub_;   //!< ECEF Odometry
     ros::Publisher odometry_llh_pub_;    //!< LLH Odometry
-    ros::Publisher odometry_smooth_pub_; //!< ECEF Smooth Odometry
-    ros::Publisher poiimu_pub_;          //!< Bias corrected IMU
-    ros::Publisher vrtk_pub_;            //!< VRTK message
-    ros::Publisher odometry_enu0_pub_;   //!< ENU0 Odometry
+    ros::Publisher odometry_enu_pub_;    //!< ENU Odometry
+    ros::Publisher odometry_smooth_pub_; //!< Smooth Odometry (ECEF)
+    ros::Publisher vrtk_pub_;            //!< FP_A-ODOMETRY message
+    
+    // Orientation
     ros::Publisher eul_pub_;             //!< Euler angles Yaw-Pitch-Roll in local ENU
     ros::Publisher eul_imu_pub_;         //!< Euler angles Pitch-Roll as estimated from the IMU in local horizontal
 
+    // IMU
+    ros::Publisher rawimu_pub_;          //!< Raw IMU data in IMU frame
+    ros::Publisher corrimu_pub_;         //!< Bias corrected IMU data in IMU frame
+    ros::Publisher poiimu_pub_;          //!< Bias corrected IMU data in POI frame
+
+    // GNSS
+    ros::Publisher nmea_pub_;            //!< Pose estimation based only on GNSS
+    ros::Publisher navsatfix_gnss1_pub_; //!< GNSS1 position and status
+    ros::Publisher navsatfix_gnss2_pub_; //!< GNSS2 position and status
+    NmeaMessage nmea_message_;           //!< Collector class for NMEA messages
+    
+    // TF
     tf2_ros::TransformBroadcaster br_;
     tf2_ros::StaticTransformBroadcaster static_br_;
-
-    NmeaMessage nmea_message_;
 };
 
 }  // namespace fixposition

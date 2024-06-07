@@ -23,18 +23,26 @@ include_directories(include
 # BUILD EXECUTABLE =====================================================================================================
 add_library(
   ${PROJECT_NAME} SHARED
-  src/fixposition_driver.cpp
+  src/messages/fpa/corrimu.cpp
+  src/messages/fpa/gnssant.cpp
+  src/messages/fpa/gnsscorr.cpp
+  src/messages/fpa/llh.cpp
   src/messages/fpa/odomenu.cpp
   src/messages/fpa/odometry.cpp
   src/messages/fpa/odomsh.cpp
   src/messages/fpa/rawimu.cpp
-  src/messages/fpa/corrimu.cpp
+  src/messages/fpa/text.cpp
   src/messages/fpa/tf.cpp
-  
   src/messages/nmea/gpgga.cpp
-  src/messages/nmea/gpzda.cpp
+  src/messages/nmea/gpgll.cpp
+  src/messages/nmea/gpgsa.cpp
+  src/messages/nmea/gpgst.cpp
+  src/messages/nmea/gpgsv.cpp
+  src/messages/nmea/gphdt.cpp
   src/messages/nmea/gprmc.cpp
-
+  src/messages/nmea/gpvtg.cpp
+  src/messages/nmea/gpzda.cpp
+  src/fixposition_driver.cpp
   src/helper.cpp
   src/parser.cpp
 )

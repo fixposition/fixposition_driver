@@ -18,9 +18,9 @@
 
 namespace fixposition {
 
-static constexpr const char kNmeaPreamble = '$';
-static constexpr const int kLibParserMaxNmeaSize = 400;
-static constexpr const int kLibParserMaxNovSize = 4096;
+static constexpr char kNmeaPreamble = '$';
+static constexpr int kLibParserMaxNmeaSize = 400;
+static constexpr int kLibParserMaxNovSize = 4096;
 
 int IsNmeaMessage(const char* buf, const int size) {
     // Start of sentence

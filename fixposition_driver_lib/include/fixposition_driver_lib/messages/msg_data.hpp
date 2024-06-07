@@ -15,14 +15,23 @@
 #ifndef __FIXPOSITION_DRIVER_LIB_MSG_DATA__
 #define __FIXPOSITION_DRIVER_LIB_MSG_DATA__
 
-/* EXTERNAL */
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Geometry>
-
 /* PACKAGE */
 #include <fixposition_driver_lib/time_conversions.hpp>
 
 namespace fixposition {
+
+enum class FusionStatus : int {
+    NOT_STARTED = 0,
+    VISION_ONLY = 1,
+    VISUAL_INERTIAL_FUSION = 2,
+    INERTIAL_GNSS_FUSION = 3,
+    VISUAL_INERTIAL_GNSS_FUSION = 4,
+};
+
+enum class ImuStatus : int {
+    NOT_CONVERGED = 0,
+    BIAS_CONVERGED = 1,
+};
 
 enum class GnssStatus : int {
     FIX_TYPE_UNKNOWN = 0,
@@ -36,6 +45,12 @@ enum class GnssStatus : int {
     FIX_TYPE_RTK_FIXED = 8,
     FIX_TYPE_RTK_FLOAT_DR = 9,
     FIX_TYPE_RTK_FIXED_DR = 10,
+};
+
+enum class WheelspeedStatus : int {
+    NOT_ENABLED = -1,
+    NOT_CONVERGED = 0,
+    WS_CONVERGED = 1,
 };
 
 struct ImuData {

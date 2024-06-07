@@ -17,6 +17,14 @@
 
 namespace fixposition {
 
+// auto qos_sensor = rclcpp::QoS(
+//     rclcpp::QoSInitialization(
+//         rmw_qos_profile_sensor_data.history,
+//         rmw_qos_profile_sensor_data.depth,
+//     ),
+//     rmw_qos_profile_sensor_data
+// );
+
 FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node, const FixpositionDriverParams& params)
     : FixpositionDriver(params),
       node_(node),

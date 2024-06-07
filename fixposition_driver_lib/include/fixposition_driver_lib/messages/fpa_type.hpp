@@ -15,12 +15,6 @@
 #ifndef __FIXPOSITION_DRIVER_LIB_CONVERTER_FPA_TYPE__
 #define __FIXPOSITION_DRIVER_LIB_CONVERTER_FPA_TYPE__
 
-/* SYSTEM / STL */
-
-/* EXTERNAL */
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Geometry>
-
 /* PACKAGE */
 #include <fixposition_driver_lib/messages/msg_data.hpp>
 #include <fixposition_driver_lib/time_conversions.hpp>
@@ -46,8 +40,8 @@ struct FP_ODOMETRY {
     const std::string frame_id = "FP_ECEF";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "ODOMETRY";
-    static constexpr const int kVersion_ = 2;
-    static constexpr const int kSize_ = 45;
+    static constexpr int kVersion_ = 2;
+    static constexpr int kSize_ = 45;
 
     FP_ODOMETRY() {
         odom.frame_id = frame_id;
@@ -88,8 +82,8 @@ struct FP_ODOMENU {
     const std::string frame_id = "FP_ECEF";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "ODOMENU";
-    static constexpr const int kVersion_ = 1;
-    static constexpr const int kSize_ = 44;
+    static constexpr int kVersion_ = 1;
+    static constexpr int kSize_ = 44;
 
     FP_ODOMENU() {
         odom.frame_id = frame_id;
@@ -129,8 +123,8 @@ struct FP_ODOMSH {
     const std::string frame_id = "FP_ECEF";
     const std::string child_frame_id = "FP_POISH";
     const std::string header_ = "ODOMSH";
-    static constexpr const int kVersion_ = 1;
-    static constexpr const int kSize_ = 44;
+    static constexpr int kVersion_ = 1;
+    static constexpr int kSize_ = 44;
 
     FP_ODOMSH() {
         odom.frame_id = frame_id;
@@ -160,14 +154,14 @@ struct FP_LLH {
     // Message fields
     times::GpsTime stamp;    
     Eigen::Vector3d llh;
-    Eigen::Matrix<double, 6, 6> cov;
+    Eigen::Matrix<double, 3, 3> cov;
 
     // Message structure
     const std::string frame_id = "FP_LLH";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "LLH";
-    static constexpr const int kVersion_ = 1;
-    static constexpr const int kSize_ = 14;
+    static constexpr int kVersion_ = 1;
+    static constexpr int kSize_ = 14;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -188,8 +182,8 @@ struct FP_TF {
 
     // Message structure
     const std::string header_ = "TF";
-    static constexpr const int kVersion_ = 2;
-    static constexpr const int kSize_ = 14;
+    static constexpr int kVersion_ = 2;
+    static constexpr int kSize_ = 14;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -212,8 +206,8 @@ struct FP_RAWIMU {
 
     // Message structure
     const std::string header_ = "RAWIMU";
-    static constexpr const int kVersion_ = 1;
-    static constexpr const int kSize_ = 11;
+    static constexpr int kVersion_ = 1;
+    static constexpr int kSize_ = 11;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -234,8 +228,8 @@ struct FP_CORRIMU {
 
     // Message structure
     const std::string header_ = "CORRIMU";
-    static constexpr const int kVersion_ = 1;
-    static constexpr const int kSize_ = 11;
+    static constexpr int kVersion_ = 1;
+    static constexpr int kSize_ = 11;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -262,8 +256,8 @@ struct FP_GNSSANT {
 
     // Message structure
     const std::string header_ = "GNSSANT";
-    static constexpr const int kVersion_ = 1;
-    static constexpr const int kSize_ = 11;
+    static constexpr int kVersion_ = 1;
+    static constexpr int kSize_ = 11;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -291,6 +285,7 @@ struct FP_GNSSCORR {
     int gnss2_fix;
     int gnss2_nsig_l1;
     int gnss2_nsig_l2;
+    float corr_latency;
     float corr_update_rate;
     float corr_data_rate;
     float corr_msg_rate;
@@ -302,8 +297,8 @@ struct FP_GNSSCORR {
 
     // Message structure
     const std::string header_ = "GNSSCORR";
-    static constexpr const int kVersion_ = 1;
-    static constexpr const int kSize_ = 20;
+    static constexpr int kVersion_ = 1;
+    static constexpr int kSize_ = 20;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -315,6 +310,7 @@ struct FP_GNSSCORR {
         gnss2_fix = 0;
         gnss2_nsig_l1 = 0;
         gnss2_nsig_l2 = 0;
+        corr_latency = 0.0;
         corr_update_rate = 0.0;
         corr_data_rate = 0.0;
         corr_msg_rate = 0.0;
@@ -332,19 +328,17 @@ struct FP_TEXT {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
     // Message fields
-    times::GpsTime stamp;
     std::string level;
     std::string text;
 
     // Message structure
     const std::string header_ = "TEXT";
-    static constexpr const int kVersion_ = 1;
-    static constexpr const int kSize_ = 5;
+    static constexpr int kVersion_ = 1;
+    static constexpr int kSize_ = 5;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
-        stamp = fixposition::times::GpsTime();
         level = "";
         text = "";
     }

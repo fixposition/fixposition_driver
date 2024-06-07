@@ -15,12 +15,6 @@
 #ifndef __FIXPOSITION_DRIVER_LIB_CONVERTER_NMEA_TYPE__
 #define __FIXPOSITION_DRIVER_LIB_CONVERTER_NMEA_TYPE__
 
-/* SYSTEM / STL */
-
-/* EXTERNAL */
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Geometry>
-
 /* PACKAGE */
 #include <fixposition_driver_lib/messages/msg_data.hpp>
 #include <fixposition_driver_lib/time_conversions.hpp>
@@ -72,7 +66,7 @@ struct GP_GLL {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Message fields
-    times::GpsTime stamp;
+    std::string time_str;
     Eigen::Vector2d latlon;
     char lat_ns;
     char lon_ew;
@@ -83,12 +77,12 @@ struct GP_GLL {
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "GPGLL";
-    static constexpr const int kSize_ = 8;
+    static constexpr int kSize_ = 8;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
-        stamp = fixposition::times::GpsTime();
+        time_str = "";
         latlon.setZero();
         lat_ns = '0';
         lon_ew = '0';
@@ -115,7 +109,7 @@ struct GP_GSA {
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "GPGSA";
-    static constexpr const int kSize_ = 19;
+    static constexpr int kSize_ = 19;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -136,7 +130,7 @@ struct GP_GST {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Message fields
-    times::GpsTime stamp;
+    std::string time_str;
     float rms_range;
     float std_major;
     float std_minor;
@@ -149,12 +143,12 @@ struct GP_GST {
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "GPGST";
-    static constexpr const int kSize_ = 9;
+    static constexpr int kSize_ = 9;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
-        stamp = fixposition::times::GpsTime();
+        time_str = "";
         rms_range = 0.0;
         std_major = 0.0;
         std_minor = 0.0;
@@ -207,12 +201,13 @@ struct GP_HDT {
 
     // Message fields
     float heading;
+    char true_ind;
     
     // Message structure
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "GPHDT";
-    static constexpr const int kSize_ = 3;
+    static constexpr int kSize_ = 3;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 

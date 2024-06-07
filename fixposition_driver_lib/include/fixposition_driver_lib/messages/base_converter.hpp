@@ -19,9 +19,6 @@
 #include <iostream>
 #include <vector>
 
-/* EXTERNAL */
-#include <eigen3/Eigen/Geometry>
-
 /* PACKAGE */
 #include <fixposition_driver_lib/time_conversions.hpp>
 
@@ -98,12 +95,28 @@ inline int ParseStatusFlag(const std::vector<std::string>& tokens, const int idx
 }
 
 /**
+ * @brief Helper function to convert string into int. If string is empty then 0 is returned
+ *
+ * @param[in] in_str
+ * @return int
+ */
+inline double StringToInt(const std::string& in_str) { return in_str.empty() ? 0 : std::stoi(in_str); }
+
+/**
  * @brief Helper function to convert string into double. If string is empty then 0.0 is returned
  *
  * @param[in] in_str
  * @return double
  */
 inline double StringToDouble(const std::string& in_str) { return in_str.empty() ? 0. : std::stod(in_str); }
+
+/**
+ * @brief Helper function to convert string into char. If string is empty then '0' is returned
+ *
+ * @param[in] in_str
+ * @return int
+ */
+inline double StringToChar(const std::string& in_str) { return in_str.empty() ? 0 : in_str[0]; }
 
 /**
  * @brief Make sure the quaternion is unit quaternion
@@ -153,6 +166,37 @@ inline times::GpsTime ConvertGpsTime(const std::string& gps_wno, const std::stri
     } else {
         return times::GpsTime(0, 0);
     }
+}
+
+/**
+ * @brief Build a 3x3 covariance matrix
+ *
+ * [xx, xy, xz,
+ *  xy, yy, yz,
+ *  xz, yz, zz]
+ *
+ * @param[in] xx
+ * @param[in] yy
+ * @param[in] zz
+ * @param[in] xy
+ * @param[in] yz
+ * @param[in] xz
+ * @return Eigen::Matrix<double, 3, 3> the 3x3 matrix
+ */
+inline Eigen::Matrix<double, 3, 3> BuildCovMat3D(const double xx, const double yy, const double zz, 
+                                                 const double xy, const double yz, const double xz) {
+    Eigen::Matrix<double, 3, 3> cov;
+    // Diagonals
+    cov(0, 0) = xx;   // 0
+    cov(1, 1) = yy;   // 4
+    cov(2, 2) = zz;   // 8
+
+    // Rest of values
+    cov(1, 0) = cov(0, 1) = xy; // 1 = 3
+    cov(2, 1) = cov(1, 2) = yz; // 2 = 6
+    cov(2, 0) = cov(0, 2) = xz; // 5 = 7
+
+    return cov;
 }
 
 /**

@@ -17,28 +17,33 @@
 
 namespace fixposition {
 
-FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& params)
-    : FixpositionDriver(params),
-      nh_("~"),
-      rawimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/rawimu", 100)),
-      corrimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/corrimu", 100)),
-      navsatfix_gnss1_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss1", 100)),
-      navsatfix_gnss2_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss2", 100)),
-      nmea_pub_(nh_.advertise<fixposition_driver_ros1::NMEA>("/fixposition/nmea", 100)),
-      //   ODOMETRY
-      odometry_ecef_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_ecef", 100)),
-      odometry_llh_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/odometry_llh", 100)),
-      odometry_smooth_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_smooth", 100)),
-      poiimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/poiimu", 100)),
-      vrtk_pub_(nh_.advertise<fixposition_driver_ros1::VRTK>("/fixposition/vrtk", 100)),
-      odometry_enu0_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_enu", 100)),
-      eul_pub_(nh_.advertise<geometry_msgs::Vector3Stamped>("/fixposition/ypr", 100)),
-      eul_imu_pub_(nh_.advertise<geometry_msgs::Vector3Stamped>("/fixposition/imu_ypr", 100)) {
+FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& params) : 
+    FixpositionDriver(params), nh_("~"),
+    // ODOMETRY
+    odometry_ecef_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_ecef", 10)),
+    odometry_llh_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/odometry_llh", 10)),
+    odometry_enu_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_enu", 10)),
+    odometry_smooth_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_smooth", 10)),
+    vrtk_pub_(nh_.advertise<fixposition_driver_ros1::VRTK>("/fixposition/vrtk", 10)),
 
-    ws_sub_ = nh_.subscribe<fixposition_driver_ros1::Speed>(params_.customer_input.speed_topic, 100,
+    // Orientation
+    eul_pub_(nh_.advertise<geometry_msgs::Vector3Stamped>("/fixposition/ypr", 10)),
+    eul_imu_pub_(nh_.advertise<geometry_msgs::Vector3Stamped>("/fixposition/imu_ypr", 10)),
+
+    // IMU
+    rawimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/rawimu", 100)),
+    corrimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/corrimu", 100)),
+    poiimu_pub_(nh_.advertise<sensor_msgs::Imu>("/fixposition/poiimu", 10)),
+
+    // GNSS
+    nmea_pub_(nh_.advertise<fixposition_driver_ros1::NMEA>("/fixposition/nmea", 10)),
+    navsatfix_gnss1_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss1", 10)),
+    navsatfix_gnss2_pub_(nh_.advertise<sensor_msgs::NavSatFix>("/fixposition/gnss2", 10))
+
+{
+    ws_sub_ = nh_.subscribe<fixposition_driver_ros1::Speed>(params_.customer_input.speed_topic, 10,
                                                             &FixpositionDriverNode::WsCallback, this,
                                                             ros::TransportHints().tcpNoDelay());
-
     RegisterObservers();
 }
 
@@ -88,10 +93,10 @@ void FixpositionDriverNode::RegisterObservers() {
             dynamic_cast<NmeaConverter<FP_ODOMENU>*>(a_converters_["ODOMENU"].get())
                 ->AddObserver([this](const FP_ODOMENU& data) {
                     // ODOMENU Observer Lambda
-                    if (odometry_enu0_pub_.getNumSubscribers() > 0) {
+                    if (odometry_enu_pub_.getNumSubscribers() > 0) {
                         nav_msgs::Odometry odometry_enu0;
                         OdometryDataToMsg(data.odom, odometry_enu0);
-                        odometry_enu0_pub_.publish(odometry_enu0);
+                        odometry_enu_pub_.publish(odometry_enu0);
                     }
 
                     if (eul_pub_.getNumSubscribers() > 0) {
