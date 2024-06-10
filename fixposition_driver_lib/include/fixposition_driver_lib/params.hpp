@@ -33,9 +33,10 @@ struct FpOutputParams {
     INPUT_TYPE type;                   //!< TCP or SERIAL
     std::vector<std::string> formats;  //!< data formats to convert, support "FP" and "LLH" for now
 
-    std::string ip;    //!< IP address for TCP connection
-    std::string port;  //!< Port for TCP connection
-    int baudrate;      //!< baudrate of serial connection
+    std::string ip;        //!< IP address for TCP connection
+    std::string port;      //!< Port for TCP connection
+    int baudrate;          //!< baudrate of serial connection
+    bool publish_odom_tf;  //!< publish odometry also as transformations between frames
 };
 struct CustomerInputParams {
     std::string speed_topic;

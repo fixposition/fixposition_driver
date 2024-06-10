@@ -28,6 +28,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     const std::string IP = ns + ".ip";
     const std::string PORT = ns + ".port";
     const std::string BAUDRATE = ns + ".baudrate";
+    const std::string PUBLISH_ODOM_TF = ns + ".publish_odom_tf";
 
     node->declare_parameter(RATE, 100);
     node->declare_parameter(RECONNECT_DELAY, 5.0);
@@ -36,6 +37,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     node->declare_parameter(PORT, "21000");
     node->declare_parameter(IP, "127.0.0.1");
     node->declare_parameter(BAUDRATE, 115200);
+    node->declare_parameter(PUBLISH_ODOM_TF, true);
     // read parameters
     if (node->get_parameter(RATE, params.rate)) {
         RCLCPP_INFO(node->get_logger(), "%s : %d", RATE.c_str(), params.rate);
@@ -83,6 +85,13 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
         } else {
             RCLCPP_WARN(node->get_logger(), "Using Default %s : %d", BAUDRATE.c_str(), params.baudrate);
         }
+    }
+
+    if (node->get_parameter(PUBLISH_ODOM_TF, params.publish_odom_tf)) {
+        RCLCPP_INFO(node->get_logger(), "%s : %s", PUBLISH_ODOM_TF.c_str(), params.publish_odom_tf.c_str());
+    } else {
+        RCLCPP_WARN(node->get_logger(), "Using Default %s : %s", PUBLISH_ODOM_TF.c_str(),
+                    params.publish_odom_tf.c_str());
     }
 
     return true;
