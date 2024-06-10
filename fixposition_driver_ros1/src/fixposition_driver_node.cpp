@@ -109,7 +109,7 @@ void FixpositionDriverNode::RegisterObservers() {
                     }
 
                     // TFs
-                    if (data.vrtk.fusion_status > 0) {
+                    if (data.vrtk.fusion_status > 0 && params_.fp_output.publish_odom_tf) {
                         geometry_msgs::TransformStamped tf_ecef_poi;
                         geometry_msgs::TransformStamped tf_ecef_enu;
                         geometry_msgs::TransformStamped tf_ecef_enu0;

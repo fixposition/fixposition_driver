@@ -29,6 +29,8 @@ bool LoadParamsFromRos1(const std::string& ns, FpOutputParams& params) {
     const std::string IP = ns + "/ip";
     const std::string PORT = ns + "/port";
     const std::string BAUDRATE = ns + "/baudrate";
+    const std::string PUBLISH_ODOM_TF = ns + "/publish_odom_tf";
+
     // read parameters
     if (!ros::param::get(RATE, params.rate)) {
         params.rate = 100;
@@ -84,6 +86,14 @@ bool LoadParamsFromRos1(const std::string& ns, FpOutputParams& params) {
         }
         ROS_INFO("%s : %d", BAUDRATE.c_str(), params.baudrate);
         ROS_INFO("%s : %s", PORT.c_str(), params.port.c_str());
+    }
+
+    if (!ros::param::get(PUBLISH_ODOM_TF, params.publish_odom_tf)) {
+        // default value is to publish odometry as transformations
+        params.publish_odom_tf = true;
+        ROS_WARN("Using Default Publish Odom TF : %d", params.publish_odom_tf);
+    } else {
+        ROS_INFO("%s : %s", PUBLISH_ODOM_TF.c_str(), params.publish_odom_tf ? "true" : "false");
     }
 
     return true;
