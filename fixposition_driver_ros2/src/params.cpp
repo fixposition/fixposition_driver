@@ -88,10 +88,10 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     }
 
     if (node->get_parameter(PUBLISH_ODOM_TF, params.publish_odom_tf)) {
-        RCLCPP_INFO(node->get_logger(), "%s : %s", PUBLISH_ODOM_TF.c_str(), params.publish_odom_tf.c_str());
+        RCLCPP_INFO(node->get_logger(), "%s : %s", PUBLISH_ODOM_TF.c_str(), params.publish_odom_tf ? "true" : "false");
     } else {
         RCLCPP_WARN(node->get_logger(), "Using Default %s : %s", PUBLISH_ODOM_TF.c_str(),
-                    params.publish_odom_tf.c_str());
+                    params.publish_odom_tf ? "true" : "false");
     }
 
     return true;
