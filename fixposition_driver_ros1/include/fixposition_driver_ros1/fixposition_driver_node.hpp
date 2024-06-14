@@ -75,6 +75,26 @@ class FixpositionDriverNode : public FixpositionDriver {
     ros::Publisher odometry_enu_pub_;    //!< ENU Odometry
     ros::Publisher odometry_smooth_pub_; //!< Smooth Odometry (ECEF)
     ros::Publisher vrtk_pub_;            //!< FP_A-ODOMETRY message
+
+    // FP_A messages
+    ros::Publisher fpa_gnssant_pub_;     //!< FP_A-GNSSANT message
+    ros::Publisher fpa_gnsscorr_pub_;    //!< FP_A-GNSSCORR message
+    ros::Publisher fpa_llh_pub_;         //!< FP_A-LLH message
+    ros::Publisher fpa_odomenu_pub_;     //!< FP_A-ODOMENU message
+    ros::Publisher fpa_odometry_pub_;    //!< FP_A-ODOMETRY message
+    ros::Publisher fpa_odomsh_pub_;      //!< FP_A-ODOMSH message
+    ros::Publisher fpa_text_pub_;        //!< FP_A-TEXT message
+
+    // NMEA messages
+    ros::Publisher nmea_gpgga_pub_;      //!< NMEA-GP-GGA message
+    ros::Publisher nmea_gpgll_pub_;      //!< NMEA-GP-GLL message
+    ros::Publisher nmea_gngsa_pub_;      //!< NMEA-GP-GSA message
+    ros::Publisher nmea_gpgst_pub_;      //!< NMEA-GP-GST message
+    ros::Publisher nmea_gxgsv_pub_;      //!< NMEA-GP-GSV message
+    ros::Publisher nmea_gphdt_pub_;      //!< NMEA-GP-HDT message
+    ros::Publisher nmea_gprmc_pub_;      //!< NMEA-GP-RMC message
+    ros::Publisher nmea_gpvtg_pub_;      //!< NMEA-GP-VTG message
+    ros::Publisher nmea_gpzda_pub_;      //!< NMEA-GP-ZDA message
     
     // Orientation
     ros::Publisher eul_pub_;             //!< Euler angles Yaw-Pitch-Roll in local ENU

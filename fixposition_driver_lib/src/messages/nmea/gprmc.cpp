@@ -74,8 +74,9 @@ void GP_RMC::ConvertFromTokens(const std::vector<std::string>& tokens) {
     mode   = StringToChar(tokens.at(mode_idx));
 
     // Speed and course over ground
-    speed  = StringToDouble(tokens.at(speed_idx)) * knots_to_ms;
-    course = StringToDouble(tokens.at(course_idx));
+    speed    = StringToDouble(tokens.at(speed_idx));
+    speed_ms = speed * knots_to_ms;
+    course   = StringToDouble(tokens.at(course_idx));
 }
 
 }  // namespace fixposition

@@ -26,6 +26,26 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
     odometry_smooth_pub_(nh_.advertise<nav_msgs::Odometry>("/fixposition/odometry_smooth", 10)),
     vrtk_pub_(nh_.advertise<fixposition_driver_ros1::VRTK>("/fixposition/vrtk", 10)),
 
+    // FP_A messages
+    fpa_gnssant_pub_(nh_.advertise<fixposition_driver_ros1::gnssant>("/fixposition/fpa/gnssant", 10)),
+    fpa_gnsscorr_pub_(nh_.advertise<fixposition_driver_ros1::gnsscorr>("/fixposition/fpa/gnsscorr", 10)),
+    fpa_llh_pub_(nh_.advertise<fixposition_driver_ros1::llh>("/fixposition/fpa/llh", 10)),
+    fpa_odomenu_pub_(nh_.advertise<fixposition_driver_ros1::odomenu>("/fixposition/fpa/odomenu", 10)),
+    fpa_odometry_pub_(nh_.advertise<fixposition_driver_ros1::odometry>("/fixposition/fpa/odometry", 10)),
+    fpa_odomsh_pub_(nh_.advertise<fixposition_driver_ros1::odomsh>("/fixposition/fpa/odomsh", 10)),
+    fpa_text_pub_(nh_.advertise<fixposition_driver_ros1::text>("/fixposition/fpa/text", 10)),
+
+    // NMEA messages
+    nmea_gpgga_pub_(nh_.advertise<fixposition_driver_ros1::gpgga>("/fixposition/nmea/gpgga", 10)),
+    nmea_gpgll_pub_(nh_.advertise<fixposition_driver_ros1::gpgll>("/fixposition/nmea/gpgll", 10)),
+    nmea_gngsa_pub_(nh_.advertise<fixposition_driver_ros1::gngsa>("/fixposition/nmea/gngsa", 10)),
+    nmea_gpgst_pub_(nh_.advertise<fixposition_driver_ros1::gpgst>("/fixposition/nmea/gpgst", 10)),
+    nmea_gxgsv_pub_(nh_.advertise<fixposition_driver_ros1::gxgsv>("/fixposition/nmea/gxgsv", 100)),
+    nmea_gphdt_pub_(nh_.advertise<fixposition_driver_ros1::gphdt>("/fixposition/nmea/gphdt", 10)),
+    nmea_gprmc_pub_(nh_.advertise<fixposition_driver_ros1::gprmc>("/fixposition/nmea/gprmc", 10)),
+    nmea_gpvtg_pub_(nh_.advertise<fixposition_driver_ros1::gpvtg>("/fixposition/nmea/gpvtg", 10)),
+    nmea_gpzda_pub_(nh_.advertise<fixposition_driver_ros1::gpzda>("/fixposition/nmea/gpzda", 10)),
+
     // Orientation
     eul_pub_(nh_.advertise<geometry_msgs::Vector3Stamped>("/fixposition/ypr", 10)),
     eul_imu_pub_(nh_.advertise<geometry_msgs::Vector3Stamped>("/fixposition/imu_ypr", 10)),
@@ -57,7 +77,8 @@ void FixpositionDriverNode::RegisterObservers() {
         if (format == "ODOMETRY") {
             dynamic_cast<NmeaConverter<FP_ODOMETRY>*>(a_converters_["ODOMETRY"].get())
                 ->AddObserver([this](const FP_ODOMETRY& data) {
-                    // ODOMETRY Observer Lambda
+                    FpToRosMsg(data, fpa_odometry_pub_);
+                    
                     if (odometry_ecef_pub_.getNumSubscribers() > 0) {
                         nav_msgs::Odometry odometry;
                         OdometryDataToMsg(data.odom, odometry);
@@ -92,7 +113,8 @@ void FixpositionDriverNode::RegisterObservers() {
         } else if (format == "ODOMENU") {
             dynamic_cast<NmeaConverter<FP_ODOMENU>*>(a_converters_["ODOMENU"].get())
                 ->AddObserver([this](const FP_ODOMENU& data) {
-                    // ODOMENU Observer Lambda
+                    FpToRosMsg(data, fpa_odomenu_pub_);
+                    
                     if (odometry_enu_pub_.getNumSubscribers() > 0) {
                         nav_msgs::Odometry odometry_enu0;
                         OdometryDataToMsg(data.odom, odometry_enu0);
@@ -117,13 +139,26 @@ void FixpositionDriverNode::RegisterObservers() {
         } else if (format == "ODOMSH") {
             dynamic_cast<NmeaConverter<FP_ODOMSH>*>(a_converters_["ODOMSH"].get())
                 ->AddObserver([this](const FP_ODOMSH& data) {
-                    // ODOMSH Observer Lambda
+                    FpToRosMsg(data, fpa_odomsh_pub_);
+                    
                     if (odometry_smooth_pub_.getNumSubscribers() > 0) {
                         nav_msgs::Odometry odometry;
                         OdometryDataToMsg(data.odom, odometry);
                         odometry_smooth_pub_.publish(odometry);
                     }
                 });
+        } else if (format == "LLH") {
+            dynamic_cast<NmeaConverter<FP_LLH>*>(a_converters_["LLH"].get())
+                ->AddObserver([this](const FP_LLH& data) { FpToRosMsg(data, fpa_llh_pub_); });
+        } else if (format == "GNSSANT") {
+            dynamic_cast<NmeaConverter<FP_GNSSANT>*>(a_converters_["GNSSANT"].get())
+                ->AddObserver([this](const FP_GNSSANT& data) { FpToRosMsg(data, fpa_gnssant_pub_); });
+        } else if (format == "GNSSCORR") {
+            dynamic_cast<NmeaConverter<FP_GNSSCORR>*>(a_converters_["GNSSCORR"].get())
+                ->AddObserver([this](const FP_GNSSCORR& data) { FpToRosMsg(data, fpa_gnsscorr_pub_); });
+        } else if (format == "TEXT") {
+            dynamic_cast<NmeaConverter<FP_TEXT>*>(a_converters_["TEXT"].get())
+                ->AddObserver([this](const FP_TEXT& data) { FpToRosMsg(data, fpa_text_pub_); });
         } else if (format == "RAWIMU") {
             dynamic_cast<NmeaConverter<FP_RAWIMU>*>(a_converters_["RAWIMU"].get())->AddObserver([this](const FP_RAWIMU& data) {
                 // RAWIMU Observer Lambda
@@ -163,22 +198,46 @@ void FixpositionDriverNode::RegisterObservers() {
             });
         } else if (format == "GPGGA") {
             dynamic_cast<NmeaConverter<GP_GGA>*>(a_converters_["GPGGA"].get())->AddObserver([this](const GP_GGA& data) {
+                FpToRosMsg(data, nmea_gpgga_pub_);
+                
                 // GPGGA Observer Lambda
                 if (nmea_pub_.getNumSubscribers() > 0) {
                     nmea_message_.gpgga = data;
                     PublishNmea(nmea_message_);
                 }
             });
+        } else if (format == "GPGLL") {
+            dynamic_cast<NmeaConverter<GP_GLL>*>(a_converters_["GPGLL"].get())
+                ->AddObserver([this](const GP_GLL& data) { FpToRosMsg(data, nmea_gpgll_pub_); });
+        } else if (format == "GNGSA") {
+            dynamic_cast<NmeaConverter<GN_GSA>*>(a_converters_["GNGSA"].get())
+                ->AddObserver([this](const GN_GSA& data) { FpToRosMsg(data, nmea_gngsa_pub_); });
+        } else if (format == "GPGST") {
+            dynamic_cast<NmeaConverter<GP_GST>*>(a_converters_["GPGST"].get())
+                ->AddObserver([this](const GP_GST& data) { FpToRosMsg(data, nmea_gpgst_pub_); });
+        } else if (format == "GPGSV" || format == "GAGSV" || format == "GBGSV" || format == "GLGSV") {
+            dynamic_cast<NmeaConverter<GX_GSV>*>(a_converters_["GXGSV"].get())
+                ->AddObserver([this](const GX_GSV& data) { FpToRosMsg(data, nmea_gxgsv_pub_); });
+        } else if (format == "GPHDT") {
+            dynamic_cast<NmeaConverter<GP_HDT>*>(a_converters_["GPHDT"].get())
+                ->AddObserver([this](const GP_HDT& data) { FpToRosMsg(data, nmea_gphdt_pub_); });
         } else if (format == "GPRMC") {
             dynamic_cast<NmeaConverter<GP_RMC>*>(a_converters_["GPRMC"].get())->AddObserver([this](const GP_RMC& data) {
+                FpToRosMsg(data, nmea_gprmc_pub_);
+                
                 // GPRMC Observer Lambda
                 if (nmea_pub_.getNumSubscribers() > 0) {
                     nmea_message_.gprmc = data;
                     PublishNmea(nmea_message_);
                 }
             });
+        } else if (format == "GPVTG") {
+            dynamic_cast<NmeaConverter<GP_VTG>*>(a_converters_["GPVTG"].get())
+                ->AddObserver([this](const GP_VTG& data) { FpToRosMsg(data, nmea_gpvtg_pub_); });
         } else if (format == "GPZDA") {
             dynamic_cast<NmeaConverter<GP_ZDA>*>(a_converters_["GPZDA"].get())->AddObserver([this](const GP_ZDA& data) {
+                FpToRosMsg(data, nmea_gpzda_pub_);
+                
                 // GPZDA Observer Lambda
                 if (nmea_pub_.getNumSubscribers() > 0) {
                     nmea_message_.gpzda = data;

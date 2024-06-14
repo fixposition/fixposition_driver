@@ -23,6 +23,31 @@
 #include <fixposition_driver_ros1/fixposition_driver_node.hpp>
 
 namespace fixposition {
+
+/**
+ * @brief
+ *
+ * @param[in] data
+ * @param[out] msg
+ */
+void FpToRosMsg( const FP_GNSSANT& data, ros::Publisher& pub);
+void FpToRosMsg(const FP_GNSSCORR& data, ros::Publisher& pub);
+void FpToRosMsg(     const FP_LLH& data, ros::Publisher& pub);
+void FpToRosMsg( const FP_ODOMENU& data, ros::Publisher& pub);
+void FpToRosMsg(const FP_ODOMETRY& data, ros::Publisher& pub);
+void FpToRosMsg(  const FP_ODOMSH& data, ros::Publisher& pub);
+void FpToRosMsg(    const FP_TEXT& data, ros::Publisher& pub);
+
+void FpToRosMsg(const GP_GGA& data, ros::Publisher& pub);
+void FpToRosMsg(const GP_GLL& data, ros::Publisher& pub);
+void FpToRosMsg(const GN_GSA& data, ros::Publisher& pub);
+void FpToRosMsg(const GP_GST& data, ros::Publisher& pub);
+void FpToRosMsg(const GX_GSV& data, ros::Publisher& pub);
+void FpToRosMsg(const GP_HDT& data, ros::Publisher& pub);
+void FpToRosMsg(const GP_RMC& data, ros::Publisher& pub);
+void FpToRosMsg(const GP_VTG& data, ros::Publisher& pub);
+void FpToRosMsg(const GP_ZDA& data, ros::Publisher& pub);
+
 /**
  * @brief
  *

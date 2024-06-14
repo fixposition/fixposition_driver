@@ -40,8 +40,8 @@ struct FP_ODOMETRY {
     const std::string frame_id = "FP_ECEF";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "ODOMETRY";
-    static constexpr int kVersion_ = 2;
-    static constexpr int kSize_ = 45;
+    static constexpr unsigned int kVersion_ = 2;
+    static constexpr unsigned int kSize_ = 45;
 
     FP_ODOMETRY() {
         odom.frame_id = frame_id;
@@ -82,8 +82,8 @@ struct FP_ODOMENU {
     const std::string frame_id = "FP_ECEF";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "ODOMENU";
-    static constexpr int kVersion_ = 1;
-    static constexpr int kSize_ = 44;
+    static constexpr unsigned int kVersion_ = 1;
+    static constexpr unsigned int kSize_ = 44;
 
     FP_ODOMENU() {
         odom.frame_id = frame_id;
@@ -123,8 +123,8 @@ struct FP_ODOMSH {
     const std::string frame_id = "FP_ECEF";
     const std::string child_frame_id = "FP_POISH";
     const std::string header_ = "ODOMSH";
-    static constexpr int kVersion_ = 1;
-    static constexpr int kSize_ = 44;
+    static constexpr unsigned int kVersion_ = 1;
+    static constexpr unsigned int kSize_ = 44;
 
     FP_ODOMSH() {
         odom.frame_id = frame_id;
@@ -160,8 +160,8 @@ struct FP_LLH {
     const std::string frame_id = "FP_LLH";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "LLH";
-    static constexpr int kVersion_ = 1;
-    static constexpr int kSize_ = 14;
+    static constexpr unsigned int kVersion_ = 1;
+    static constexpr unsigned int kSize_ = 14;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -182,8 +182,8 @@ struct FP_TF {
 
     // Message structure
     const std::string header_ = "TF";
-    static constexpr int kVersion_ = 2;
-    static constexpr int kSize_ = 14;
+    static constexpr unsigned int kVersion_ = 2;
+    static constexpr unsigned int kSize_ = 14;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -206,8 +206,8 @@ struct FP_RAWIMU {
 
     // Message structure
     const std::string header_ = "RAWIMU";
-    static constexpr int kVersion_ = 1;
-    static constexpr int kSize_ = 11;
+    static constexpr unsigned int kVersion_ = 1;
+    static constexpr unsigned int kSize_ = 11;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -228,8 +228,8 @@ struct FP_CORRIMU {
 
     // Message structure
     const std::string header_ = "CORRIMU";
-    static constexpr int kVersion_ = 1;
-    static constexpr int kSize_ = 11;
+    static constexpr unsigned int kVersion_ = 1;
+    static constexpr unsigned int kSize_ = 11;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -256,8 +256,8 @@ struct FP_GNSSANT {
 
     // Message structure
     const std::string header_ = "GNSSANT";
-    static constexpr int kVersion_ = 1;
-    static constexpr int kSize_ = 11;
+    static constexpr unsigned int kVersion_ = 1;
+    static constexpr unsigned int kSize_ = 11;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -290,15 +290,13 @@ struct FP_GNSSCORR {
     float corr_data_rate;
     float corr_msg_rate;
     int sta_id;
-    double sta_lat;
-    double sta_lon;
-    double sta_height;
+    Eigen::Vector3d sta_llh;
     int sta_dist;
 
     // Message structure
     const std::string header_ = "GNSSCORR";
-    static constexpr int kVersion_ = 1;
-    static constexpr int kSize_ = 20;
+    static constexpr unsigned int kVersion_ = 1;
+    static constexpr unsigned int kSize_ = 20;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -315,9 +313,7 @@ struct FP_GNSSCORR {
         corr_data_rate = 0.0;
         corr_msg_rate = 0.0;
         sta_id = 0;
-        sta_lat = 0.0;
-        sta_lon = 0.0;
-        sta_height = 0.0;
+        sta_llh.setZero();
         sta_dist = 0;
     }
 };
@@ -333,8 +329,8 @@ struct FP_TEXT {
 
     // Message structure
     const std::string header_ = "TEXT";
-    static constexpr int kVersion_ = 1;
-    static constexpr int kSize_ = 5;
+    static constexpr unsigned int kVersion_ = 1;
+    static constexpr unsigned int kSize_ = 5;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 

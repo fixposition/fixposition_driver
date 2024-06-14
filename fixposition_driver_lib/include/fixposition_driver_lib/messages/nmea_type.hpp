@@ -42,7 +42,7 @@ struct GP_GGA {
     static constexpr char frame_id[] = "LLH";
     static constexpr char child_frame_id[] = "FP_POI";
     static constexpr char header_[] = "GPGGA";
-    static constexpr int kSize_ = 15;
+    static constexpr unsigned int kSize_ = 15;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -77,7 +77,7 @@ struct GP_GLL {
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "GPGLL";
-    static constexpr int kSize_ = 8;
+    static constexpr unsigned int kSize_ = 8;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -91,15 +91,15 @@ struct GP_GLL {
     }
 };
 
-// ------------ NMEA-GP-GSA ------------
+// ------------ NMEA-GN-GSA ------------
 
-struct GP_GSA {
+struct GN_GSA {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Message fields
     char mode_op;
     int8_t mode_nav;
-    std::vector<int> ids[11];
+    std::vector<int> ids;
     float pdop;
     float hdop;
     float vdop;
@@ -108,15 +108,15 @@ struct GP_GSA {
     // Message structure
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
-    const std::string header_ = "GPGSA";
-    static constexpr int kSize_ = 19;
+    const std::string header_ = "GNGSA";
+    static constexpr unsigned int kSize_ = 19;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         mode_op = '0';
         mode_nav = 0;
-        memset(ids, 0, 11 * sizeof(ids[0]));
+        ids.clear();
         pdop = 0.0;
         hdop = 0.0;
         vdop = 0.0;
@@ -143,7 +143,7 @@ struct GP_GST {
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "GPGST";
-    static constexpr int kSize_ = 9;
+    static constexpr unsigned int kSize_ = 9;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -159,26 +159,26 @@ struct GP_GST {
     }
 };
 
-// ------------ NMEA-GP-GSV ------------
+// ------------ NMEA-GX-GSV ------------
 
-struct GP_GSV {
+struct GX_GSV {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Message fields
     uint8_t sentences;
     uint8_t sent_num;
     uint8_t num_sats;
-    uint8_t sat_id[4];
-    uint8_t elev[4];
-    uint8_t azim[4];
-    uint8_t cno[4];
-    char signal_id;
+    std::vector<unsigned int> sat_id;
+    std::vector<unsigned int> elev;
+    std::vector<unsigned int> azim;
+    std::vector<unsigned int> cno;
+    std::string signal_id;
     
     // Message structure
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
-    const std::string header_ = "GPGST";
-    int kSize_ = 4 + (4) * 4; // Maximum size: 4 + num_sats * 4
+    const std::string header_ = "GXGST";
+    unsigned int kSize_ = 4; // Maximum size: 4 + num_sats * 4
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -186,11 +186,11 @@ struct GP_GSV {
         sentences = 0;
         sent_num = 0;
         num_sats = 0;
-        memset(sat_id, 0, 4 * sizeof(sat_id[0]));
-        memset(elev, 0, 4 * sizeof(elev[0]));
-        memset(azim, 0, 4 * sizeof(azim[0]));
-        memset(cno, 0, 4 * sizeof(cno[0]));
-        signal_id = '0';
+        sat_id.clear();
+        elev.clear();
+        azim.clear();
+        cno.clear();
+        signal_id = "Unknown";
     }
 };
 
@@ -207,7 +207,7 @@ struct GP_HDT {
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "GPHDT";
-    static constexpr int kSize_ = 3;
+    static constexpr unsigned int kSize_ = 3;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -229,6 +229,7 @@ struct GP_RMC {
     char lat_ns;
     char lon_ew;
     float speed;
+    float speed_ms;
     float course;
     char mode;
     
@@ -236,7 +237,7 @@ struct GP_RMC {
     static constexpr char frame_id[] = "LLH";
     static constexpr char child_frame_id[] = "FP_POI";
     static constexpr char header_[] = "GPRMC";
-    static constexpr int kSize_ = 13;
+    static constexpr unsigned int kSize_ = 13;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -272,7 +273,7 @@ struct GP_VTG {
     static constexpr char frame_id[] = "LLH";
     static constexpr char child_frame_id[] = "FP_POI";
     static constexpr char header_[] = "GPVTG";
-    static constexpr int kSize_ = 10;
+    static constexpr unsigned int kSize_ = 10;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -305,12 +306,14 @@ struct GP_ZDA {
     static constexpr char frame_id[] = "LLH";
     static constexpr char child_frame_id[] = "FP_POI";
     static constexpr char header_[] = "GPZDA";
-    static constexpr int kSize_ = 7;
+    static constexpr unsigned int kSize_ = 7;
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         stamp = fixposition::times::GpsTime();
+        time_str = "hhmmss.ss(ss)";
+        date_str = "dd/mm/yyyy";
         local_hr = 0;
         local_min = 0;
     }

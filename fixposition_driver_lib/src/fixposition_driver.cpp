@@ -202,12 +202,12 @@ bool FixpositionDriver::InitializeConverters() {
             a_converters_["GPGGA"] = std::unique_ptr<NmeaConverter<GP_GGA>>(new NmeaConverter<GP_GGA>());
         } else if (format == "GPGLL") {
             a_converters_["GPGLL"] = std::unique_ptr<NmeaConverter<GP_GLL>>(new NmeaConverter<GP_GLL>());
-        } else if (format == "GPGSA") {
-            a_converters_["GPGSA"] = std::unique_ptr<NmeaConverter<GP_GSA>>(new NmeaConverter<GP_GSA>());
+        } else if (format == "GNGSA") {
+            a_converters_["GNGSA"] = std::unique_ptr<NmeaConverter<GN_GSA>>(new NmeaConverter<GN_GSA>());
         } else if (format == "GPGST") {
             a_converters_["GPGST"] = std::unique_ptr<NmeaConverter<GP_GST>>(new NmeaConverter<GP_GST>());
-        } else if (format == "GPGSV") {
-            a_converters_["GPGSV"] = std::unique_ptr<NmeaConverter<GP_GSV>>(new NmeaConverter<GP_GSV>());
+        } else if (format == "GPGSV" || format == "GAGSV" || format == "GBGSV" || format == "GLGSV") {
+            a_converters_["GXGSV"] = std::unique_ptr<NmeaConverter<GX_GSV>>(new NmeaConverter<GX_GSV>());
         } else if (format == "GPHDT") {
             a_converters_["GPHDT"] = std::unique_ptr<NmeaConverter<GP_HDT>>(new NmeaConverter<GP_HDT>());
         } else if (format == "GPRMC") {
@@ -305,7 +305,13 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
     SplitMessage(tokens, msg.substr(1, star_pos - 1), ",");
 
     // if it doesn't start with FP then do nothing
-    if ((tokens.at(0) != "FP") && (tokens.at(0) != "GPGGA") && (tokens.at(0) != "GPZDA") && (tokens.at(0) != "GPRMC")) {
+    if ((tokens.at(0) != "FP") && (tokens.at(0) != "GPGGA") && 
+        (tokens.at(0) != "GPGLL") && (tokens.at(0) != "GNGSA") &&
+        (tokens.at(0) != "GPGST") && (tokens.at(0) != "GPHDT") &&
+        (tokens.at(0) != "GPRMC") && (tokens.at(0) != "GPVTG") &&
+        (tokens.at(0) != "GPZDA") && (tokens.at(0) != "GPGSV") &&
+        (tokens.at(0) != "GAGSV") && (tokens.at(0) != "GBGSV") &&
+        (tokens.at(0) != "GLGSV")) {
         return;
     }
 
@@ -313,17 +319,28 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
     std::string _header;
     if (tokens.at(0) == "GPGGA") {
         _header = "GPGGA";
-    } else if (tokens.at(0) == "GPZDA") {
-        _header = "GPZDA";
+    } else if (tokens.at(0) == "GPGLL") {
+        _header = "GPGLL";
+    } else if (tokens.at(0) == "GNGSA") {
+        _header = "GNGSA";
+    } else if (tokens.at(0) == "GPGST") {
+        _header = "GPGST";
+    } else if (tokens.at(0) == "GPHDT") {
+        _header = "GPHDT";
     } else if (tokens.at(0) == "GPRMC") {
         _header = "GPRMC";
+    } else if (tokens.at(0) == "GPVTG") {
+        _header = "GPVTG";
+    } else if (tokens.at(0) == "GPZDA") {
+        _header = "GPZDA";
+    } else if (tokens.at(0) == "GPGSV" || tokens.at(0) == "GAGSV" || tokens.at(0) == "GBGSV" || tokens.at(0) == "GLGSV") {
+        _header = "GXGSV";
     } else {
         _header = tokens.at(1);
     }
     const std::string header = _header;
 
     // If we have a converter available, convert to ros.
-    // Currently supported are "FP", "ODOMETRY", "ODOMENU", "ODOMSH", "TF", "RAWIMU", "CORRIMU", "GPGGA", "GPZDA", "GPRMC"
     if (a_converters_[header] != nullptr) {
         a_converters_[header]->ConvertTokens(tokens);
     }

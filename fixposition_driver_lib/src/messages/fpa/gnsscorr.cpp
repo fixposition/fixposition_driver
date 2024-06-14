@@ -78,9 +78,7 @@ void FP_GNSSCORR::ConvertFromTokens(const std::vector<std::string>& tokens) {
     corr_data_rate   = StringToDouble(tokens.at(corr_data_rate_idx));
     corr_msg_rate    = StringToDouble(tokens.at(corr_msg_rate_idx));
     sta_id     = StringToInt(tokens.at(sta_id_idx));
-    sta_lat    = StringToDouble(tokens.at(sta_lon_idx));
-    sta_lon    = StringToDouble(tokens.at(sta_lat_idx));
-    sta_height = StringToDouble(tokens.at(sta_height_idx));
+    sta_llh    = Vector3ToEigen(tokens.at(sta_lat_idx), tokens.at(sta_lon_idx), tokens.at(sta_height_idx));
     sta_dist   = StringToInt(tokens.at(sta_dist_idx));
 }
 

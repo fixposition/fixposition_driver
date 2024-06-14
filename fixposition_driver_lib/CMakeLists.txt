@@ -35,9 +35,9 @@ add_library(
   src/messages/fpa/tf.cpp
   src/messages/nmea/gpgga.cpp
   src/messages/nmea/gpgll.cpp
-  src/messages/nmea/gpgsa.cpp
+  src/messages/nmea/gngsa.cpp
   src/messages/nmea/gpgst.cpp
-  src/messages/nmea/gpgsv.cpp
+  src/messages/nmea/gxgsv.cpp
   src/messages/nmea/gphdt.cpp
   src/messages/nmea/gprmc.cpp
   src/messages/nmea/gpvtg.cpp
