@@ -45,19 +45,34 @@ struct GP_GGA {
     static constexpr char header_[] = "GPGGA";
     static constexpr unsigned int kSize_ = 15;
 
+    GP_GGA() {
+        time_str = "";
+        llh.setZero();
+        lat_ns = ' ';
+        lon_ew = ' ';
+        alt_unit = ' ';
+        quality = -1;
+        num_sv = -1;
+        hdop = -1.0;
+        diff_age = -1.0;
+        diff_sta = "";
+        sentence = "";
+    }
+
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         time_str = "";
         llh.setZero();
-        lat_ns = '0';
-        lon_ew = '0';
-        alt_unit = '0';
-        quality = 0;
-        num_sv = 0;
-        hdop = 0.0;
-        diff_age = 0.0;
-        diff_sta = ""; 
+        lat_ns = ' ';
+        lon_ew = ' ';
+        alt_unit = ' ';
+        quality = -1;
+        num_sv = -1;
+        hdop = -1.0;
+        diff_age = -1.0;
+        diff_sta = "";
+        sentence = "";
     }
 };
 
@@ -80,15 +95,24 @@ struct GP_GLL {
     const std::string header_ = "GPGLL";
     static constexpr unsigned int kSize_ = 8;
 
+    GP_GLL() {
+        time_str = "";
+        latlon.setZero();
+        lat_ns = ' ';
+        lon_ew = ' ';
+        status = ' ';
+        mode = ' ';
+    }
+
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         time_str = "";
         latlon.setZero();
-        lat_ns = '0';
-        lon_ew = '0';
-        status = '0';
-        mode = '0';
+        lat_ns = ' ';
+        lon_ew = ' ';
+        status = ' ';
+        mode = ' ';
     }
 };
 
@@ -112,16 +136,26 @@ struct GN_GSA {
     const std::string header_ = "GNGSA";
     static constexpr unsigned int kSize_ = 19;
 
+    GN_GSA() {
+        mode_op = ' ';
+        mode_nav = -1;
+        ids.clear();
+        pdop = -1.0;
+        hdop = -1.0;
+        vdop = -1.0;
+        gnss_id = -1;
+    }
+
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
-        mode_op = '0';
-        mode_nav = 0;
+        mode_op = ' ';
+        mode_nav = -1;
         ids.clear();
-        pdop = 0.0;
-        hdop = 0.0;
-        vdop = 0.0;
-        gnss_id = 0;
+        pdop = -1.0;
+        hdop = -1.0;
+        vdop = -1.0;
+        gnss_id = -1;
     }
 };
 
@@ -146,17 +180,28 @@ struct GP_GST {
     const std::string header_ = "GPGST";
     static constexpr unsigned int kSize_ = 9;
 
+    GP_GST() {
+        time_str = "";
+        rms_range = -1.0;
+        std_major = -1.0;
+        std_minor = -1.0;
+        angle_major = -1.0;
+        std_lat = -1.0;
+        std_lon = -1.0;
+        std_alt = -1.0;
+    }
+
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         time_str = "";
-        rms_range = 0.0;
-        std_major = 0.0;
-        std_minor = 0.0;
-        angle_major = 0.0;
-        std_lat = 0.0;
-        std_lon = 0.0;
-        std_alt = 0.0;
+        rms_range = -1.0;
+        std_major = -1.0;
+        std_minor = -1.0;
+        angle_major = -1.0;
+        std_lat = -1.0;
+        std_lon = -1.0;
+        std_alt = -1.0;
     }
 };
 
@@ -180,6 +225,17 @@ struct GX_GSV {
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "GXGST";
     unsigned int kSize_ = 4; // Maximum size: 4 + num_sats * 4
+
+    GX_GSV() {
+        sentences = 0;
+        sent_num = 0;
+        num_sats = 0;
+        sat_id.clear();
+        elev.clear();
+        azim.clear();
+        cno.clear();
+        signal_id = "Unknown";
+    }
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -210,10 +266,16 @@ struct GP_HDT {
     const std::string header_ = "GPHDT";
     static constexpr unsigned int kSize_ = 3;
 
+    GP_HDT() {
+        heading = 0.0;
+        true_ind = ' ';
+    }
+
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         heading = 0.0;
+        true_ind = ' ';
     }
 };
 
@@ -240,17 +302,32 @@ struct GP_RMC {
     static constexpr char header_[] = "GPRMC";
     static constexpr unsigned int kSize_ = 13;
 
+    GP_RMC() {
+        date_str = "";
+        time_str = "";
+        status = ' ';
+        latlon.setZero();
+        lat_ns = ' ';
+        lon_ew = ' ';
+        speed = 0.0;
+        speed_ms = 0.0;
+        course = 0.0;
+        mode = ' ';
+    }
+
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
+        date_str = "";
         time_str = "";
-        status = '0';
+        status = ' ';
         latlon.setZero();
-        lat_ns = '0';
-        lon_ew = '0';
+        lat_ns = ' ';
+        lon_ew = ' ';
         speed = 0.0;
+        speed_ms = 0.0;
         course = 0.0;
-        mode = '0';
+        mode = ' ';
     }
 };
 
@@ -276,18 +353,30 @@ struct GP_VTG {
     static constexpr char header_[] = "GPVTG";
     static constexpr unsigned int kSize_ = 10;
 
+    GP_VTG() {
+        cog_true = 0.0;
+        cog_ref_t = ' ';
+        cog_mag = 0.0;
+        cog_ref_m = ' ';
+        sog_knot = 0.0;
+        sog_unit_n = ' ';
+        sog_kph = 0.0;
+        sog_unit_k = ' ';
+        mode = ' ';
+    }
+
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         cog_true = 0.0;
-        cog_ref_t = '0';
+        cog_ref_t = ' ';
         cog_mag = 0.0;
-        cog_ref_m = '0';
+        cog_ref_m = ' ';
         sog_knot = 0.0;
-        sog_unit_n = '0';
+        sog_unit_n = ' ';
         sog_kph = 0.0;
-        sog_unit_k = '0';
-        mode = '0';
+        sog_unit_k = ' ';
+        mode = ' ';
     }
 };
 
@@ -308,6 +397,14 @@ struct GP_ZDA {
     static constexpr char child_frame_id[] = "FP_POI";
     static constexpr char header_[] = "GPZDA";
     static constexpr unsigned int kSize_ = 7;
+
+    GP_ZDA() {
+        stamp = fixposition::times::GpsTime();
+        time_str = "hhmmss.ss(ss)";
+        date_str = "dd/mm/yyyy";
+        local_hr = 0;
+        local_min = 0;
+    }
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 

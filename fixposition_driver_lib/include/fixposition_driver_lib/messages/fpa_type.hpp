@@ -44,22 +44,34 @@ struct FP_ODOMETRY {
     static constexpr unsigned int kSize_ = 45;
 
     FP_ODOMETRY() {
+        odom.stamp = fixposition::times::GpsTime();
         odom.frame_id = frame_id;
         odom.child_frame_id = child_frame_id;
+        odom.pose = PoseWithCovData();
+        odom.twist = TwistWithCovData();
+        acceleration.setZero();
+        fusion_status = -1;
+        imu_bias_status = -1;
+        gnss1_status = -1;
+        gnss2_status = -1;
+        wheelspeed_status = -1;
+        version = "Unknown";
     }
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         odom.stamp = fixposition::times::GpsTime();
+        odom.frame_id = frame_id;
+        odom.child_frame_id = child_frame_id;
         odom.pose = PoseWithCovData();
         odom.twist = TwistWithCovData();
         acceleration.setZero();
-        fusion_status = 0;
-        imu_bias_status = 0;
-        gnss1_status = 0;
-        gnss2_status = 0;
-        wheelspeed_status = 0;
+        fusion_status = -1;
+        imu_bias_status = -1;
+        gnss1_status = -1;
+        gnss2_status = -1;
+        wheelspeed_status = -1;
         version = "Unknown";
     }
 };
@@ -86,22 +98,33 @@ struct FP_ODOMENU {
     static constexpr unsigned int kSize_ = 44;
 
     FP_ODOMENU() {
+        odom.stamp = fixposition::times::GpsTime();
         odom.frame_id = frame_id;
         odom.child_frame_id = child_frame_id;
+        odom.pose = PoseWithCovData();
+        odom.twist = TwistWithCovData();
+        acceleration.setZero();
+        fusion_status = -1;
+        imu_bias_status = -1;
+        gnss1_status = -1;
+        gnss2_status = -1;
+        wheelspeed_status = -1;
     }
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         odom.stamp = fixposition::times::GpsTime();
+        odom.frame_id = frame_id;
+        odom.child_frame_id = child_frame_id;
         odom.pose = PoseWithCovData();
         odom.twist = TwistWithCovData();
         acceleration.setZero();
-        fusion_status = 0;
-        imu_bias_status = 0;
-        gnss1_status = 0;
-        gnss2_status = 0;
-        wheelspeed_status = 0;
+        fusion_status = -1;
+        imu_bias_status = -1;
+        gnss1_status = -1;
+        gnss2_status = -1;
+        wheelspeed_status = -1;
     }
 };
 
@@ -127,22 +150,33 @@ struct FP_ODOMSH {
     static constexpr unsigned int kSize_ = 44;
 
     FP_ODOMSH() {
+        odom.stamp = fixposition::times::GpsTime();
         odom.frame_id = frame_id;
         odom.child_frame_id = child_frame_id;
+        odom.pose = PoseWithCovData();
+        odom.twist = TwistWithCovData();
+        acceleration.setZero();
+        fusion_status = -1;
+        imu_bias_status = -1;
+        gnss1_status = -1;
+        gnss2_status = -1;
+        wheelspeed_status = -1;
     }
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         odom.stamp = fixposition::times::GpsTime();
+        odom.frame_id = frame_id;
+        odom.child_frame_id = child_frame_id;
         odom.pose = PoseWithCovData();
         odom.twist = TwistWithCovData();
         acceleration.setZero();
-        fusion_status = 0;
-        imu_bias_status = 0;
-        gnss1_status = 0;
-        gnss2_status = 0;
-        wheelspeed_status = 0;
+        fusion_status = -1;
+        imu_bias_status = -1;
+        gnss1_status = -1;
+        gnss2_status = -1;
+        wheelspeed_status = -1;
     }
 };
 
@@ -162,6 +196,12 @@ struct FP_LLH {
     const std::string header_ = "LLH";
     static constexpr unsigned int kVersion_ = 1;
     static constexpr unsigned int kSize_ = 14;
+
+    FP_LLH() {
+        stamp = fixposition::times::GpsTime();
+        llh.setZero();
+        cov.setZero();
+    }
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -184,6 +224,14 @@ struct FP_TF {
     const std::string header_ = "TF";
     static constexpr unsigned int kVersion_ = 2;
     static constexpr unsigned int kSize_ = 14;
+
+    FP_TF() {
+        tf.stamp = fixposition::times::GpsTime();
+        tf.frame_id = "";
+        tf.child_frame_id = "";
+        tf.translation.setZero();
+        tf.rotation.setIdentity();
+    }
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
@@ -209,10 +257,18 @@ struct FP_RAWIMU {
     static constexpr unsigned int kVersion_ = 1;
     static constexpr unsigned int kSize_ = 11;
 
+    FP_RAWIMU() {
+        imu.stamp = fixposition::times::GpsTime();
+        imu.frame_id = "";
+        imu.linear_acceleration.setZero();
+        imu.angular_velocity.setZero();
+    }
+
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         imu.stamp = fixposition::times::GpsTime();
+        imu.frame_id = "";
         imu.linear_acceleration.setZero();
         imu.angular_velocity.setZero();
     }
@@ -231,10 +287,18 @@ struct FP_CORRIMU {
     static constexpr unsigned int kVersion_ = 1;
     static constexpr unsigned int kSize_ = 11;
 
+    FP_CORRIMU() {
+        imu.stamp = fixposition::times::GpsTime();
+        imu.frame_id = "";
+        imu.linear_acceleration.setZero();
+        imu.angular_velocity.setZero();
+    }
+
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         imu.stamp = fixposition::times::GpsTime();
+        imu.frame_id = "";
         imu.linear_acceleration.setZero();
         imu.angular_velocity.setZero();
     }
@@ -259,16 +323,26 @@ struct FP_GNSSANT {
     static constexpr unsigned int kVersion_ = 1;
     static constexpr unsigned int kSize_ = 11;
 
+    FP_GNSSANT() {
+        stamp = fixposition::times::GpsTime();
+        gnss1_state = "";
+        gnss1_power = "";
+        gnss1_age = -1;
+        gnss2_state = "";
+        gnss2_power = "";
+        gnss2_age = -1;
+    }
+
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         stamp = fixposition::times::GpsTime();
         gnss1_state = "";
         gnss1_power = "";
-        gnss1_age = 0;
+        gnss1_age = -1;
         gnss2_state = "";
         gnss2_power = "";
-        gnss2_age = 0;
+        gnss2_age = -1;
     }
 };
 
@@ -298,23 +372,40 @@ struct FP_GNSSCORR {
     static constexpr unsigned int kVersion_ = 1;
     static constexpr unsigned int kSize_ = 20;
 
+    FP_GNSSCORR() {
+        stamp = fixposition::times::GpsTime();
+        gnss1_fix = -1;
+        gnss1_nsig_l1 = -1;
+        gnss1_nsig_l2 = -1;
+        gnss2_fix = -1;
+        gnss2_nsig_l1 = -1;
+        gnss2_nsig_l2 = -1;
+        corr_latency = -1.0;
+        corr_update_rate = -1.0;
+        corr_data_rate = -1.0;
+        corr_msg_rate = -1.0;
+        sta_id = -1;
+        sta_llh.setZero();
+        sta_dist = -1;
+    }
+
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
     void ResetData() {
         stamp = fixposition::times::GpsTime();
-        gnss1_fix = 0;
-        gnss1_nsig_l1 = 0;
-        gnss1_nsig_l2 = 0;
-        gnss2_fix = 0;
-        gnss2_nsig_l1 = 0;
-        gnss2_nsig_l2 = 0;
-        corr_latency = 0.0;
-        corr_update_rate = 0.0;
-        corr_data_rate = 0.0;
-        corr_msg_rate = 0.0;
-        sta_id = 0;
+        gnss1_fix = -1;
+        gnss1_nsig_l1 = -1;
+        gnss1_nsig_l2 = -1;
+        gnss2_fix = -1;
+        gnss2_nsig_l1 = -1;
+        gnss2_nsig_l2 = -1;
+        corr_latency = -1.0;
+        corr_update_rate = -1.0;
+        corr_data_rate = -1.0;
+        corr_msg_rate = -1.0;
+        sta_id = -1;
         sta_llh.setZero();
-        sta_dist = 0;
+        sta_dist = -1;
     }
 };
 
@@ -331,6 +422,11 @@ struct FP_TEXT {
     const std::string header_ = "TEXT";
     static constexpr unsigned int kVersion_ = 1;
     static constexpr unsigned int kSize_ = 5;
+
+    FP_TEXT() {
+        level = "";
+        text = "";
+    }
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
 
