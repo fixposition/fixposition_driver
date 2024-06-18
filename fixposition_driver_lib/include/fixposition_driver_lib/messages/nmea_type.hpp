@@ -37,6 +37,7 @@ struct GP_GGA {
     float hdop;
     float diff_age;
     std::string diff_sta;
+    std::string sentence;
     
     // Message structure
     static constexpr char frame_id[] = "LLH";

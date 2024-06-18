@@ -67,6 +67,25 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
     RegisterObservers();
 }
 
+void FixpositionDriverNode::Run() {
+    ros::Rate rate(params_.fp_output.rate);
+
+    while (ros::ok()) {
+        // Read data and publish to ros
+        const bool connection_ok = RunOnce();
+        // process Incoming ROS msgs
+        ros::spinOnce();
+        // Handle connection loss
+        if (!connection_ok) {
+            printf("Reconnecting in %.1f seconds ...\n", params_.fp_output.reconnect_delay);
+            ros::Duration(params_.fp_output.reconnect_delay).sleep();
+            Connect();
+        } else {
+            rate.sleep();  // ensure the loop runs at the desired rate
+        }
+    }
+}
+
 void FixpositionDriverNode::RegisterObservers() {
     // NOV_B
     bestgnsspos_obs_.push_back(std::bind(&FixpositionDriverNode::BestGnssPosToPublishNavSatFix, this,
@@ -200,7 +219,6 @@ void FixpositionDriverNode::RegisterObservers() {
             dynamic_cast<NmeaConverter<GP_GGA>*>(a_converters_["GPGGA"].get())->AddObserver([this](const GP_GGA& data) {
                 FpToRosMsg(data, nmea_gpgga_pub_);
                 
-                // GPGGA Observer Lambda
                 if (nmea_pub_.getNumSubscribers() > 0) {
                     nmea_message_.gpgga = data;
                     PublishNmea(nmea_message_);
@@ -225,7 +243,6 @@ void FixpositionDriverNode::RegisterObservers() {
             dynamic_cast<NmeaConverter<GP_RMC>*>(a_converters_["GPRMC"].get())->AddObserver([this](const GP_RMC& data) {
                 FpToRosMsg(data, nmea_gprmc_pub_);
                 
-                // GPRMC Observer Lambda
                 if (nmea_pub_.getNumSubscribers() > 0) {
                     nmea_message_.gprmc = data;
                     PublishNmea(nmea_message_);
@@ -238,7 +255,6 @@ void FixpositionDriverNode::RegisterObservers() {
             dynamic_cast<NmeaConverter<GP_ZDA>*>(a_converters_["GPZDA"].get())->AddObserver([this](const GP_ZDA& data) {
                 FpToRosMsg(data, nmea_gpzda_pub_);
                 
-                // GPZDA Observer Lambda
                 if (nmea_pub_.getNumSubscribers() > 0) {
                     nmea_message_.gpzda = data;
                     PublishNmea(nmea_message_);
@@ -302,24 +318,6 @@ void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
 
         // Publish message
         nmea_pub_.publish(msg);
-    }
-}
-
-void FixpositionDriverNode::Run() {
-    ros::Rate rate(params_.fp_output.rate);
-    while (ros::ok()) {
-        // Read data and publish to ros
-        const bool connection_ok = RunOnce();
-        // process Incoming ROS msgs
-        ros::spinOnce();
-        // Handle connection loss
-        if (!connection_ok) {
-            printf("Reconnecting in %.1f seconds ...\n", params_.fp_output.reconnect_delay);
-            ros::Duration(params_.fp_output.reconnect_delay).sleep();
-            Connect();
-        } else {
-            rate.sleep();  // ensure the loop runs at the desired rate
-        }
     }
 }
 

@@ -1,7 +1,6 @@
-// Wrapper to include ROS stuff withouth quoting the same warning suppressions all over
-// --- ROS messages used in fusion_optim ---
-#ifndef __FUSION_OPTIM_EXT_ROS2_MSGS_HPP__
-#define __FUSION_OPTIM_EXT_ROS2_MSGS_HPP__
+// Wrapper to include ROS2 stuff without quoting the same warning suppressions all over
+#ifndef __ROS2_DRIVER_ROS2_MSGS_HPP__
+#define __ROS2_DRIVER_ROS2_MSGS_HPP__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -27,6 +26,24 @@
 #include <fixposition_driver_ros2/msg/vrtk.hpp>
 #include <fixposition_driver_ros2/msg/nmea.hpp>
 
+#include <fixposition_driver_ros2/msg/gnssant.hpp>
+#include <fixposition_driver_ros2/msg/gnsscorr.hpp>
+#include <fixposition_driver_ros2/msg/llh.hpp>
+#include <fixposition_driver_ros2/msg/odomenu.hpp>
+#include <fixposition_driver_ros2/msg/odometry.hpp>
+#include <fixposition_driver_ros2/msg/odomsh.hpp>
+#include <fixposition_driver_ros2/msg/text.hpp>
+
+#include <fixposition_driver_ros2/msg/gpgga.hpp>
+#include <fixposition_driver_ros2/msg/gpgll.hpp>
+#include <fixposition_driver_ros2/msg/gngsa.hpp>
+#include <fixposition_driver_ros2/msg/gpgst.hpp>
+#include <fixposition_driver_ros2/msg/gxgsv.hpp>
+#include <fixposition_driver_ros2/msg/gphdt.hpp>
+#include <fixposition_driver_ros2/msg/gprmc.hpp>
+#include <fixposition_driver_ros2/msg/gpvtg.hpp>
+#include <fixposition_driver_ros2/msg/gpzda.hpp>
+
 #if __has_include(<tf2_eigen/tf2_eigen.hpp>)
 #include <tf2_eigen/tf2_eigen.hpp>
 #else
@@ -35,4 +52,4 @@
 #endif
 
 #pragma GCC diagnostic pop
-#endif  // __FUSION_OPTIM_EXT_ROS2_MSGS_HPP__
+#endif  // __ROS2_DRIVER_ROS2_MSGS_HPP__

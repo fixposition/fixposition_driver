@@ -51,6 +51,30 @@ inline builtin_interfaces::msg::Time GpsTimeToMsgTime(times::GpsTime input) {
  * @param[in] data
  * @param[out] msg
  */
+void FpToRosMsg( const FP_GNSSANT& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSANT>::SharedPtr pub);
+void FpToRosMsg(const FP_GNSSCORR& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSCORR>::SharedPtr pub);
+void FpToRosMsg(     const FP_LLH& data, rclcpp::Publisher<fixposition_driver_ros2::msg::LLH>::SharedPtr pub);
+void FpToRosMsg( const FP_ODOMENU& data, rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMENU>::SharedPtr pub);
+void FpToRosMsg(const FP_ODOMETRY& data, rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMETRY>::SharedPtr pub);
+void FpToRosMsg(  const FP_ODOMSH& data, rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMSH>::SharedPtr pub);
+void FpToRosMsg(    const FP_TEXT& data, rclcpp::Publisher<fixposition_driver_ros2::msg::TEXT>::SharedPtr pub);
+
+void FpToRosMsg(const GP_GGA& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GPGGA>::SharedPtr pub);
+void FpToRosMsg(const GP_GLL& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GPGLL>::SharedPtr pub);
+void FpToRosMsg(const GN_GSA& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GNGSA>::SharedPtr pub);
+void FpToRosMsg(const GP_GST& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GPGST>::SharedPtr pub);
+void FpToRosMsg(const GX_GSV& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GXGSV>::SharedPtr pub);
+void FpToRosMsg(const GP_HDT& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GPHDT>::SharedPtr pub);
+void FpToRosMsg(const GP_RMC& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GPRMC>::SharedPtr pub);
+void FpToRosMsg(const GP_VTG& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GPVTG>::SharedPtr pub);
+void FpToRosMsg(const GP_ZDA& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GPZDA>::SharedPtr pub);
+
+/**
+ * @brief
+ *
+ * @param[in] data
+ * @param[out] msg
+ */
 void ImuDataToMsg(const ImuData& data, sensor_msgs::msg::Imu& msg);
 
 /**

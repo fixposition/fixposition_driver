@@ -34,6 +34,17 @@ static constexpr int sep_unit_idx = 12;
 static constexpr int diff_age_idx = 13;
 static constexpr int diff_sta_idx = 14;
 
+std::string join(const std::vector<std::string>& elements, const char& delimiter) {
+    std::ostringstream os;
+    for (auto it = elements.begin(); it != elements.end(); ++it) {
+        if (it != elements.begin()) {
+            os << delimiter;
+        }
+        os << *it;
+    }
+    return os.str();
+}
+
 void GP_GGA::ConvertFromTokens(const std::vector<std::string>& tokens) {
     // Check if message size is wrong
     bool ok = tokens.size() == kSize_;
@@ -78,6 +89,9 @@ void GP_GGA::ConvertFromTokens(const std::vector<std::string>& tokens) {
     // Differental data
     diff_age = StringToDouble(tokens.at(diff_age_idx));
     diff_sta = tokens.at(diff_sta_idx);
+
+    // ASCII sentence
+    sentence = join(tokens, ',');
 }
 
 }  // namespace fixposition

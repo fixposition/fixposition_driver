@@ -1,7 +1,6 @@
-// Wrapper to include ROS stuff withouth quoting the same warning suppressions all over
-// --- ROS messages used in fusion_optim ---
-#ifndef __FUSION_OPTIM_EXT_ROS_MSGS_HPP__
-#define __FUSION_OPTIM_EXT_ROS_MSGS_HPP__
+// Wrapper to include ROS stuff without quoting the same warning suppressions all over
+#ifndef __ROS1_DRIVER_ROS_MSGS_HPP__
+#define __ROS1_DRIVER_ROS_MSGS_HPP__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -47,4 +46,4 @@
 #include <eigen_conversions/eigen_msg.h>
 
 #pragma GCC diagnostic pop
-#endif  // __FUSION_OPTIM_EXT_ROS_MSGS_HPP__
+#endif  // __ROS1_DRIVER_ROS_MSGS_HPP__
