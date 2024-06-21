@@ -18,9 +18,6 @@
 /* SYSTEM / STL */
 #include <termios.h>
 #include <unordered_map>
-#include <arpa/inet.h>
-#include <errno.h>
-#include <fcntl.h>
 
 /* ROS */
 #include <fixposition_driver_ros1/ros_msgs.hpp>

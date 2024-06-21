@@ -9,6 +9,8 @@
 #include <ros/ros.h>
 #include <ros/console.h>
 
+#include <std_msgs/UInt8MultiArray.h>
+
 #include <nav_msgs/Odometry.h>
 
 #include <sensor_msgs/Imu.h>
