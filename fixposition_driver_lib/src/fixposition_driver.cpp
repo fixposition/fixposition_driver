@@ -140,6 +140,23 @@ void FixpositionDriver::WsCallback(
     }
 }
 
+void FixpositionDriver::RtcmCallback(const void *rtcm_msg, const size_t msg_size) {
+    // TODO: Check that RTCM message is valid
+
+    switch (params_.fp_output.type) {
+        case INPUT_TYPE::TCP:
+            send(this->client_fd_, rtcm_msg, msg_size, MSG_DONTWAIT);
+            break;
+        case INPUT_TYPE::SERIAL:
+            (void)!write(this->client_fd_, rtcm_msg, msg_size);
+            // Suppress warning - https://stackoverflow.com/a/64407070/7944565
+            break;
+        default:
+            std::cerr << "Unknown connection type!\n";
+            break;
+    }
+}
+
 bool FixpositionDriver::FillWsSensorMeas(const std::vector<std::pair<bool, int>>& meas_vec,
                                          const FpbMeasurementsMeasLoc meas_loc, FpbMeasurementsMeas& meas_fpb) {
     const size_t num_axis = meas_vec.size();

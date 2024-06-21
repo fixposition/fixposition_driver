@@ -39,6 +39,7 @@ struct FpOutputParams {
 };
 struct CustomerInputParams {
     std::string speed_topic;
+    std::string rtcm_topic;
 };
 
 struct FixpositionDriverParams {

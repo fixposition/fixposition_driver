@@ -62,6 +62,13 @@ class FixpositionDriver {
     /**
      * @brief
      *
+     * @param[in] rtcm_msg string with ASCII data for RTK correction
+     */
+    virtual void RtcmCallback(const void *rtcm_msg, const size_t msg_size);
+
+    /**
+     * @brief
+     *
      * @param[in] meas_vec measurements from one specific wheelspeed sensor, with their validity flag
      * @param[in] meas_loc location from the specific wheelspeed sensor
      * @param[out] meas_fpb fpb measurement to be filled from the vector

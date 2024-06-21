@@ -94,6 +94,14 @@ bool LoadParamsFromRos1(const std::string& ns, CustomerInputParams& params) {
     }
     ROS_INFO("%s : %s", SPEED_TOPIC.c_str(), params.speed_topic.c_str());
 
+    const std::string RTCM_TOPIC = ns + "/rtcm_topic";
+    if (!ros::param::get(RTCM_TOPIC, params.rtcm_topic)) {
+        // default value for the topic name
+        params.rtcm_topic = "/fixposition/rtcm";
+        ROS_WARN("Using Default Rtcm Topic : %s", params.rtcm_topic.c_str());
+    }
+    ROS_INFO("%s : %s", RTCM_TOPIC.c_str(), params.rtcm_topic.c_str());
+
     return true;
 }
 

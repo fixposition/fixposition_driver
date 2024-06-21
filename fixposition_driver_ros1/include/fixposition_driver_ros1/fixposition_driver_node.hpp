@@ -18,6 +18,9 @@
 /* SYSTEM / STL */
 #include <termios.h>
 #include <unordered_map>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
 
 /* ROS */
 #include <fixposition_driver_ros1/ros_msgs.hpp>
@@ -46,6 +49,8 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     void WsCallback(const fixposition_driver_ros1::SpeedConstPtr& msg);
 
+    void RtcmCallback(const std_msgs::UInt8MultiArray::ConstPtr& msg);
+
    private:
     /**
      * @brief Observer Functions to publish NavSatFix from BestGnssPos
@@ -67,6 +72,7 @@ class FixpositionDriverNode : public FixpositionDriver {
     
     // ROS subscribers
     ros::Subscriber ws_sub_;  //!< wheelspeed message subscriber
+    ros::Subscriber rtcm_sub_;  //!< RTCM3 message subscriber
 
     // ROS publishers
     // ODOMETRY

@@ -64,6 +64,9 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
     ws_sub_ = nh_.subscribe<fixposition_driver_ros1::Speed>(params_.customer_input.speed_topic, 10,
                                                             &FixpositionDriverNode::WsCallback, this,
                                                             ros::TransportHints().tcpNoDelay());
+    rtcm_sub_ = nh_.subscribe<std_msgs::UInt8MultiArray>(params_.customer_input.rtcm_topic, 10,
+                                                         &FixpositionDriverNode::RtcmCallback, this,
+                                                         ros::TransportHints().tcpNoDelay());
     RegisterObservers();
 }
 
@@ -329,6 +332,12 @@ void FixpositionDriverNode::WsCallback(const fixposition_driver_ros1::SpeedConst
         measurements[sensor.location].push_back({sensor.vz_valid, sensor.vz});
     }
     FixpositionDriver::WsCallback(measurements);
+}
+
+void FixpositionDriverNode::RtcmCallback(const std_msgs::UInt8MultiArray::ConstPtr& msg) {
+    const void *rtcm_msg = &(msg->data[0]);
+    size_t msg_size = msg->layout.dim[0].size;
+    FixpositionDriver::RtcmCallback(rtcm_msg, msg_size);
 }
 
 void FixpositionDriverNode::BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header,

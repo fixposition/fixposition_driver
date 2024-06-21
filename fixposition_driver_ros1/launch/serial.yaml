@@ -12,3 +12,4 @@ fp_output:
 
 customer_input:
     speed_topic: "/fixposition/speed"
+    rtcm_topic: "/fixposition/rtcm"
