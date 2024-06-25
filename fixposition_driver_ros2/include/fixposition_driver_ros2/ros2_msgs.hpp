@@ -10,6 +10,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/logging.hpp>
 
+#include <std_msgs/msg/u_int8_multi_array.hpp>
+
 #include <nav_msgs/msg/odometry.hpp>
 
 #include <sensor_msgs/msg/imu.hpp>

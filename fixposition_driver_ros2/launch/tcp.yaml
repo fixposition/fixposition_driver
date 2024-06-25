@@ -13,3 +13,4 @@ fixposition_driver_ros2:
       reconnect_delay: 5.0 # wait time in [s] until retry connection
     customer_input:
       speed_topic: "/fixposition/speed"
+      rtcm_topic: "/fixposition/rtcm"

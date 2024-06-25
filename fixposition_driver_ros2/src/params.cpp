@@ -90,6 +90,11 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     node->declare_parameter(SPEED_TOPIC, "/fixposition/speed");
     node->get_parameter(SPEED_TOPIC, params.speed_topic);
     RCLCPP_INFO(node->get_logger(), "%s : %s", SPEED_TOPIC.c_str(), params.speed_topic.c_str());
+
+    const std::string RTCM_TOPIC = ns + ".rtcm_topic";
+    node->declare_parameter(RTCM_TOPIC, "/fixposition/rtcm");
+    node->get_parameter(RTCM_TOPIC, params.rtcm_topic);
+    RCLCPP_INFO(node->get_logger(), "%s : %s", RTCM_TOPIC.c_str(), params.rtcm_topic.c_str());
     return true;
 }
 
