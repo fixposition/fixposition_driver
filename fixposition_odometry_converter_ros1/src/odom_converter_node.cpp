@@ -12,10 +12,6 @@
  *
  */
 
-/* ROS */
-#include <ros/console.h>
-#include <ros/ros.h>
-
 /* PACKAGE */
 #include <fixposition_odometry_converter_ros1/odom_converter.hpp>
 

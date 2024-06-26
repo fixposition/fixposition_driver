@@ -20,8 +20,8 @@
 /* SYSTEM / STL */
 #include <string>
 
-/* ROS */
-#include <rclcpp/rclcpp.hpp>
+/* PACKAGE */
+#include <fixposition_odometry_converter_ros2/ros_msgs.hpp>
 
 namespace fixposition {
 

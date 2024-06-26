@@ -34,7 +34,6 @@ add_executable(
   src/odom_converter_node.cpp
   src/odom_converter.cpp
   src/params.cpp
-
 )
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})

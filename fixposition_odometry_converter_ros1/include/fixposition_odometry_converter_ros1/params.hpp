@@ -18,10 +18,6 @@
 /* SYSTEM / STL */
 #include <string>
 
-/* EXTERNAL */
-
-/* PACKAGE */
-
 namespace fixposition {
 
 enum class VelTopicType : int8_t { Twist = 0, TwistWithCov = 1, Odometry = 2 };

@@ -19,10 +19,6 @@
 #include <string>
 #include <vector>
 
-/* EXTERNAL */
-
-/* PACKAGE */
-
 namespace fixposition {
 
 enum class INPUT_TYPE { TCP = 1, SERIAL = 2 };
