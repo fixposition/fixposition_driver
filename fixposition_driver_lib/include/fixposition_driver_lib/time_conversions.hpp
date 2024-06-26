@@ -15,6 +15,9 @@
 #ifndef __FIXPOSITION_DRIVER_LIB_TIME_CONVERSIONS__
 #define __FIXPOSITION_DRIVER_LIB_TIME_CONVERSIONS__
 
+/* EXTERNAL */
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Geometry>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace BOOST_POSIX = boost::posix_time;
@@ -206,6 +209,61 @@ inline GpsTime PtimeToGpsTime(const BOOST_POSIX::ptime& boost_ptime) {
     double sec_in_week =
         gps_duration.total_microseconds() / 1e6 - weekcount * Constants::sec_per_week + Constants::gps_leap_time_s;
     return GpsTime(weekcount, sec_in_week);
+}
+
+/**
+ * @brief Convert UTC time with milliseconds to GPS time
+ *
+ * @param[in] utcTimeString
+ * @param[in] gpsWeek
+ * @param[in] gpsTimeOfWeek
+ * @return GpsTime
+ */
+inline void convertToGPSTime(const std::string& utcTimeString, std::string& gpsWeek, std::string& gpsTimeOfWeek) {
+    // Define constants
+    const double secondsInWeek = 604800.0; // 7 days in seconds
+
+    // Parse the input string
+    std::tm tmTime = {};
+    std::istringstream iss(utcTimeString);
+    iss >> std::get_time(&tmTime, "%d/%m/%Y %H:%M:%S");
+
+    // Read milliseconds from input
+    char dot;
+    std::string milliseconds;
+    iss >> dot >> milliseconds;
+    double ms = std::stod("0." + milliseconds);
+    
+    if (iss.fail()) {
+        std::cerr << "Error parsing input string.\n";
+        return;
+    }
+    
+    // Convert UTC time to time since epoch
+    std::time_t utcTime = std::mktime(&tmTime);
+
+    // GPS epoch time (January 6, 1980)
+    std::tm gpsEpoch = {};
+    gpsEpoch.tm_year = 80; // years since 1900
+    gpsEpoch.tm_mon = 0;   // months since January
+    gpsEpoch.tm_mday = 6;  // day of the month
+    std::time_t gpsEpochTime = std::mktime(&gpsEpoch);
+
+    // Calculate GPS time of week and GPS week number
+    double timeDifference = std::difftime(utcTime, gpsEpochTime);
+    int gpsWeekNumber = static_cast<int>(std::floor(timeDifference / secondsInWeek));
+    double gpsTime = std::fmod(timeDifference, secondsInWeek);
+
+    // Add milliseconds to GPS time
+    gpsTime += (Constants::gps_leap_time_s + ms);
+
+    // Convert results to strings
+    std::ostringstream ossWeek, ossTime;
+    ossWeek << gpsWeekNumber;
+    ossTime << std::fixed << std::setprecision(6) << gpsTime;
+
+    gpsWeek = ossWeek.str();
+    gpsTimeOfWeek = ossTime.str();
 }
 
 }  // namespace times

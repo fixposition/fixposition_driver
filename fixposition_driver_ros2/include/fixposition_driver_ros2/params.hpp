@@ -15,17 +15,11 @@
 #ifndef __FIXPOSITION_DRIVER_ROS2_PARAMS_HPP__
 #define __FIXPOSITION_DRIVER_ROS2_PARAMS_HPP__
 
-/* SYSTEM / STL */
-#include <string>
-#include <vector>
-
-/* EXTERNAL */
-#include <rclcpp/rclcpp.hpp>
+/* ROS */
+#include <fixposition_driver_ros2/ros2_msgs.hpp>
 
 /* FIXPOSITION */
 #include <fixposition_driver_lib/params.hpp>
-
-/* PACKAGE */
 
 namespace fixposition {
 

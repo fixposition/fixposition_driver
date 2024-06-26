@@ -29,6 +29,22 @@ add_message_files(
   Speed.msg
   WheelSensor.msg
   NMEA.msg
+  fpa/gnssant.msg
+  fpa/gnsscorr.msg
+  fpa/llh.msg
+  fpa/odomenu.msg
+  fpa/odometry.msg
+  fpa/odomsh.msg
+  fpa/text.msg
+  nmea/gpgga.msg
+  nmea/gpgll.msg
+  nmea/gngsa.msg
+  nmea/gpgst.msg
+  nmea/gxgsv.msg
+  nmea/gphdt.msg
+  nmea/gprmc.msg
+  nmea/gpvtg.msg
+  nmea/gpzda.msg
 )
 
 generate_messages(

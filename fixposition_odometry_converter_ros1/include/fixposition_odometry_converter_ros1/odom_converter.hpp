@@ -16,21 +16,8 @@
 #define __ODOM_CONVERTER_HPP__
 
 /* EXTERNAL */
-
-/* ROS */
-#include <geometry_msgs/Twist.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <geometry_msgs/TwistWithCovariance.h>
-#include <geometry_msgs/TwistWithCovarianceStamped.h>
-#include <geometry_msgs/Vector3.h>
-#include <geometry_msgs/Vector3Stamped.h>
-#include <nav_msgs/Odometry.h>
-#include <ros/ros.h>
-
-/* PACKAGE */
-#include <fixposition_driver_ros1/Speed.h>
-
 #include <fixposition_odometry_converter_ros1/params.hpp>
+#include <fixposition_odometry_converter_ros1/ros_msgs.hpp>
 
 namespace fixposition {
 

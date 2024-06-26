@@ -57,7 +57,7 @@ header:
   stamp:
     secs: 1671488303
     nsecs: 752147983
-  frame_id: "ECEF"
+  frame_id: "FP_ECEF"
 child_frame_id: "FP_POI"
 pose:
   pose:
@@ -98,7 +98,7 @@ header:
   stamp:
     secs: 1671544327
     nsecs: 933986893
-  frame_id: "POI"
+  frame_id: "FP_POI"
 status:
   status: 0
   service: 0

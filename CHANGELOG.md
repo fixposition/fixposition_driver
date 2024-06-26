@@ -45,7 +45,7 @@ _For questions about compatibility, please contact Fixpositions Support support@
 ## [4.4.0](https://github.com/fixposition/fixposition_driver/releases/tag/4.4.0)
 
     -   Pitch-Roll estimation from IMU data parsed from Vision-RTK 2, output available before fusion initialization.
-    -   OdometryConverter imeplemented as an example for wheelspeed data integration.
+    -   OdometryConverter implemented as an example for wheelspeed data integration.
 
 ## [4.3.0](https://github.com/fixposition/fixposition_driver/releases/tag/4.3.0)
 

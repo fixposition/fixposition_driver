@@ -12,12 +12,9 @@
  *
  */
 
-/* ROS */
-#include <ros/console.h>
-#include <ros/ros.h>
-
 /* PACKAGE */
 #include <fixposition_odometry_converter_ros1/params.hpp>
+#include <fixposition_odometry_converter_ros1/ros_msgs.hpp>
 
 namespace fixposition {
 
