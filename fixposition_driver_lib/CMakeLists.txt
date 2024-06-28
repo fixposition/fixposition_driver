@@ -42,6 +42,7 @@ add_library(
   src/messages/nmea/gprmc.cpp
   src/messages/nmea/gpvtg.cpp
   src/messages/nmea/gpzda.cpp
+  src/messages/nmea/nmea.cpp
   src/fixposition_driver.cpp
   src/helper.cpp
   src/parser.cpp

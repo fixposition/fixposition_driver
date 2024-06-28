@@ -24,7 +24,6 @@
 #include <tf2_ros/transform_listener.h>
 
 #include <fixposition_driver_ros1/Speed.h>
-#include <fixposition_driver_ros1/VRTK.h>
 #include <fixposition_driver_ros1/NMEA.h>
 
 #include <fixposition_driver_ros1/gnssant.h>

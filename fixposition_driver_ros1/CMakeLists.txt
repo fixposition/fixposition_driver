@@ -25,7 +25,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 add_message_files(
   FILES
-  VRTK.msg
   Speed.msg
   WheelSensor.msg
   NMEA.msg

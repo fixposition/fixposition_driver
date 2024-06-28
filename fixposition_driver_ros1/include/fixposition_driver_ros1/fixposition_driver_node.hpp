@@ -72,13 +72,6 @@ class FixpositionDriverNode : public FixpositionDriver {
     ros::Subscriber rtcm_sub_;  //!< RTCM3 message subscriber
 
     // ROS publishers
-    // ODOMETRY
-    ros::Publisher odometry_ecef_pub_;   //!< ECEF Odometry
-    ros::Publisher odometry_llh_pub_;    //!< LLH Odometry
-    ros::Publisher odometry_enu_pub_;    //!< ENU Odometry
-    ros::Publisher odometry_smooth_pub_; //!< Smooth Odometry (ECEF)
-    ros::Publisher vrtk_pub_;            //!< FP_A-ODOMETRY message
-
     // FP_A messages
     ros::Publisher fpa_gnssant_pub_;     //!< FP_A-GNSSANT message
     ros::Publisher fpa_gnsscorr_pub_;    //!< FP_A-GNSSCORR message
@@ -98,6 +91,12 @@ class FixpositionDriverNode : public FixpositionDriver {
     ros::Publisher nmea_gprmc_pub_;      //!< NMEA-GP-RMC message
     ros::Publisher nmea_gpvtg_pub_;      //!< NMEA-GP-VTG message
     ros::Publisher nmea_gpzda_pub_;      //!< NMEA-GP-ZDA message
+
+    // ODOMETRY
+    ros::Publisher odometry_ecef_pub_;   //!< ECEF Odometry
+    ros::Publisher odometry_llh_pub_;    //!< LLH Odometry
+    ros::Publisher odometry_enu_pub_;    //!< ENU Odometry
+    ros::Publisher odometry_smooth_pub_; //!< Smooth Odometry (ECEF)
     
     // Orientation
     ros::Publisher eul_pub_;             //!< Euler angles Yaw-Pitch-Roll in local ENU

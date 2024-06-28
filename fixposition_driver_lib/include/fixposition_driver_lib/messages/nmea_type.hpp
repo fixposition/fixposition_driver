@@ -386,8 +386,8 @@ struct GP_ZDA {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Message fields
-    std::string date_str;
-    std::string time_str;
+    std::string date_str; // Format: dd/mm/yyyy
+    std::string time_str; // Format: hhmmss.ss(ss)
     times::GpsTime stamp;
     uint8_t local_hr;
     uint8_t local_min;
@@ -400,8 +400,8 @@ struct GP_ZDA {
 
     GP_ZDA() {
         stamp = fixposition::times::GpsTime();
-        time_str = "hhmmss.ss(ss)";
-        date_str = "dd/mm/yyyy";
+        time_str = "";
+        date_str = "";
         local_hr = 0;
         local_min = 0;
     }
@@ -410,8 +410,8 @@ struct GP_ZDA {
 
     void ResetData() {
         stamp = fixposition::times::GpsTime();
-        time_str = "hhmmss.ss(ss)";
-        date_str = "dd/mm/yyyy";
+        time_str = "";
+        date_str = "";
         local_hr = 0;
         local_min = 0;
     }
@@ -419,20 +419,131 @@ struct GP_ZDA {
 
 struct NmeaMessage {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    GP_GGA gpgga;
-    GP_ZDA gpzda;
-    GP_RMC gprmc;
+
+    // Message fields
+    std::string gpgga_time_str; // GP_GGA
+    std::string gpzda_time_str; // GP_ZDA
+    std::string time_str; // GP_ZDA (alt. GP_GGA, GP_GST, GP_RMC)
+    std::string date_str; // GP_ZDA (alt. GP_RMC)
+    times::GpsTime stamp; // GP_ZDA
+    Eigen::Vector3d llh;  // GP_GGA (alt. LL only for GP_GLL, GP_RMC)
+    uint8_t quality;      // GP_GGA (alt. GP_RMC, GP_VTG, or limited GP_GLL, GP_GSA)
+    uint8_t num_sv;       // GP_GGA
+    std::vector<int> ids; // GN_GSA
+    float hdop_receiver;  // GP_GGA
+    float pdop;           // GN_GSA
+    float hdop;           // GN_GSA (alt. GP_GGA)
+    float vdop;           // GN_GSA
+    float rms_range;      // GP_GST
+    float std_major;      // GP_GST
+    float std_minor;      // GP_GST
+    float angle_major;    // GP_GST
+    float std_lat;        // GP_GST (alt. GP_GGA)
+    float std_lon;        // GP_GST (alt. GP_GGA)
+    float std_alt;        // GP_GST (alt. GP_GGA)
+    Eigen::Matrix<double, 3, 3> cov;  // GP_GST (alt. GP_GGA)
+    uint8_t cov_type;                 // GP_GST (alt. GP_GGA)
+    uint8_t num_sats;                 // GX_GSV
+    std::vector<unsigned int> sat_id; // GX_GSV
+    std::vector<unsigned int> elev;   // GX_GSV
+    std::vector<unsigned int> azim;   // GX_GSV
+    std::vector<unsigned int> cno;    // GX_GSV
+    float heading;                    // GP_HDT
+    float speed;                      // GP_RMC (alt. GP_VTG)
+    float course;                     // GP_RMC (alt. GP_VTG)
+    float diff_age;       // GP_GGA
+    std::string diff_sta; // GP_GGA
     
     /**
      * @brief Check if GNSS epoch is complete
      */
     bool checkEpoch() {
-        if ((gpgga.time_str.compare(gpzda.time_str) == 0) && (gpgga.time_str.compare(gprmc.time_str) == 0)) {
+        if ((gpgga_time_str.compare(gpzda_time_str) == 0)) {
             return true;
         } else {
             return false;
         }
     }
+
+    NmeaMessage() {
+        gpgga_time_str = "";
+        gpzda_time_str = "";
+        time_str = "";
+        date_str = "";
+        stamp = fixposition::times::GpsTime();
+        llh.setZero();
+        quality = -1;
+        diff_age = 0.0;
+        diff_sta = "";
+        ids.clear();
+        hdop_receiver = 0.0;
+        pdop = 0.0;
+        hdop = 0.0;
+        vdop = 0.0;
+        rms_range = 0.0;
+        std_major = 0.0;
+        std_minor = 0.0;
+        angle_major = 0.0;
+        std_lat = 0.0;
+        std_lon = 0.0;
+        std_alt = 0.0;
+        cov.setZero();
+        cov_type = 0;
+        num_sv = 0;
+        num_sats = 0;
+        sat_id.clear();
+        elev.clear();
+        azim.clear();
+        cno.clear();
+        heading = 0.0;
+        speed = 0.0;
+        course = 0.0;
+    }
+
+    void ResetData() {
+        gpgga_time_str = "";
+        gpzda_time_str = "";
+        time_str = "";
+        date_str = "";
+        stamp = fixposition::times::GpsTime();
+        llh.setZero();
+        quality = -1;
+        diff_age = 0.0;
+        diff_sta = "";
+        ids.clear();
+        hdop_receiver = 0.0;
+        pdop = 0.0;
+        hdop = 0.0;
+        vdop = 0.0;
+        rms_range = 0.0;
+        std_major = 0.0;
+        std_minor = 0.0;
+        angle_major = 0.0;
+        std_lat = 0.0;
+        std_lon = 0.0;
+        std_alt = 0.0;
+        cov.setZero();
+        cov_type = 0;
+        num_sv = 0;
+        num_sats = 0;
+        sat_id.clear();
+        elev.clear();
+        azim.clear();
+        cno.clear();
+        heading = 0.0;
+        speed = 0.0;
+        course = 0.0;
+    }
+
+    void AddNmeaEpoch(const GP_GGA& msg);
+    void AddNmeaEpoch(const GP_GLL& msg);
+    void AddNmeaEpoch(const GN_GSA& msg);
+    void AddNmeaEpoch(const GP_GST& msg);
+    void AddNmeaEpoch(const GX_GSV& msg);
+    void AddNmeaEpoch(const GP_HDT& msg);
+    void AddNmeaEpoch(const GP_RMC& msg);
+    void AddNmeaEpoch(const GP_VTG& msg);
+    void AddNmeaEpoch(const GP_ZDA& msg);
 };
 
 }  // namespace fixposition
