@@ -19,10 +19,6 @@
 #include <string>
 #include <vector>
 
-/* EXTERNAL */
-
-/* PACKAGE */
-
 namespace fixposition {
 
 enum class INPUT_TYPE { TCP = 1, SERIAL = 2 };
@@ -31,7 +27,7 @@ struct FpOutputParams {
     int rate;                          //!< loop rate of the main read loop
     double reconnect_delay;            //!< wait time in [s] until retry connection
     INPUT_TYPE type;                   //!< TCP or SERIAL
-    std::vector<std::string> formats;  //!< data formats to convert, support "FP" and "LLH" for now
+    std::vector<std::string> formats;  //!< data formats to convert, supports "FP" for now
 
     std::string ip;    //!< IP address for TCP connection
     std::string port;  //!< Port for TCP connection
@@ -39,6 +35,7 @@ struct FpOutputParams {
 };
 struct CustomerInputParams {
     std::string speed_topic;
+    std::string rtcm_topic;
 };
 
 struct FixpositionDriverParams {

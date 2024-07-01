@@ -14,12 +14,12 @@
 
 /* PACKAGE */
 #include <fixposition_driver_lib/helper.hpp>
-#include <fixposition_driver_lib/nov_type.hpp>
+#include <fixposition_driver_lib/messages/nov_type.hpp>
 
 namespace fixposition {
 
-static constexpr const char kNmeaPreamble = '$';
-static constexpr const int kLibParserMaxNmeaSize = 400;
+static constexpr char kNmeaPreamble = '$';
+static constexpr int kLibParserMaxNmeaSize = 400;
 
 void SplitMessage(std::vector<std::string>& tokens, const std::string& msg, const std::string& delim) {
     boost::split(tokens, msg, boost::is_any_of(delim));

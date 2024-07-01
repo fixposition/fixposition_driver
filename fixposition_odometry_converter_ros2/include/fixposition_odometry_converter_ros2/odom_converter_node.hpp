@@ -17,14 +17,7 @@
 #ifndef __ODOM_CONVERTER_NODE_HPP__
 #define __ODOM_CONVERTER_NODE_HPP__
 
-/* ROS */
-#include <geometry_msgs/msg/twist.hpp>
-#include <geometry_msgs/msg/twist_with_covariance.hpp>
-#include <nav_msgs/msg/odometry.hpp>
-#include <rclcpp/rclcpp.hpp>
-
 /* PACKAGE */
-#include <fixposition_driver_ros2/msg/speed.hpp>
 #include <fixposition_odometry_converter_ros2/params.hpp>
 
 namespace fixposition {

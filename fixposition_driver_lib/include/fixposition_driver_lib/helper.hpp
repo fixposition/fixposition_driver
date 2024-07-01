@@ -22,8 +22,8 @@
 /* EXTERNAL */
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include <fixposition_driver_lib/msg_data.hpp>
-#include <fixposition_driver_lib/nov_type.hpp>
+#include <fixposition_driver_lib/messages/msg_data.hpp>
+#include <fixposition_driver_lib/messages/nov_type.hpp>
 
 namespace fixposition {
 
