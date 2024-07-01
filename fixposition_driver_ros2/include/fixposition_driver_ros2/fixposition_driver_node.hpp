@@ -58,7 +58,7 @@ class FixpositionDriverNode : public FixpositionDriver {
     void BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header, const BESTGNSSPOSMem* payload);
 
     /**
-     * @brief Observer Function to publish NMEA message from GPGGA, GPRMC, and GPZDA once the GNSS epoch transmission is complete
+     * @brief Observer Function to publish NMEA message once the GNSS epoch transmission is complete
      *
      * @param[in] data
      */
@@ -72,13 +72,6 @@ class FixpositionDriverNode : public FixpositionDriver {
     rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr rtcm_sub_;  //!< RTCM3 message subscriber
 
     // ROS publishers
-    // ODOMETRY
-    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_ecef_pub_;    //!< ECEF Odometry
-    rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr odometry_llh_pub_; //!< LLH Odometry
-    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_enu_pub_;     //!< ENU Odometry
-    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_smooth_pub_;  //!< Smooth Odometry (ECEF)
-    rclcpp::Publisher<fixposition_driver_ros2::msg::VRTK>::SharedPtr vrtk_pub_;  //!< FP_A-ODOMETRY message
-
     // FP_A messages
     rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSANT>::SharedPtr fpa_gnssant_pub_;   //!< FP_A-GNSSANT message
     rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSCORR>::SharedPtr fpa_gnsscorr_pub_; //!< FP_A-GNSSCORR message
@@ -98,6 +91,12 @@ class FixpositionDriverNode : public FixpositionDriver {
     rclcpp::Publisher<fixposition_driver_ros2::msg::GPRMC>::SharedPtr nmea_gprmc_pub_;      //!< NMEA-GP-RMC message
     rclcpp::Publisher<fixposition_driver_ros2::msg::GPVTG>::SharedPtr nmea_gpvtg_pub_;      //!< NMEA-GP-VTG message
     rclcpp::Publisher<fixposition_driver_ros2::msg::GPZDA>::SharedPtr nmea_gpzda_pub_;      //!< NMEA-GP-ZDA message
+
+    // ODOMETRY
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_ecef_pub_;    //!< ECEF Odometry
+    rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr odometry_llh_pub_; //!< LLH Odometry
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_enu_pub_;     //!< ENU Odometry
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_smooth_pub_;  //!< Smooth Odometry (ECEF)
 
     // Orientation
     rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr eul_pub_;              //!< Euler angles Yaw-Pitch-Roll in local ENU

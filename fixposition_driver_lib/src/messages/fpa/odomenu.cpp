@@ -100,6 +100,21 @@ void FP_ODOMENU::ConvertFromTokens(const std::vector<std::string>& tokens) {
         odom.pose.position = Vector3ToEigen(tokens.at(pos_x_idx), tokens.at(pos_y_idx), tokens.at(pos_z_idx));
         odom.pose.orientation = Vector4ToEigen(tokens.at(orientation_w_idx), tokens.at(orientation_x_idx),
                                                tokens.at(orientation_y_idx), tokens.at(orientation_z_idx));
+
+        if (odom.pose.orientation.vec().isZero() && (odom.pose.orientation.w() == 0)) {
+            // Change Fusion status to invalid state
+            fusion_status = -1;
+
+            // Reset corresponding fields
+            odom.stamp = fixposition::times::GpsTime();
+            odom.frame_id = frame_id;
+            odom.child_frame_id = child_frame_id;
+            odom.pose = PoseWithCovData();
+            odom.twist = TwistWithCovData();
+            acceleration.setZero();
+            return;
+        }
+
         odom.pose.cov = BuildCovMat6D(
             StringToDouble(tokens.at(pos_cov_xx_idx)), StringToDouble(tokens.at(pos_cov_yy_idx)),
             StringToDouble(tokens.at(pos_cov_zz_idx)), StringToDouble(tokens.at(pos_cov_xy_idx)),

@@ -51,13 +51,15 @@ inline builtin_interfaces::msg::Time GpsTimeToMsgTime(times::GpsTime input) {
  * @param[in] data
  * @param[out] msg
  */
-void FpToRosMsg( const FP_GNSSANT& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSANT>::SharedPtr pub);
-void FpToRosMsg(const FP_GNSSCORR& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSCORR>::SharedPtr pub);
-void FpToRosMsg(     const FP_LLH& data, rclcpp::Publisher<fixposition_driver_ros2::msg::LLH>::SharedPtr pub);
-void FpToRosMsg( const FP_ODOMENU& data, rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMENU>::SharedPtr pub);
-void FpToRosMsg(const FP_ODOMETRY& data, rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMETRY>::SharedPtr pub);
-void FpToRosMsg(  const FP_ODOMSH& data, rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMSH>::SharedPtr pub);
-void FpToRosMsg(    const FP_TEXT& data, rclcpp::Publisher<fixposition_driver_ros2::msg::TEXT>::SharedPtr pub);
+void FpToRosMsg(const OdometryData& data, rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub);
+void FpToRosMsg(     const ImuData& data, rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub);
+void FpToRosMsg(  const FP_GNSSANT& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSANT>::SharedPtr pub);
+void FpToRosMsg( const FP_GNSSCORR& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSCORR>::SharedPtr pub);
+void FpToRosMsg(      const FP_LLH& data, rclcpp::Publisher<fixposition_driver_ros2::msg::LLH>::SharedPtr pub);
+void FpToRosMsg(  const FP_ODOMENU& data, rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMENU>::SharedPtr pub);
+void FpToRosMsg( const FP_ODOMETRY& data, rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMETRY>::SharedPtr pub);
+void FpToRosMsg(   const FP_ODOMSH& data, rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMSH>::SharedPtr pub);
+void FpToRosMsg(     const FP_TEXT& data, rclcpp::Publisher<fixposition_driver_ros2::msg::TEXT>::SharedPtr pub);
 
 void FpToRosMsg(const GP_GGA& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GPGGA>::SharedPtr pub);
 void FpToRosMsg(const GP_GLL& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GPGLL>::SharedPtr pub);
@@ -75,15 +77,7 @@ void FpToRosMsg(const GP_ZDA& data, rclcpp::Publisher<fixposition_driver_ros2::m
  * @param[in] data
  * @param[out] msg
  */
-void ImuDataToMsg(const ImuData& data, sensor_msgs::msg::Imu& msg);
-
-/**
- * @brief 
- * 
- * @param[in] data
- * @param[in] msg
- */
-void NavSatStatusDataToMsg(const NavSatStatusData& data, sensor_msgs::msg::NavSatStatus& msg);
+void TfDataToMsg(const TfData& data, geometry_msgs::msg::TransformStamped& msg);
 
 /**
  * @brief
@@ -115,7 +109,7 @@ void TwistWithCovDataToMsg(const TwistWithCovData& data, geometry_msgs::msg::Twi
  * @param[in] data
  * @param[out] msg
  */
-void OdometryDataToMsg(const OdometryData& data, nav_msgs::msg::Odometry& msg);
+void OdometryDataToTf(const FP_ODOMETRY& data, std::shared_ptr<tf2_ros::TransformBroadcaster> pub);
 
 /**
  * @brief
@@ -123,7 +117,7 @@ void OdometryDataToMsg(const OdometryData& data, nav_msgs::msg::Odometry& msg);
  * @param[in] data
  * @param[out] msg
  */
-void OdometryDataToTf(const OdometryData& data, geometry_msgs::msg::TransformStamped& msg);
+void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr pub);
 
 /**
  * @brief
@@ -131,7 +125,7 @@ void OdometryDataToTf(const OdometryData& data, geometry_msgs::msg::TransformSta
  * @param[in] data
  * @param[out] msg
  */
-void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, sensor_msgs::msg::NavSatFix& msg);
+void OdomToImuMsg(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr msg);
 
 /**
  * @brief
@@ -139,31 +133,7 @@ void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, sensor_msgs::msg::Nav
  * @param[in] data
  * @param[out] msg
  */
-void OdomToVrtkMsg(const fixposition::FP_ODOMETRY& data, fixposition_driver_ros2::msg::VRTK& msg);
-
-/**
- * @brief
- *
- * @param[in] data
- * @param[out] msg
- */
-void OdomToImuMsg(const fixposition::FP_ODOMETRY& data, sensor_msgs::msg::Imu& msg);
-
-/**
- * @brief
- *
- * @param[in] data
- * @param[out] msg
- */
-void VrtkDataToMsg(const VrtkData& data, fixposition_driver_ros2::msg::VRTK& msg);
-
-/**
- * @brief
- *
- * @param[in] data
- * @param[out] msg
- */
-void TfDataToMsg(const TfData& data, geometry_msgs::msg::TransformStamped& msg);
+void OdomToYprMsg(const OdometryData& data, rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr pub);
 
 }  // namespace fixposition
 

@@ -483,6 +483,11 @@ void TwistWithCovDataToMsg(const TwistWithCovData& data, geometry_msgs::TwistWit
 
 void OdometryDataToTf(const FP_ODOMETRY& data, tf2_ros::TransformBroadcaster& pub) {
     if (data.fusion_status > 0) {
+        // Ensure Fusion orientation is a valid quaternion
+        if (data.odom.pose.orientation.vec().isZero() && (data.odom.pose.orientation.w() == 0)) {
+            return;
+        }
+        
         // Create message
         geometry_msgs::TransformStamped msg;
         

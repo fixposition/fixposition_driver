@@ -58,7 +58,7 @@ class FixpositionDriverNode : public FixpositionDriver {
     void BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header, const BESTGNSSPOSMem* payload);
 
     /**
-     * @brief Observer Function to publish NMEA message from GPGGA, GPRMC, and GPZDA once the GNSS epoch transmission is complete
+     * @brief Observer Function to publish NMEA message once the GNSS epoch transmission is complete
      *
      * @param[in] data
      */

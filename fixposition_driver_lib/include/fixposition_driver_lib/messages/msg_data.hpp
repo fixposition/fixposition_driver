@@ -111,32 +111,6 @@ struct OdometryData {
     TwistWithCovData twist;
 };
 
-struct VrtkData {
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    times::GpsTime stamp;
-    std::string frame_id;
-    std::string pose_frame;
-    std::string kin_frame;
-    PoseWithCovData pose;
-    TwistWithCovData velocity;
-    Eigen::Vector3d acceleration;
-    int fusion_status;
-    int imu_bias_status;
-    int gnss1_status;
-    int gnss2_status;
-    int wheelspeed_status;
-    std::string version;
-    VrtkData()
-        : fusion_status(-1),
-          imu_bias_status(-1),
-          gnss1_status(-1),
-          gnss2_status(-1),
-          wheelspeed_status(-1),
-          version("") {
-        acceleration.setZero();
-    }
-};
-
 struct NavSatStatusData {
     enum class Status : int8_t {
         STATUS_NO_FIX   = -1, // Unable to fix position
