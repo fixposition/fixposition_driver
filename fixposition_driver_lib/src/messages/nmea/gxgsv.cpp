@@ -47,8 +47,15 @@ void GX_GSV::ConvertFromTokens(const std::vector<std::string>& tokens) {
         offset++;
     }
 
-    constellation = tokens.front();
+    // Obtain signal ID and type
+    std::string constellation = tokens.front();
     signal_id = tokens.back();
+
+    if (constellation.size() >= 2) {
+        type = string2enum(constellation.substr(0,2));
+    } else {
+        type = SignalType::Invalid;
+    }
 }
 
 }  // namespace fixposition

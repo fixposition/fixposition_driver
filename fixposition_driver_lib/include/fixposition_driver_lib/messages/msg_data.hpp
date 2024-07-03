@@ -56,6 +56,8 @@ enum class WheelspeedStatus : int {
     WS_CONVERGED = 1,
 };
 
+enum class SignalType : uint8_t { Invalid, GPS, Galileo, BeiDou, GLONASS };
+
 struct ImuData {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     times::GpsTime stamp;
@@ -116,21 +118,21 @@ struct OdometryData {
 
 struct NavSatStatusData {
     enum class Status : int8_t {
-        STATUS_NO_FIX   = -1, // Unable to fix position
-        STATUS_FIX      =  0, // Unaugmented fix
-        STATUS_SBAS_FIX =  1, // With satellite-based augmentation
-        STATUS_GBAS_FIX =  2, // With ground-based augmentation
+        STATUS_NO_FIX = -1,   // Unable to fix position
+        STATUS_FIX = 0,       // Unaugmented fix
+        STATUS_SBAS_FIX = 1,  // With satellite-based augmentation
+        STATUS_GBAS_FIX = 2,  // With ground-based augmentation
     };
 
     enum class Service : uint16_t {
-        SERVICE_NONE    =  0,
-        SERVICE_GPS     =  1,
-        SERVICE_GLONASS =  2,
-        SERVICE_COMPASS =  4, // includes BeiDou.
-        SERVICE_GALILEO =  8,
-        SERVICE_ALL     = 15,
+        SERVICE_NONE = 0,
+        SERVICE_GPS = 1,
+        SERVICE_GLONASS = 2,
+        SERVICE_COMPASS = 4,  // includes BeiDou.
+        SERVICE_GALILEO = 8,
+        SERVICE_ALL = 15,
     };
-    
+
     int8_t status;
     uint16_t service;
     NavSatStatusData() : status(static_cast<int8_t>(Status::STATUS_NO_FIX)), service(0) {}
@@ -158,7 +160,9 @@ struct GpggaData {
     Eigen::Matrix<double, 3, 3> cov;
     int position_covariance_type;
     bool valid;
-    GpggaData() : latitude(0.0), longitude(0.0), altitude(0.0), position_covariance_type(0), valid(false) { cov.setZero(); }
+    GpggaData() : latitude(0.0), longitude(0.0), altitude(0.0), position_covariance_type(0), valid(false) {
+        cov.setZero();
+    }
 };
 
 struct GpzdaData {

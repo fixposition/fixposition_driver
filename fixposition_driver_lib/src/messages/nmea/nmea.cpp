@@ -89,41 +89,22 @@ void NmeaMessage::AddNmeaEpoch(const GP_GST& msg) {
     std_alt = msg.std_alt;
 }
 
-void NmeaMessage::AddNmeaEpoch(const GX_GSV& msg) {
-    // Get signal ID
-    std::string signal_id;
-    if (msg.constellation.size() >= 2) {
-        signal_id = msg.constellation.substr(0,2) + msg.signal_id;
-    } else {
-        signal_id = msg.constellation + msg.signal_id;
-    }
-    
-    // Create new struct if signal ID is not in map
-    if (gnss_signals.find(signal_id) == gnss_signals.end()) {
-        gnss_signals[signal_id] = GnssSignalStats();
-    }
+void NmeaMessage::AddNmeaEpoch(const GX_GSV& msg) {    
+    // Populate GNSS signal stats
+    for (u_int8_t i = 0; i < msg.sat_id.size(); i++) {
+        GnssSignalStats *stats = &gnss_signals[msg.type][msg.sat_id.at(i)];
 
-    // Get signal ID
-    if (signal_id_lut.find(signal_id) == signal_id_lut.end()) {
-        gnss_signals.at(signal_id).sat_id_name = "Key not found";
-    } else {
-        gnss_signals.at(signal_id).sat_id_name = signal_id_lut.at(signal_id);
+        // Populate necessary fields
+        if (stats->elev == 0) { stats->elev = msg.elev.at(i); }
+        if (stats->azim == 0) { stats->azim = msg.azim.at(i); }
+
+        // Populate CNO
+        if (msg.signal_id == "1" || msg.signal_id == "7") {
+            stats->cno_l1 = msg.cno.at(i);
+        } else if (msg.signal_id == "6" || msg.signal_id == "2" || msg.signal_id == "B" || msg.signal_id == "3") {
+            stats->cno_l2 = msg.cno.at(i);
+        }
     }
-
-    // Get number of satellites in view
-    gnss_signals.at(signal_id).num_sats = msg.num_sats;
-
-    // Safety measure for vectors
-    if (gnss_signals.at(signal_id).sat_id.size() >= 100) { gnss_signals.at(signal_id).sat_id.clear(); }
-    if (gnss_signals.at(signal_id).azim.size() >= 100) { gnss_signals.at(signal_id).azim.clear(); }
-    if (gnss_signals.at(signal_id).elev.size() >= 100) { gnss_signals.at(signal_id).elev.clear(); }
-    if (gnss_signals.at(signal_id).cno.size() >= 100) { gnss_signals.at(signal_id).cno.clear(); }
-    
-    // Populate GNSS satellites in view (priority)
-    gnss_signals.at(signal_id).sat_id.insert(gnss_signals.at(signal_id).sat_id.end(), msg.sat_id.begin(), msg.sat_id.end());
-    gnss_signals.at(signal_id).azim.insert(gnss_signals.at(signal_id).azim.end(), msg.azim.begin(), msg.azim.end());
-    gnss_signals.at(signal_id).elev.insert(gnss_signals.at(signal_id).elev.end(), msg.elev.begin(), msg.elev.end());
-    gnss_signals.at(signal_id).cno.insert(gnss_signals.at(signal_id).cno.end(), msg.cno.begin(), msg.cno.end());
 }
 
 void NmeaMessage::AddNmeaEpoch(const GP_HDT& msg) {

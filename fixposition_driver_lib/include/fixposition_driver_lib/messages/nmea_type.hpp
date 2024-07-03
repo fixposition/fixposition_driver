@@ -38,7 +38,7 @@ struct GP_GGA {
     float diff_age;
     std::string diff_sta;
     std::string sentence;
-    
+
     // Message structure
     static constexpr char frame_id[] = "LLH";
     static constexpr char child_frame_id[] = "FP_POI";
@@ -88,7 +88,7 @@ struct GP_GLL {
     char lon_ew;
     char status;
     char mode;
-    
+
     // Message structure
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
@@ -129,7 +129,7 @@ struct GN_GSA {
     float hdop;
     float vdop;
     int8_t gnss_id;
-    
+
     // Message structure
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
@@ -173,7 +173,7 @@ struct GP_GST {
     float std_lat;
     float std_lon;
     float std_alt;
-    
+
     // Message structure
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
@@ -218,14 +218,22 @@ struct GX_GSV {
     std::vector<unsigned int> elev;
     std::vector<unsigned int> azim;
     std::vector<unsigned int> cno;
-    std::string constellation;
     std::string signal_id;
-    
+    SignalType type;
+
     // Message structure
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
     const std::string header_ = "GXGST";
-    unsigned int kSize_ = 4; // Maximum size: 4 + num_sats * 4
+    unsigned int kSize_ = 4;  // Maximum size: 4 + num_sats * 4
+
+    SignalType string2enum(const std::string& name) {
+        if (name == "GP") return SignalType::GPS;     // GPS
+        if (name == "GA") return SignalType::Galileo; // Galileo
+        if (name == "GB") return SignalType::BeiDou;  // BeiDou
+        if (name == "GL") return SignalType::GLONASS; // GLONASS
+        return SignalType::Invalid;
+    }
 
     GX_GSV() {
         sentences = 0;
@@ -235,7 +243,7 @@ struct GX_GSV {
         elev.clear();
         azim.clear();
         cno.clear();
-        signal_id = "Unknown";
+        type = SignalType::Invalid;
     }
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
@@ -248,7 +256,7 @@ struct GX_GSV {
         elev.clear();
         azim.clear();
         cno.clear();
-        signal_id = "Unknown";
+        type = SignalType::Invalid;
     }
 };
 
@@ -260,7 +268,7 @@ struct GP_HDT {
     // Message fields
     float heading;
     char true_ind;
-    
+
     // Message structure
     const std::string frame_id = "LLH";
     const std::string child_frame_id = "FP_POI";
@@ -296,7 +304,7 @@ struct GP_RMC {
     float speed_ms;
     float course;
     char mode;
-    
+
     // Message structure
     static constexpr char frame_id[] = "LLH";
     static constexpr char child_frame_id[] = "FP_POI";
@@ -347,7 +355,7 @@ struct GP_VTG {
     float sog_kph;
     char sog_unit_k;
     char mode;
-    
+
     // Message structure
     static constexpr char frame_id[] = "LLH";
     static constexpr char child_frame_id[] = "FP_POI";
@@ -387,12 +395,12 @@ struct GP_ZDA {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Message fields
-    std::string date_str; // Format: dd/mm/yyyy
-    std::string time_str; // Format: hhmmss.ss(ss)
+    std::string date_str;  // Format: dd/mm/yyyy
+    std::string time_str;  // Format: hhmmss.ss(ss)
     times::GpsTime stamp;
     uint8_t local_hr;
     uint8_t local_min;
-    
+
     // Message structure
     static constexpr char frame_id[] = "LLH";
     static constexpr char child_frame_id[] = "FP_POI";
@@ -419,32 +427,24 @@ struct GP_ZDA {
 };
 
 // ------------ NmeaMessage ------------
-
-// TODO: Optimize cn0 allocation for L1 and L2, repeated signals
 struct GnssSignalStats {
-    uint8_t num_sats;
-    std::string sat_id_name;
-    std::vector<unsigned int> sat_id;
-    std::vector<unsigned int> elev;
-    std::vector<unsigned int> azim;
-    std::vector<unsigned int> cno;
+    unsigned int azim;
+    unsigned int elev;
+    unsigned int cno_l1;
+    unsigned int cno_l2;
 
     GnssSignalStats() {
-        num_sats = 0;
-        sat_id_name = "";
-        sat_id.clear();
-        elev.clear();
-        azim.clear();
-        cno.clear();
+        azim = 0;
+        elev = 0;
+        cno_l1 = 0;
+        cno_l2 = 0;
     }
 
     void ResetData() {
-        num_sats = 0;
-        sat_id_name = "";
-        sat_id.clear();
-        elev.clear();
-        azim.clear();
-        cno.clear();
+        azim = 0;
+        elev = 0;
+        cno_l1 = 0;
+        cno_l2 = 0;
     }
 };
 
@@ -452,50 +452,35 @@ struct NmeaMessage {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Message fields
-    std::string gpgga_time_str; // GP_GGA
-    std::string gpzda_time_str; // GP_ZDA
-    std::string time_str; // GP_ZDA (alt. GP_GGA, GP_GST, GP_RMC)
-    std::string date_str; // GP_ZDA (alt. GP_RMC)
-    times::GpsTime stamp; // GP_ZDA
-    Eigen::Vector3d llh;  // GP_GGA (alt. LL only for GP_GLL, GP_RMC)
-    uint8_t quality;      // GP_GGA (alt. GP_RMC, GP_VTG, or limited GP_GLL, GP_GSA)
-    uint8_t num_sv;       // GP_GGA
-    std::vector<int> ids; // GN_GSA
-    float hdop_receiver;  // GP_GGA
-    float pdop;           // GN_GSA
-    float hdop;           // GN_GSA (alt. GP_GGA)
-    float vdop;           // GN_GSA
-    float rms_range;      // GP_GST
-    float std_major;      // GP_GST
-    float std_minor;      // GP_GST
-    float angle_major;    // GP_GST
-    float std_lat;        // GP_GST (alt. GP_GGA)
-    float std_lon;        // GP_GST (alt. GP_GGA)
-    float std_alt;        // GP_GST (alt. GP_GGA)
-    Eigen::Matrix<double, 3, 3> cov;  // GP_GST (alt. GP_GGA)
-    uint8_t cov_type;                 // GP_GST (alt. GP_GGA)
-    float heading;                    // GP_HDT
-    float speed;                      // GP_RMC (alt. GP_VTG)
-    float course;                     // GP_RMC (alt. GP_VTG)
-    float diff_age;       // GP_GGA
-    std::string diff_sta; // GP_GGA
-    std::unordered_map<std::string, GnssSignalStats> gnss_signals; // GX_GSV
+    std::string gpgga_time_str;      // GP_GGA
+    std::string gpzda_time_str;      // GP_ZDA
+    std::string time_str;            // GP_ZDA (alt. GP_GGA, GP_GST, GP_RMC)
+    std::string date_str;            // GP_ZDA (alt. GP_RMC)
+    times::GpsTime stamp;            // GP_ZDA
+    Eigen::Vector3d llh;             // GP_GGA (alt. LL only for GP_GLL, GP_RMC)
+    uint8_t quality;                 // GP_GGA (alt. GP_RMC, GP_VTG, or limited GP_GLL, GP_GSA)
+    uint8_t num_sv;                  // GP_GGA
+    std::vector<int> ids;            // GN_GSA
+    float hdop_receiver;             // GP_GGA
+    float pdop;                      // GN_GSA
+    float hdop;                      // GN_GSA (alt. GP_GGA)
+    float vdop;                      // GN_GSA
+    float rms_range;                 // GP_GST
+    float std_major;                 // GP_GST
+    float std_minor;                 // GP_GST
+    float angle_major;               // GP_GST
+    float std_lat;                   // GP_GST (alt. GP_GGA)
+    float std_lon;                   // GP_GST (alt. GP_GGA)
+    float std_alt;                   // GP_GST (alt. GP_GGA)
+    Eigen::Matrix<double, 3, 3> cov; // GP_GST (alt. GP_GGA)
+    uint8_t cov_type;                // GP_GST (alt. GP_GGA)
+    float heading;                   // GP_HDT
+    float speed;                     // GP_RMC (alt. GP_VTG)
+    float course;                    // GP_RMC (alt. GP_VTG)
+    float diff_age;                  // GP_GGA
+    std::string diff_sta;            // GP_GGA
+    std::unordered_map<SignalType, std::map<unsigned int, GnssSignalStats>> gnss_signals; // GX_GSV
 
-    std::unordered_map<std::string, std::string> signal_id_lut = {
-        {"GP0", "GPS No signal"},
-        {"GP1", "GPS/SBAS L1C/A"},
-        {"GP6", "GPS L2C-L"},
-        {"GA0", "Galileo No signal"},
-        {"GA7", "Galileo L1-BC"},
-        {"GA2", "Galileo E5b"},
-        {"GB0", "BeiDou No signal"},
-        {"GB1", "BeiDou B1I"},
-        {"GBB", "BeiDou B2I"},
-        {"GL0", "GLONASS No signal"},
-        {"GL1", "GLONASS G1 C/A"},
-        {"GL3", "GLONASS G2 C/A"}
-    };
-    
     /**
      * @brief Check if GNSS epoch is complete
      */

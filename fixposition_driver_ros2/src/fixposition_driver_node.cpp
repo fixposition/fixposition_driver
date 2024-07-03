@@ -287,27 +287,44 @@ void FixpositionDriverNode::PublishNmea() {
         msg.cov_type = nmea_message_.cov_type;
 
         // Populate GNSS satellites in view
-        for (auto it = nmea_message_.gnss_signals.begin(); it != nmea_message_.gnss_signals.end(); ++it) {
-            GnssSignalStats gnss_data = it->second;
+        for (auto gsv_it = nmea_message_.gnss_signals.begin(); gsv_it != nmea_message_.gnss_signals.end(); ++gsv_it) {
+            SignalType msg_type = gsv_it->first;
+            std::map<unsigned int, GnssSignalStats> *gnss_data = &gsv_it->second;
 
             // Populate GnssSats message
             fixposition_driver_ros2::msg::Gnsssats sats_msg;
-            sats_msg.signal_id = gnss_data.sat_id_name;
-            sats_msg.num_sats = gnss_data.num_sats;
-            for (unsigned int i = 0; i < gnss_data.sat_id.size(); i++) {
-                sats_msg.sat_id.push_back(gnss_data.sat_id.at(i));
-                sats_msg.azim.push_back(gnss_data.azim.at(i));
-                sats_msg.elev.push_back(gnss_data.elev.at(i));
-                sats_msg.cno.push_back(gnss_data.cno.at(i));
+
+            // Get constellation name
+            if (msg_type == SignalType::GPS) {
+                sats_msg.constellation = "GPS";
+            } else if (msg_type == SignalType::Galileo) { 
+                sats_msg.constellation = "Galileo";
+            } else if (msg_type == SignalType::BeiDou) { 
+                sats_msg.constellation = "BeiDou";
+            } else if (msg_type == SignalType::GLONASS) {
+                sats_msg.constellation = "GLONASS";
+            } else {
+                sats_msg.constellation = "Unknown";
             }
+
+            // Get signal statistics
+            for (auto it = gnss_data->begin(); it != gnss_data->end(); ++it) {
+                unsigned int sat_id = it->first;
+                GnssSignalStats signals = it->second;
+
+                sats_msg.sat_id.push_back(sat_id);
+                sats_msg.azim.push_back(signals.azim);
+                sats_msg.elev.push_back(signals.elev);
+                sats_msg.cno_l1.push_back(signals.cno_l1);
+                sats_msg.cno_l2.push_back(signals.cno_l2);
+            }
+
+            // Add GnssSats to NMEA message
             msg.gnss_sats.push_back(sats_msg);
-            
-            // Clear vectors
-            it->second.sat_id.clear();
-            it->second.azim.clear();
-            it->second.elev.clear();
-            it->second.cno.clear();
         }
+
+        // Clear map
+        nmea_message_.gnss_signals.clear();
 
         // True heading
         msg.heading = nmea_message_.heading;
