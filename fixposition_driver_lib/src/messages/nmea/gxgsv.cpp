@@ -47,6 +47,7 @@ void GX_GSV::ConvertFromTokens(const std::vector<std::string>& tokens) {
         offset++;
     }
 
+    constellation = tokens.front();
     signal_id = tokens.back();
 }
 

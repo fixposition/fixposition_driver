@@ -17,7 +17,6 @@
 
 /* SYSTEM / STL */
 #include <termios.h>
-#include <unordered_map>
 
 /* EXTERNAL */
 #include <fixposition_driver_lib/messages/base_converter.hpp>

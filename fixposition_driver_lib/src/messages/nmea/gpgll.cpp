@@ -40,13 +40,20 @@ void GP_GLL::ConvertFromTokens(const std::vector<std::string>& tokens) {
     time_str = tokens.at(time_idx);
 
     // LLH coordinates
+    double _lat = 0.0;
+    double _lon = 0.0;
     const std::string _latstr = tokens.at(lat_idx);
-    double _lat = StringToDouble(_latstr.substr(0,2)) + StringToDouble((_latstr.substr(2))) / 60;
-    if (tokens.at(lat_ns_idx).compare("S") == 0) _lat *= -1;
-
     const std::string _lonstr = tokens.at(lon_idx);
-    double _lon = StringToDouble(_lonstr.substr(0,3)) + StringToDouble((_lonstr.substr(3))) / 60;
-    if (tokens.at(lon_ew_idx).compare("W") == 0) _lon *= -1;
+
+    if (!_latstr.empty()) {
+        _lat = StringToDouble(_latstr.substr(0,2)) + StringToDouble((_latstr.substr(2))) / 60;
+        if (tokens.at(lat_ns_idx).compare("S") == 0) _lat *= -1;
+    }
+
+    if (!_lonstr.empty()) {
+        _lon = StringToDouble(_lonstr.substr(0,3)) + StringToDouble((_lonstr.substr(3))) / 60;
+        if (tokens.at(lon_ew_idx).compare("W") == 0) _lon *= -1;
+    }
 
     latlon = Eigen::Vector2d(_lat, _lon);
 

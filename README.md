@@ -63,11 +63,7 @@ Then source your development environment:
 
     `roslaunch fixposition_driver_ros1 serial.launch`
 
--   In TCP mode (Wi-Fi):
-
-    `roslaunch fixposition_driver_ros1 tcp.launch`
-
--   In TCP mode (Ethernet):
+-   In TCP mode (Ethernet or Wi-Fi):
 
     `roslaunch fixposition_driver_ros1 tcp.launch`
 
@@ -118,11 +114,7 @@ Then source your environment after the build:
 
     `ros2 launch fixposition_driver_ros2 serial.launch`
 
--   In TCP mode (Wi-Fi):
-
-    `ros2 launch fixposition_driver_ros2 tcp.launch`
-
--   In TCP mode (Ethernet):
+-   In TCP mode (Ethernet or Wi-Fi):
 
     `ros2 launch fixposition_driver_ros2 tcp.launch`
 

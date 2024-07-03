@@ -218,6 +218,7 @@ struct GX_GSV {
     std::vector<unsigned int> elev;
     std::vector<unsigned int> azim;
     std::vector<unsigned int> cno;
+    std::string constellation;
     std::string signal_id;
     
     // Message structure
@@ -417,6 +418,36 @@ struct GP_ZDA {
     }
 };
 
+// ------------ NmeaMessage ------------
+
+// TODO: Optimize cn0 allocation for L1 and L2, repeated signals
+struct GnssSignalStats {
+    uint8_t num_sats;
+    std::string sat_id_name;
+    std::vector<unsigned int> sat_id;
+    std::vector<unsigned int> elev;
+    std::vector<unsigned int> azim;
+    std::vector<unsigned int> cno;
+
+    GnssSignalStats() {
+        num_sats = 0;
+        sat_id_name = "";
+        sat_id.clear();
+        elev.clear();
+        azim.clear();
+        cno.clear();
+    }
+
+    void ResetData() {
+        num_sats = 0;
+        sat_id_name = "";
+        sat_id.clear();
+        elev.clear();
+        azim.clear();
+        cno.clear();
+    }
+};
+
 struct NmeaMessage {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -443,16 +474,27 @@ struct NmeaMessage {
     float std_alt;        // GP_GST (alt. GP_GGA)
     Eigen::Matrix<double, 3, 3> cov;  // GP_GST (alt. GP_GGA)
     uint8_t cov_type;                 // GP_GST (alt. GP_GGA)
-    uint8_t num_sats;                 // GX_GSV
-    std::vector<unsigned int> sat_id; // GX_GSV
-    std::vector<unsigned int> elev;   // GX_GSV
-    std::vector<unsigned int> azim;   // GX_GSV
-    std::vector<unsigned int> cno;    // GX_GSV
     float heading;                    // GP_HDT
     float speed;                      // GP_RMC (alt. GP_VTG)
     float course;                     // GP_RMC (alt. GP_VTG)
     float diff_age;       // GP_GGA
     std::string diff_sta; // GP_GGA
+    std::unordered_map<std::string, GnssSignalStats> gnss_signals; // GX_GSV
+
+    std::unordered_map<std::string, std::string> signal_id_lut = {
+        {"GP0", "GPS No signal"},
+        {"GP1", "GPS/SBAS L1C/A"},
+        {"GP6", "GPS L2C-L"},
+        {"GA0", "Galileo No signal"},
+        {"GA7", "Galileo L1-BC"},
+        {"GA2", "Galileo E5b"},
+        {"GB0", "BeiDou No signal"},
+        {"GB1", "BeiDou B1I"},
+        {"GBB", "BeiDou B2I"},
+        {"GL0", "GLONASS No signal"},
+        {"GL1", "GLONASS G1 C/A"},
+        {"GL3", "GLONASS G2 C/A"}
+    };
     
     /**
      * @brief Check if GNSS epoch is complete
@@ -490,11 +532,6 @@ struct NmeaMessage {
         cov.setZero();
         cov_type = 0;
         num_sv = 0;
-        num_sats = 0;
-        sat_id.clear();
-        elev.clear();
-        azim.clear();
-        cno.clear();
         heading = 0.0;
         speed = 0.0;
         course = 0.0;
@@ -525,11 +562,6 @@ struct NmeaMessage {
         cov.setZero();
         cov_type = 0;
         num_sv = 0;
-        num_sats = 0;
-        sat_id.clear();
-        elev.clear();
-        azim.clear();
-        cno.clear();
         heading = 0.0;
         speed = 0.0;
         course = 0.0;

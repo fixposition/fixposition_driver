@@ -3,8 +3,7 @@ fixposition_driver_ros2:
     fp_output:
       formats: [
                 "ODOMETRY", "LLH", "ODOMENU", "ODOMSH", "RAWIMU", "CORRIMU", "GNSSANT", "GNSSCORR", "TEXT", "TF", # FP_A
-                "GPGGA", "GPGLL", "GNGSA", "GPGST", "GPHDT", "GPRMC", "GPVTG", "GPZDA", # NMEA
-                #"GPGSV", "GAGSV", "GBGSV", "GLGSV" # GXGSV
+                "GPGGA", "GPGLL", "GNGSA", "GPGST", "GPHDT", "GPRMC", "GPVTG", "GPZDA", "GXGSV" # NMEA
                ]
       type: "tcp"
       port: "21000"

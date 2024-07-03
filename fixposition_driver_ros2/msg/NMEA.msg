@@ -34,17 +34,13 @@ float64           std_lon     # [m]               | Standard deviation of longit
 float64           std_alt     # [m]               | Standard deviation of altitude error.
 float64[9]        covariance  # [m2]              | Position covariance defined relative to a tangential plane (ENU frame).
 int8              cov_type    # [-]               | Method employed to estimate covariance (see below).
-int16             num_sats    # [-]               | Total number of satellites in view.
-int16[]           sat_id      # [-]               | Satellite ID number.               
-int16[]           elev        # [deg]             | Satellite elevation. 
-int16[]           azim        # [deg]             | Satellite azimuth from true North.
-int16[]           cno         # [db-Hz]           | Satellite SNR (C/No).
 float64           heading     # [deg]             | True heading.
 float64           speed       # [m/s]             | Speed over ground.
 float64           course      # [deg]             | Course over ground (w.r.t. True North).
 float64           diff_age    # [-]               | Approximate age of differential data (last GPS MSM message received).
 string            diff_sta    # [-]               | DGPS station ID (0000-1023).
-string            sentence    # [-]               | ASCII string to be used by NTRIP clients.
+fixposition_driver_ros2/Gnsssats[] gnss_sats # [-]| GNSS satellite signal statistics.
+
 
 # Quality indicator table
 #

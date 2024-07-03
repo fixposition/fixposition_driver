@@ -222,7 +222,7 @@ bool FixpositionDriver::InitializeConverters() {
             a_converters_["GNGSA"] = std::unique_ptr<NmeaConverter<GN_GSA>>(new NmeaConverter<GN_GSA>());
         } else if (format == "GPGST") {
             a_converters_["GPGST"] = std::unique_ptr<NmeaConverter<GP_GST>>(new NmeaConverter<GP_GST>());
-        } else if (format == "GPGSV" || format == "GAGSV" || format == "GBGSV" || format == "GLGSV") {
+        } else if (format == "GXGSV") {
             a_converters_["GXGSV"] = std::unique_ptr<NmeaConverter<GX_GSV>>(new NmeaConverter<GX_GSV>());
         } else if (format == "GPHDT") {
             a_converters_["GPHDT"] = std::unique_ptr<NmeaConverter<GP_HDT>>(new NmeaConverter<GP_HDT>());

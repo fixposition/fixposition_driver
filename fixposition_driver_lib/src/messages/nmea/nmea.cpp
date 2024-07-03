@@ -90,17 +90,56 @@ void NmeaMessage::AddNmeaEpoch(const GP_GST& msg) {
 }
 
 void NmeaMessage::AddNmeaEpoch(const GX_GSV& msg) {
+    // Get signal ID
+    std::string signal_id;
+    if (msg.constellation.size() >= 2) {
+        signal_id = msg.constellation.substr(0,2) + msg.signal_id;
+    } else {
+        signal_id = msg.constellation + msg.signal_id;
+    }
+    
+    // Create new struct if signal ID is not in map
+    if (gnss_signals.find(signal_id) == gnss_signals.end()) {
+        gnss_signals[signal_id] = GnssSignalStats();
+    }
+
+    // Get signal ID
+    if (signal_id_lut.find(signal_id) == signal_id_lut.end()) {
+        gnss_signals.at(signal_id).sat_id_name = "Key not found";
+    } else {
+        gnss_signals.at(signal_id).sat_id_name = signal_id_lut.at(signal_id);
+    }
+
+    // Get number of satellites in view
+    gnss_signals.at(signal_id).num_sats = msg.num_sats;
+
+    // Safety measure for vectors
+    if (gnss_signals.at(signal_id).sat_id.size() >= 100) { gnss_signals.at(signal_id).sat_id.clear(); }
+    if (gnss_signals.at(signal_id).azim.size() >= 100) { gnss_signals.at(signal_id).azim.clear(); }
+    if (gnss_signals.at(signal_id).elev.size() >= 100) { gnss_signals.at(signal_id).elev.clear(); }
+    if (gnss_signals.at(signal_id).cno.size() >= 100) { gnss_signals.at(signal_id).cno.clear(); }
+    
     // Populate GNSS satellites in view (priority)
-    num_sats = msg.num_sats;
-    sat_id = msg.sat_id;
-    elev = msg.elev;
-    azim = msg.azim;
-    cno = msg.cno;
+    gnss_signals.at(signal_id).sat_id.insert(gnss_signals.at(signal_id).sat_id.end(), msg.sat_id.begin(), msg.sat_id.end());
+    gnss_signals.at(signal_id).azim.insert(gnss_signals.at(signal_id).azim.end(), msg.azim.begin(), msg.azim.end());
+    gnss_signals.at(signal_id).elev.insert(gnss_signals.at(signal_id).elev.end(), msg.elev.begin(), msg.elev.end());
+    gnss_signals.at(signal_id).cno.insert(gnss_signals.at(signal_id).cno.end(), msg.cno.begin(), msg.cno.end());
 }
 
 void NmeaMessage::AddNmeaEpoch(const GP_HDT& msg) {
     // Populate true heading (priority)
     heading = msg.heading;
+}
+
+void NmeaMessage::AddNmeaEpoch(const GP_VTG& msg) {
+    // Populate SOG and COG if empty
+    if (speed == 0.0) {
+        speed = msg.sog_kph / 3.6; // Convert km/h to m/s
+    }
+
+    if (course == 0.0) {
+        course = msg.cog_true;
+    }
 }
 
 void NmeaMessage::AddNmeaEpoch(const GP_RMC& msg) {

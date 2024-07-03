@@ -48,10 +48,12 @@ void GP_ZDA::ConvertFromTokens(const std::vector<std::string>& tokens) {
     date_str = tokens.at(day_idx) + '/' + tokens.at(month_idx) + '/' + tokens.at(year_idx);
 
     // Generate GPS timestamp
-    std::string utcTimeString = date_str + " " + time_str.substr(0,2) + ":" + time_str.substr(2,2) + ":" + time_str.substr(4);
-    std::string gps_tow, gps_week;
-    times::convertToGPSTime(utcTimeString, gps_week, gps_tow);
-    stamp = ConvertGpsTime(gps_week, gps_tow);
+    if (!time_str.empty()) {
+        std::string utcTimeString = date_str + " " + time_str.substr(0,2) + ":" + time_str.substr(2,2) + ":" + time_str.substr(4);
+        std::string gps_tow, gps_week;
+        times::convertToGPSTime(utcTimeString, gps_week, gps_tow);
+        stamp = ConvertGpsTime(gps_week, gps_tow);
+    }
 
     // Get local time
     local_hr  = StringToInt(tokens.at(local_hr_idx));

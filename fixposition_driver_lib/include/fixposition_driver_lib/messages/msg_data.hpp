@@ -15,6 +15,9 @@
 #ifndef __FIXPOSITION_DRIVER_LIB_MSG_DATA__
 #define __FIXPOSITION_DRIVER_LIB_MSG_DATA__
 
+/* SYSTEM / STL */
+#include <unordered_map>
+
 /* PACKAGE */
 #include <fixposition_driver_lib/time_conversions.hpp>
 

@@ -17,7 +17,6 @@
 
 /* SYSTEM / STL */
 #include <termios.h>
-#include <unordered_map>
 
 /* ROS2 */
 #include <fixposition_driver_ros2/ros2_msgs.hpp>
@@ -62,7 +61,7 @@ class FixpositionDriverNode : public FixpositionDriver {
      *
      * @param[in] data
      */
-    void PublishNmea(NmeaMessage data);
+    void PublishNmea();
     
     // ROS node handler
     std::shared_ptr<rclcpp::Node> node_;

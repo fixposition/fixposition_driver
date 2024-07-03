@@ -26,6 +26,7 @@ find_package(fixposition_driver_lib REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   msg/Speed.msg
+  msg/Gnsssats.msg
   msg/NMEA.msg
   msg/WheelSensor.msg
   msg/fpa/GNSSANT.msg

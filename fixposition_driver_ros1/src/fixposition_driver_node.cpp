@@ -163,32 +163,44 @@ void FixpositionDriverNode::RegisterObservers() {
                 FpToRosMsg(data, nmea_gpgga_pub_);
                 if (nmea_pub_.getNumSubscribers() > 0) { 
                     nmea_message_.AddNmeaEpoch(data);
-                    PublishNmea(nmea_message_); // GPGGA controls the NMEA output
+                    PublishNmea(); // GPGGA controls the NMEA output
                 }
             });
         } else if (format == "GPGLL") {
-            dynamic_cast<NmeaConverter<GP_GLL>*>(a_converters_["GPGLL"].get())
-                ->AddObserver([this](const GP_GLL& data) { FpToRosMsg(data, nmea_gpgll_pub_); });
+            dynamic_cast<NmeaConverter<GP_GLL>*>(a_converters_["GPGLL"].get())->AddObserver([this](const GP_GLL& data) { 
+                FpToRosMsg(data, nmea_gpgll_pub_);
+                if (nmea_pub_.getNumSubscribers() > 0) { nmea_message_.AddNmeaEpoch(data); }
+            });
         } else if (format == "GNGSA") {
-            dynamic_cast<NmeaConverter<GN_GSA>*>(a_converters_["GNGSA"].get())
-                ->AddObserver([this](const GN_GSA& data) { FpToRosMsg(data, nmea_gngsa_pub_); });
+            dynamic_cast<NmeaConverter<GN_GSA>*>(a_converters_["GNGSA"].get())->AddObserver([this](const GN_GSA& data) { 
+                FpToRosMsg(data, nmea_gngsa_pub_);
+                if (nmea_pub_.getNumSubscribers() > 0) { nmea_message_.AddNmeaEpoch(data); }
+            });
         } else if (format == "GPGST") {
-            dynamic_cast<NmeaConverter<GP_GST>*>(a_converters_["GPGST"].get())
-                ->AddObserver([this](const GP_GST& data) { FpToRosMsg(data, nmea_gpgst_pub_); });
-        } else if (format == "GPGSV" || format == "GAGSV" || format == "GBGSV" || format == "GLGSV") {
-            dynamic_cast<NmeaConverter<GX_GSV>*>(a_converters_["GXGSV"].get())
-                ->AddObserver([this](const GX_GSV& data) { FpToRosMsg(data, nmea_gxgsv_pub_); });
+            dynamic_cast<NmeaConverter<GP_GST>*>(a_converters_["GPGST"].get())->AddObserver([this](const GP_GST& data) { 
+                FpToRosMsg(data, nmea_gpgst_pub_);
+                if (nmea_pub_.getNumSubscribers() > 0) { nmea_message_.AddNmeaEpoch(data); }
+            });
+        } else if (format == "GXGSV") {
+            dynamic_cast<NmeaConverter<GX_GSV>*>(a_converters_["GXGSV"].get())->AddObserver([this](const GX_GSV& data) { 
+                FpToRosMsg(data, nmea_gxgsv_pub_);
+                if (nmea_pub_.getNumSubscribers() > 0) { nmea_message_.AddNmeaEpoch(data); }
+            });
         } else if (format == "GPHDT") {
-            dynamic_cast<NmeaConverter<GP_HDT>*>(a_converters_["GPHDT"].get())
-                ->AddObserver([this](const GP_HDT& data) { FpToRosMsg(data, nmea_gphdt_pub_); });
+            dynamic_cast<NmeaConverter<GP_HDT>*>(a_converters_["GPHDT"].get())->AddObserver([this](const GP_HDT& data) { 
+                FpToRosMsg(data, nmea_gphdt_pub_);
+                if (nmea_pub_.getNumSubscribers() > 0) { nmea_message_.AddNmeaEpoch(data); }
+            });
         } else if (format == "GPRMC") {
             dynamic_cast<NmeaConverter<GP_RMC>*>(a_converters_["GPRMC"].get())->AddObserver([this](const GP_RMC& data) {
                 FpToRosMsg(data, nmea_gprmc_pub_);
                 if (nmea_pub_.getNumSubscribers() > 0) { nmea_message_.AddNmeaEpoch(data); }
             });
         } else if (format == "GPVTG") {
-            dynamic_cast<NmeaConverter<GP_VTG>*>(a_converters_["GPVTG"].get())
-                ->AddObserver([this](const GP_VTG& data) { FpToRosMsg(data, nmea_gpvtg_pub_); });
+            dynamic_cast<NmeaConverter<GP_VTG>*>(a_converters_["GPVTG"].get())->AddObserver([this](const GP_VTG& data) { 
+                FpToRosMsg(data, nmea_gpvtg_pub_);
+                if (nmea_pub_.getNumSubscribers() > 0) { nmea_message_.AddNmeaEpoch(data); }
+            });
         } else if (format == "GPZDA") {
             dynamic_cast<NmeaConverter<GP_ZDA>*>(a_converters_["GPZDA"].get())->AddObserver([this](const GP_ZDA& data) {
                 FpToRosMsg(data, nmea_gpzda_pub_);
@@ -198,88 +210,102 @@ void FixpositionDriverNode::RegisterObservers() {
     }
 }
 
-void FixpositionDriverNode::PublishNmea(NmeaMessage data) {
+void FixpositionDriverNode::PublishNmea() {
     // If epoch message is complete, generate NMEA output
-    if (data.checkEpoch()) {
+    if (nmea_message_.checkEpoch()) {
         // Generate new message
         fixposition_driver_ros1::NMEA msg;
 
         // ROS Header
-        if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+        if (nmea_message_.stamp.tow == 0.0 && nmea_message_.stamp.wno == 0) {
             msg.header.stamp = ros::Time::now();
         } else {
-            msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
+            msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(nmea_message_.stamp));
         }
         msg.header.frame_id = "FP_POI";
 
         // Time and date fields
-        msg.time = data.time_str;
-        msg.date = data.date_str;
+        msg.time = nmea_message_.time_str;
+        msg.date = nmea_message_.date_str;
         
         // Latitude [degrees]. Positive is north of equator; negative is south
-        msg.latitude = data.llh(0);
+        msg.latitude = nmea_message_.llh(0);
 
         // Longitude [degrees]. Positive is east of prime meridian; negative is west
-        msg.longitude = data.llh(1);
+        msg.longitude = nmea_message_.llh(1);
 
         // Altitude [m]. Positive is above the WGS-84 ellipsoid
-        msg.altitude = data.llh(2);
+        msg.altitude = nmea_message_.llh(2);
 
         // Quality indicator
-        msg.quality = data.quality;
+        msg.quality = nmea_message_.quality;
 
         // Number of satellites
-        msg.num_sv = data.num_sv;
+        msg.num_sv = nmea_message_.num_sv;
 
         // ID numbers of satellites used in solution
-        for (unsigned int i = 0; i < data.ids.size(); i++) {
-           msg.ids.push_back(data.ids.at(i));
+        for (unsigned int i = 0; i < nmea_message_.ids.size(); i++) {
+           msg.ids.push_back(nmea_message_.ids.at(i));
         }
 
         // Dilution of precision
-        msg.hdop_rec = data.hdop_receiver;
-        msg.pdop = data.pdop;
-        msg.hdop = data.hdop;
-        msg.vdop = data.vdop;
+        msg.hdop_rec = nmea_message_.hdop_receiver;
+        msg.pdop = nmea_message_.pdop;
+        msg.hdop = nmea_message_.hdop;
+        msg.vdop = nmea_message_.vdop;
 
         // Populate GNSS pseudorange error statistics
-        msg.rms_range = data.rms_range;
-        msg.std_major = data.std_major;
-        msg.std_minor = data.std_minor;
-        msg.angle_major = data.angle_major;
-        msg.std_lat = data.std_lat;
-        msg.std_lon = data.std_lon;
-        msg.std_alt = data.std_alt;
+        msg.rms_range = nmea_message_.rms_range;
+        msg.std_major = nmea_message_.std_major;
+        msg.std_minor = nmea_message_.std_minor;
+        msg.angle_major = nmea_message_.angle_major;
+        msg.std_lat = nmea_message_.std_lat;
+        msg.std_lon = nmea_message_.std_lon;
+        msg.std_alt = nmea_message_.std_alt;
 
         // Position covariance [m^2]
         Eigen::Map<Eigen::Matrix<double, 3, 3>> cov_map =
             Eigen::Map<Eigen::Matrix<double, 3, 3>>(msg.covariance.data());
-        cov_map = data.cov;
+        cov_map = nmea_message_.cov;
 
         // Method employed to estimate covariance
-        msg.cov_type = data.cov_type;
+        msg.cov_type = nmea_message_.cov_type;
 
         // Populate GNSS satellites in view
-        msg.num_sats = data.num_sats;
-        for (unsigned int i = 0; i < data.sat_id.size(); i++) {
-            msg.sat_id.push_back(data.sat_id.at(i));
-            msg.elev.push_back(data.elev.at(i));
-            msg.azim.push_back(data.azim.at(i));
-            msg.cno.push_back(data.cno.at(i));
+        for (auto it = nmea_message_.gnss_signals.begin(); it != nmea_message_.gnss_signals.end(); ++it) {
+            GnssSignalStats gnss_data = it->second;
+
+            // Populate GnssSats message
+            fixposition_driver_ros1::GnssSats sats_msg;
+            sats_msg.signal_id = gnss_data.sat_id_name;
+            sats_msg.num_sats = gnss_data.num_sats;
+            for (unsigned int i = 0; i < gnss_data.sat_id.size(); i++) {
+                sats_msg.sat_id.push_back(gnss_data.sat_id.at(i));
+                sats_msg.azim.push_back(gnss_data.azim.at(i));
+                sats_msg.elev.push_back(gnss_data.elev.at(i));
+                sats_msg.cno.push_back(gnss_data.cno.at(i));
+            }
+            msg.gnss_sats.push_back(sats_msg);
+            
+            // Clear vectors
+            it->second.sat_id.clear();
+            it->second.azim.clear();
+            it->second.elev.clear();
+            it->second.cno.clear();
         }
 
         // True heading
-        msg.heading = data.heading;
+        msg.heading = nmea_message_.heading;
 
         // Speed over ground [m/s]
-        msg.speed = data.speed;
+        msg.speed = nmea_message_.speed;
 
         // Course over ground [deg]
-        msg.course = data.course;
+        msg.course = nmea_message_.course;
 
         // Populate differential data information
-        msg.diff_age = data.diff_age;
-        msg.diff_sta = data.diff_sta;
+        msg.diff_age = nmea_message_.diff_age;
+        msg.diff_sta = nmea_message_.diff_sta;
 
         // Publish message
         nmea_pub_.publish(msg);

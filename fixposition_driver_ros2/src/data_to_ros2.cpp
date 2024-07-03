@@ -261,6 +261,7 @@ void FpToRosMsg(const GP_GGA& data, rclcpp::Publisher<fixposition_driver_ros2::m
         msg.alt_unit = data.alt_unit;
         msg.diff_age = data.diff_age;
         msg.diff_sta = data.diff_sta;
+        msg.sentence = data.sentence;
 
         // Publish message
         pub->publish(msg);
@@ -418,9 +419,15 @@ void FpToRosMsg(const GP_ZDA& data, rclcpp::Publisher<fixposition_driver_ros2::m
 
         // Populate message
         msg.time = data.time_str;
-        msg.day = StringToInt(data.date_str.substr(0,2));
-        msg.month = StringToInt(data.date_str.substr(3,2));
-        msg.year = StringToInt(data.date_str.substr(6,4));
+        if (!data.date_str.empty()) {
+            msg.day = StringToInt(data.date_str.substr(0,2));
+            msg.month = StringToInt(data.date_str.substr(3,2));
+            msg.year = StringToInt(data.date_str.substr(6,4));
+        } else {
+            msg.day = 0;
+            msg.month = 0;
+            msg.year = 0;
+        }
         msg.local_hr = data.local_hr;
         msg.local_min = data.local_min;
 

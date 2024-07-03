@@ -27,6 +27,7 @@ add_message_files(
   FILES
   Speed.msg
   WheelSensor.msg
+  GnssSats.msg
   NMEA.msg
   fpa/gnssant.msg
   fpa/gnsscorr.msg
