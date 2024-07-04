@@ -418,17 +418,17 @@ void FpToRosMsg(const GP_ZDA& data, ros::Publisher& pub) {
         // Create message
         fixposition_driver_ros1::gpzda msg;
 
+        // ROS Header
+        if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+            msg.header.stamp = ros::Time::now();
+        } else {
+            msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
+        }
+        msg.header.frame_id = "FP_POI";
+
         // Populate message
         msg.time = data.time_str;
-        if (!data.date_str.empty()) {
-            msg.day = StringToInt(data.date_str.substr(0,2));
-            msg.month = StringToInt(data.date_str.substr(3,2));
-            msg.year = StringToInt(data.date_str.substr(6,4));
-        } else {
-            msg.day = 0;
-            msg.month = 0;
-            msg.year = 0;
-        }
+        msg.date = data.date_str;
         msg.local_hr = data.local_hr;
         msg.local_min = data.local_min;
 

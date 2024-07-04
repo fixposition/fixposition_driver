@@ -22,6 +22,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     const std::string RECONNECT_DELAY = ns + ".reconnect_delay";
     const std::string TYPE = ns + ".type";
     const std::string FORMATS = ns + ".formats";
+    const std::string QOS_TYPE = ns + ".qos_type";
     const std::string IP = ns + ".ip";
     const std::string PORT = ns + ".port";
     const std::string BAUDRATE = ns + ".baudrate";
@@ -30,6 +31,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     node->declare_parameter(RECONNECT_DELAY, 5.0);
     node->declare_parameter(TYPE, "tcp");
     node->declare_parameter(FORMATS, std::vector<std::string>());
+    node->declare_parameter(QOS_TYPE, "sensor_short");
     node->declare_parameter(PORT, "21000");
     node->declare_parameter(IP, "127.0.0.1");
     node->declare_parameter(BAUDRATE, 115200);
@@ -43,6 +45,11 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
         RCLCPP_INFO(node->get_logger(), "%s : %f", RECONNECT_DELAY.c_str(), params.reconnect_delay);
     } else {
         RCLCPP_WARN(node->get_logger(), "%s : %f", RECONNECT_DELAY.c_str(), params.reconnect_delay);
+    }
+    if (node->get_parameter(QOS_TYPE, params.qos_type)) {
+        RCLCPP_INFO(node->get_logger(), "%s : %s", QOS_TYPE.c_str(), params.qos_type.c_str());
+    } else {
+        RCLCPP_WARN(node->get_logger(), "%s : %s", QOS_TYPE.c_str(), params.qos_type.c_str());
     }
 
     std::string type_str;
@@ -95,6 +102,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     node->declare_parameter(RTCM_TOPIC, "/fixposition/rtcm");
     node->get_parameter(RTCM_TOPIC, params.rtcm_topic);
     RCLCPP_INFO(node->get_logger(), "%s : %s", RTCM_TOPIC.c_str(), params.rtcm_topic.c_str());
+
     return true;
 }
 

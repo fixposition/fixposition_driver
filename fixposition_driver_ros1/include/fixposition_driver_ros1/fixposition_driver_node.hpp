@@ -72,12 +72,12 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     // ROS publishers
     // FP_A messages
-    ros::Publisher fpa_gnssant_pub_;     //!< FP_A-GNSSANT message
-    ros::Publisher fpa_gnsscorr_pub_;    //!< FP_A-GNSSCORR message
+    ros::Publisher fpa_odometry_pub_;    //!< FP_A-ODOMETRY message
     ros::Publisher fpa_llh_pub_;         //!< FP_A-LLH message
     ros::Publisher fpa_odomenu_pub_;     //!< FP_A-ODOMENU message
-    ros::Publisher fpa_odometry_pub_;    //!< FP_A-ODOMETRY message
     ros::Publisher fpa_odomsh_pub_;      //!< FP_A-ODOMSH message
+    ros::Publisher fpa_gnssant_pub_;     //!< FP_A-GNSSANT message
+    ros::Publisher fpa_gnsscorr_pub_;    //!< FP_A-GNSSCORR message
     ros::Publisher fpa_text_pub_;        //!< FP_A-TEXT message
 
     // NMEA messages

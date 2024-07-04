@@ -37,7 +37,7 @@ class FixpositionDriverNode : public FixpositionDriver {
      *
      * @param[in] params
      */
-    FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node, const FixpositionDriverParams& params);
+    FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node, const FixpositionDriverParams& params, rclcpp::QoS qos_settings);
 
     void Run();
 
@@ -72,12 +72,12 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     // ROS publishers
     // FP_A messages
-    rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSANT>::SharedPtr fpa_gnssant_pub_;   //!< FP_A-GNSSANT message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSCORR>::SharedPtr fpa_gnsscorr_pub_; //!< FP_A-GNSSCORR message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMETRY>::SharedPtr fpa_odometry_pub_; //!< FP_A-ODOMETRY message
     rclcpp::Publisher<fixposition_driver_ros2::msg::LLH>::SharedPtr fpa_llh_pub_;           //!< FP_A-LLH message
     rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMENU>::SharedPtr fpa_odomenu_pub_;   //!< FP_A-ODOMENU message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMETRY>::SharedPtr fpa_odometry_pub_; //!< FP_A-ODOMETRY message
     rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMSH>::SharedPtr fpa_odomsh_pub_;     //!< FP_A-ODOMSH message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSANT>::SharedPtr fpa_gnssant_pub_;   //!< FP_A-GNSSANT message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSCORR>::SharedPtr fpa_gnsscorr_pub_; //!< FP_A-GNSSCORR message
     rclcpp::Publisher<fixposition_driver_ros2::msg::TEXT>::SharedPtr fpa_text_pub_;         //!< FP_A-TEXT message
 
     // NMEA messages

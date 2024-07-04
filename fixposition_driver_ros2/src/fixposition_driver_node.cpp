@@ -17,67 +17,61 @@
 
 namespace fixposition {
 
-// auto qos_sensor = rclcpp::QoS(
-//     rclcpp::QoSInitialization(
-//         rmw_qos_profile_sensor_data.history,
-//         rmw_qos_profile_sensor_data.depth,
-//     ),
-//     rmw_qos_profile_sensor_data
-// );
+FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node, const FixpositionDriverParams& params, rclcpp::QoS qos_settings)
+    : FixpositionDriver(params),
+      node_(node),
 
-FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node, const FixpositionDriverParams& params)
-    : FixpositionDriver(params), node_(node),
-    // FP_A messages
-    fpa_gnssant_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GNSSANT>("/fixposition/fpa/gnssant", 10)),
-    fpa_gnsscorr_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GNSSCORR>("/fixposition/fpa/gnsscorr", 10)),
-    fpa_llh_pub_(node_->create_publisher<fixposition_driver_ros2::msg::LLH>("/fixposition/fpa/llh", 10)),
-    fpa_odomenu_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMENU>("/fixposition/fpa/odomenu", 10)),
-    fpa_odometry_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMETRY>("/fixposition/fpa/odometry", 10)),
-    fpa_odomsh_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMSH>("/fixposition/fpa/odomsh", 10)),
-    fpa_text_pub_(node_->create_publisher<fixposition_driver_ros2::msg::TEXT>("/fixposition/fpa/text", 10)),
+      // FP_A messages
+      fpa_odometry_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMETRY>("/fixposition/fpa/odometry", qos_settings)),
+      fpa_llh_pub_(node_->create_publisher<fixposition_driver_ros2::msg::LLH>("/fixposition/fpa/llh", qos_settings)),
+      fpa_odomenu_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMENU>("/fixposition/fpa/odomenu", qos_settings)),
+      fpa_odomsh_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMSH>("/fixposition/fpa/odomsh", qos_settings)),
+      fpa_gnssant_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GNSSANT>("/fixposition/fpa/gnssant", qos_settings)),
+      fpa_gnsscorr_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GNSSCORR>("/fixposition/fpa/gnsscorr", qos_settings)),
+      fpa_text_pub_(node_->create_publisher<fixposition_driver_ros2::msg::TEXT>("/fixposition/fpa/text", qos_settings)),
 
-    // NMEA messages
-    nmea_gpgga_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPGGA>("/fixposition/nmea/gpgga", 10)),
-    nmea_gpgll_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPGLL>("/fixposition/nmea/gpgll", 10)),
-    nmea_gngsa_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GNGSA>("/fixposition/nmea/gngsa", 10)),
-    nmea_gpgst_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPGST>("/fixposition/nmea/gpgst", 10)),
-    nmea_gxgsv_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GXGSV>("/fixposition/nmea/gxgsv", 100)),
-    nmea_gphdt_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPHDT>("/fixposition/nmea/gphdt", 10)),
-    nmea_gprmc_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPRMC>("/fixposition/nmea/gprmc", 10)),
-    nmea_gpvtg_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPVTG>("/fixposition/nmea/gpvtg", 10)),
-    nmea_gpzda_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPZDA>("/fixposition/nmea/gpzda", 10)),
+      // NMEA messages
+      nmea_gpgga_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPGGA>("/fixposition/nmea/gpgga", qos_settings)),
+      nmea_gpgll_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPGLL>("/fixposition/nmea/gpgll", qos_settings)),
+      nmea_gngsa_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GNGSA>("/fixposition/nmea/gngsa", qos_settings)),
+      nmea_gpgst_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPGST>("/fixposition/nmea/gpgst", qos_settings)),
+      nmea_gxgsv_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GXGSV>("/fixposition/nmea/gxgsv", qos_settings)),
+      nmea_gphdt_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPHDT>("/fixposition/nmea/gphdt", qos_settings)),
+      nmea_gprmc_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPRMC>("/fixposition/nmea/gprmc", qos_settings)),
+      nmea_gpvtg_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPVTG>("/fixposition/nmea/gpvtg", qos_settings)),
+      nmea_gpzda_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPZDA>("/fixposition/nmea/gpzda", qos_settings)),
 
-    // ODOMETRY
-    odometry_ecef_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry_ecef", 10)),
-    odometry_llh_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/odometry_llh", 10)),
-    odometry_enu_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry_enu", 10)),
-    odometry_smooth_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry_smooth", 10)),
+      // ODOMETRY
+      odometry_ecef_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry_ecef", qos_settings)),
+      odometry_llh_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/odometry_llh", qos_settings)),
+      odometry_enu_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry_enu", qos_settings)),
+      odometry_smooth_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry_smooth", qos_settings)),
 
-    // Orientation
-    eul_pub_(node_->create_publisher<geometry_msgs::msg::Vector3Stamped>("/fixposition/ypr", 10)),
-    eul_imu_pub_(node_->create_publisher<geometry_msgs::msg::Vector3Stamped>("/fixposition/imu_ypr", 10)),
+      // Orientation
+      eul_pub_(node_->create_publisher<geometry_msgs::msg::Vector3Stamped>("/fixposition/ypr", qos_settings)),
+      eul_imu_pub_(node_->create_publisher<geometry_msgs::msg::Vector3Stamped>("/fixposition/imu_ypr", qos_settings)),
 
-    // IMU
-    rawimu_pub_(node_->create_publisher<sensor_msgs::msg::Imu>("/fixposition/rawimu", 100)),
-    corrimu_pub_(node_->create_publisher<sensor_msgs::msg::Imu>("/fixposition/corrimu", 100)),
-    poiimu_pub_(node_->create_publisher<sensor_msgs::msg::Imu>("/fixposition/poiimu", 10)),
+      // IMU
+      rawimu_pub_(node_->create_publisher<sensor_msgs::msg::Imu>("/fixposition/rawimu", qos_settings)),
+      corrimu_pub_(node_->create_publisher<sensor_msgs::msg::Imu>("/fixposition/corrimu", qos_settings)),
+      poiimu_pub_(node_->create_publisher<sensor_msgs::msg::Imu>("/fixposition/poiimu", qos_settings)),
 
-    // GNSS
-    nmea_pub_(node_->create_publisher<fixposition_driver_ros2::msg::NMEA>("/fixposition/nmea", 10)),
-    navsatfix_gnss1_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/gnss1", 10)),
-    navsatfix_gnss2_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/gnss2", 10)),
-      
-    // TF
-    br_(std::make_shared<tf2_ros::TransformBroadcaster>(node_)),
-    static_br_(std::make_shared<tf2_ros::StaticTransformBroadcaster>(node_)) 
+      // GNSS
+      nmea_pub_(node_->create_publisher<fixposition_driver_ros2::msg::NMEA>("/fixposition/nmea", qos_settings)),
+      navsatfix_gnss1_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/gnss1", qos_settings)),
+      navsatfix_gnss2_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/gnss2", qos_settings)),
+
+      // TF
+      br_(std::make_shared<tf2_ros::TransformBroadcaster>(node_)),
+      static_br_(std::make_shared<tf2_ros::StaticTransformBroadcaster>(node_))
 
 {
     ws_sub_ = node_->create_subscription<fixposition_driver_ros2::msg::Speed>(
-                     params_.customer_input.speed_topic, 100,
-                     std::bind(&FixpositionDriverNode::WsCallback, this, std::placeholders::_1));
+        params_.customer_input.speed_topic, 100,
+        std::bind(&FixpositionDriverNode::WsCallback, this, std::placeholders::_1));
     rtcm_sub_ = node_->create_subscription<std_msgs::msg::UInt8MultiArray>(
-                       params_.customer_input.rtcm_topic, 10,
-                       std::bind(&FixpositionDriverNode::RtcmCallback, this, std::placeholders::_1));
+        params_.customer_input.rtcm_topic, 10,
+        std::bind(&FixpositionDriverNode::RtcmCallback, this, std::placeholders::_1));
     RegisterObservers();
 }
 
@@ -150,76 +144,78 @@ void FixpositionDriverNode::RegisterObservers() {
                 ->AddObserver([this](const FP_CORRIMU& data) { FpToRosMsg(data.imu, corrimu_pub_); });
         } else if (format == "TF") {
             dynamic_cast<NmeaConverter<FP_TF>*>(a_converters_["TF"].get())->AddObserver([this](const FP_TF& data) {
-                // TF Observer Lambda
-                geometry_msgs::msg::TransformStamped tf;
-                TfDataToMsg(data.tf, tf);
-                if (tf.child_frame_id == "FP_IMUH" && tf.header.frame_id == "FP_POI") {
-                    br_->sendTransform(tf);
+                if (data.valid_tf) {
+                    // TF Observer Lambda
+                    geometry_msgs::msg::TransformStamped tf;
+                    TfDataToMsg(data.tf, tf);
+                    if (tf.child_frame_id == "FP_IMUH" && tf.header.frame_id == "FP_POI") {
+                        br_->sendTransform(tf);
 
-                    // Publish Pitch Roll based on IMU only
-                    Eigen::Vector3d imu_ypr_eigen = gnss_tf::QuatToEul(data.tf.rotation);
-                    imu_ypr_eigen.x() = 0.0;  // the yaw value is not observable using IMU alone
-                    geometry_msgs::msg::Vector3Stamped imu_ypr;
-                    imu_ypr.header.stamp = tf.header.stamp;
-                    imu_ypr.header.frame_id = "FP_POI";
-                    imu_ypr.vector.set__x(imu_ypr_eigen.x());
-                    imu_ypr.vector.set__y(imu_ypr_eigen.y());
-                    imu_ypr.vector.set__z(imu_ypr_eigen.z());
-                    eul_imu_pub_->publish(imu_ypr);
+                        // Publish Pitch Roll based on IMU only
+                        Eigen::Vector3d imu_ypr_eigen = gnss_tf::QuatToEul(data.tf.rotation);
+                        imu_ypr_eigen.x() = 0.0;  // the yaw value is not observable using IMU alone
+                        geometry_msgs::msg::Vector3Stamped imu_ypr;
+                        imu_ypr.header.stamp = tf.header.stamp;
+                        imu_ypr.header.frame_id = "FP_POI";
+                        imu_ypr.vector.set__x(imu_ypr_eigen.x());
+                        imu_ypr.vector.set__y(imu_ypr_eigen.y());
+                        imu_ypr.vector.set__z(imu_ypr_eigen.z());
+                        eul_imu_pub_->publish(imu_ypr);
 
-                } else if (tf.child_frame_id == "FP_POISH" && tf.header.frame_id == "FP_POI") {
-                    br_->sendTransform(tf);
-                } else {
-                    static_br_->sendTransform(tf);
+                    } else if (tf.child_frame_id == "FP_POISH" && tf.header.frame_id == "FP_POI") {
+                        br_->sendTransform(tf);
+                    } else {
+                        static_br_->sendTransform(tf);
+                    }
                 }
             });
         } else if (format == "GPGGA") {
             dynamic_cast<NmeaConverter<GP_GGA>*>(a_converters_["GPGGA"].get())->AddObserver([this](const GP_GGA& data) {
                 FpToRosMsg(data, nmea_gpgga_pub_);
-                if (nmea_pub_->get_subscription_count() > 0) { 
+                if (nmea_pub_->get_subscription_count() > 0) {
                     nmea_message_.AddNmeaEpoch(data);
-                    PublishNmea(); // GPGGA controls the NMEA output
+                    PublishNmea();  // GPGGA controls the NMEA output
                 }
             });
         } else if (format == "GPGLL") {
-            dynamic_cast<NmeaConverter<GP_GLL>*>(a_converters_["GPGLL"].get())->AddObserver([this](const GP_GLL& data) { 
+            dynamic_cast<NmeaConverter<GP_GLL>*>(a_converters_["GPGLL"].get())->AddObserver([this](const GP_GLL& data) {
                 FpToRosMsg(data, nmea_gpgll_pub_);
-                if (nmea_pub_->get_subscription_count() > 0) { nmea_message_.AddNmeaEpoch(data); }
+                if (nmea_pub_->get_subscription_count() > 0) nmea_message_.AddNmeaEpoch(data);
             });
         } else if (format == "GNGSA") {
             dynamic_cast<NmeaConverter<GN_GSA>*>(a_converters_["GNGSA"].get())->AddObserver([this](const GN_GSA& data) {
                 FpToRosMsg(data, nmea_gngsa_pub_);
-                if (nmea_pub_->get_subscription_count() > 0) { nmea_message_.AddNmeaEpoch(data); }
+                if (nmea_pub_->get_subscription_count() > 0) nmea_message_.AddNmeaEpoch(data);
             });
         } else if (format == "GPGST") {
             dynamic_cast<NmeaConverter<GP_GST>*>(a_converters_["GPGST"].get())->AddObserver([this](const GP_GST& data) {
                 FpToRosMsg(data, nmea_gpgst_pub_);
-                if (nmea_pub_->get_subscription_count() > 0) { nmea_message_.AddNmeaEpoch(data); }
+                if (nmea_pub_->get_subscription_count() > 0) nmea_message_.AddNmeaEpoch(data);
             });
         } else if (format == "GXGSV") {
             dynamic_cast<NmeaConverter<GX_GSV>*>(a_converters_["GXGSV"].get())->AddObserver([this](const GX_GSV& data) {
                 FpToRosMsg(data, nmea_gxgsv_pub_);
-                if (nmea_pub_->get_subscription_count() > 0) { nmea_message_.AddNmeaEpoch(data); }
+                if (nmea_pub_->get_subscription_count() > 0) nmea_message_.AddNmeaEpoch(data);
             });
         } else if (format == "GPHDT") {
             dynamic_cast<NmeaConverter<GP_HDT>*>(a_converters_["GPHDT"].get())->AddObserver([this](const GP_HDT& data) {
                 FpToRosMsg(data, nmea_gphdt_pub_);
-                if (nmea_pub_->get_subscription_count() > 0) { nmea_message_.AddNmeaEpoch(data); }
+                if (nmea_pub_->get_subscription_count() > 0) nmea_message_.AddNmeaEpoch(data);
             });
         } else if (format == "GPRMC") {
             dynamic_cast<NmeaConverter<GP_RMC>*>(a_converters_["GPRMC"].get())->AddObserver([this](const GP_RMC& data) {
                 FpToRosMsg(data, nmea_gprmc_pub_);
-                if (nmea_pub_->get_subscription_count() > 0) { nmea_message_.AddNmeaEpoch(data); }
+                if (nmea_pub_->get_subscription_count() > 0) nmea_message_.AddNmeaEpoch(data);
             });
         } else if (format == "GPVTG") {
             dynamic_cast<NmeaConverter<GP_VTG>*>(a_converters_["GPVTG"].get())->AddObserver([this](const GP_VTG& data) {
                 FpToRosMsg(data, nmea_gpvtg_pub_);
-                if (nmea_pub_->get_subscription_count() > 0) { nmea_message_.AddNmeaEpoch(data); }
+                if (nmea_pub_->get_subscription_count() > 0) nmea_message_.AddNmeaEpoch(data);
             });
         } else if (format == "GPZDA") {
             dynamic_cast<NmeaConverter<GP_ZDA>*>(a_converters_["GPZDA"].get())->AddObserver([this](const GP_ZDA& data) {
                 FpToRosMsg(data, nmea_gpzda_pub_);
-                if (nmea_pub_->get_subscription_count() > 0) { nmea_message_.AddNmeaEpoch(data); }
+                if (nmea_pub_->get_subscription_count() > 0) nmea_message_.AddNmeaEpoch(data);
             });
         }
     }
@@ -242,7 +238,7 @@ void FixpositionDriverNode::PublishNmea() {
         // Time and date fields
         msg.time = nmea_message_.time_str;
         msg.date = nmea_message_.date_str;
-        
+
         // Latitude [degrees]. Positive is north of equator; negative is south
         msg.latitude = nmea_message_.llh(0);
 
@@ -260,7 +256,7 @@ void FixpositionDriverNode::PublishNmea() {
 
         // ID numbers of satellites used in solution
         for (unsigned int i = 0; i < nmea_message_.ids.size(); i++) {
-           msg.ids.push_back(nmea_message_.ids.at(i));
+            msg.ids.push_back(nmea_message_.ids.at(i));
         }
 
         // Dilution of precision
@@ -289,7 +285,7 @@ void FixpositionDriverNode::PublishNmea() {
         // Populate GNSS satellites in view
         for (auto gsv_it = nmea_message_.gnss_signals.begin(); gsv_it != nmea_message_.gnss_signals.end(); ++gsv_it) {
             SignalType msg_type = gsv_it->first;
-            std::map<unsigned int, GnssSignalStats> *gnss_data = &gsv_it->second;
+            std::map<unsigned int, GnssSignalStats>* gnss_data = &gsv_it->second;
 
             // Populate GnssSats message
             fixposition_driver_ros2::msg::Gnsssats sats_msg;
@@ -297,9 +293,9 @@ void FixpositionDriverNode::PublishNmea() {
             // Get constellation name
             if (msg_type == SignalType::GPS) {
                 sats_msg.constellation = "GPS";
-            } else if (msg_type == SignalType::Galileo) { 
+            } else if (msg_type == SignalType::Galileo) {
                 sats_msg.constellation = "Galileo";
-            } else if (msg_type == SignalType::BeiDou) { 
+            } else if (msg_type == SignalType::BeiDou) {
                 sats_msg.constellation = "BeiDou";
             } else if (msg_type == SignalType::GLONASS) {
                 sats_msg.constellation = "GLONASS";
@@ -346,7 +342,7 @@ void FixpositionDriverNode::PublishNmea() {
 
 void FixpositionDriverNode::WsCallback(const fixposition_driver_ros2::msg::Speed::ConstSharedPtr msg) {
     std::unordered_map<std::string, std::vector<std::pair<bool, int>>> measurements;
-    for (const auto &sensor : msg->sensors) {
+    for (const auto& sensor : msg->sensors) {
         measurements[sensor.location].push_back({sensor.vx_valid, sensor.vx});
         measurements[sensor.location].push_back({sensor.vy_valid, sensor.vy});
         measurements[sensor.location].push_back({sensor.vz_valid, sensor.vz});
@@ -355,7 +351,7 @@ void FixpositionDriverNode::WsCallback(const fixposition_driver_ros2::msg::Speed
 }
 
 void FixpositionDriverNode::RtcmCallback(const std_msgs::msg::UInt8MultiArray::ConstSharedPtr msg) {
-    const void *rtcm_msg = &(msg->data[0]);
+    const void* rtcm_msg = &(msg->data[0]);
     size_t msg_size = msg->layout.dim[0].size;
     FixpositionDriver::RtcmCallback(rtcm_msg, msg_size);
 }
@@ -393,7 +389,23 @@ int main(int argc, char** argv) {
 
     if (fixposition::LoadParamsFromRos2(node, params)) {
         RCLCPP_INFO(node->get_logger(), "Params Loaded!");
-        fixposition::FixpositionDriverNode driver_node(node, params);
+        
+        // Define ROS QoS
+        rclcpp::QoS qos_settings = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default);
+
+        if (params.fp_output.qos_type == "sensor_short") { // Short-queue sensor-type QoS
+            qos_settings = rclcpp::QoS(rclcpp::KeepLast(5), rmw_qos_profile_sensor_data);
+        } else if (params.fp_output.qos_type == "sensor_long") { // Long-queue sensor-type QoS
+            qos_settings = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_sensor_data);
+        } else if (params.fp_output.qos_type == "default_short") { // Short-queue default-type QoS
+            qos_settings = rclcpp::QoS(rclcpp::KeepLast(5), rmw_qos_profile_default);
+        } else if (params.fp_output.qos_type == "default_long") { // Long-queue default-type QoS
+            qos_settings = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default);
+        } else { // Default QoS profile
+            qos_settings = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default);
+        }
+
+        fixposition::FixpositionDriverNode driver_node(node, params, qos_settings);
         driver_node.Run();
         RCLCPP_INFO(node->get_logger(), "Exiting.");
     } else {

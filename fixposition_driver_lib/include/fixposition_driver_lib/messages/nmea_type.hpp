@@ -485,7 +485,7 @@ struct NmeaMessage {
      * @brief Check if GNSS epoch is complete
      */
     bool checkEpoch() {
-        if ((gpgga_time_str.compare(gpzda_time_str) == 0)) {
+        if (!gpzda_time_str.empty() && (gpgga_time_str.compare(gpzda_time_str) == 0)) {
             return true;
         } else {
             return false;

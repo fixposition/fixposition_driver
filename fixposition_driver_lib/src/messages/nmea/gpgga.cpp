@@ -54,14 +54,6 @@ void GP_GGA::ConvertFromTokens(const std::vector<std::string>& tokens) {
         return;
     }
 
-    // Check that critical message fields are populated
-    for (int i = 1; i < 11; i++) {
-        if (tokens.at(i).empty()) {
-            ResetData();
-            return;
-        }
-    }
-
     // Time string
     time_str = tokens.at(time_idx);
 

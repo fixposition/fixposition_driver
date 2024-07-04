@@ -219,6 +219,7 @@ struct FP_TF {
     
     // Message fields
     TfData tf;
+    bool valid_tf;
 
     // Message structure
     const std::string header_ = "TF";
@@ -231,6 +232,7 @@ struct FP_TF {
         tf.child_frame_id = "";
         tf.translation.setZero();
         tf.rotation.setIdentity();
+        valid_tf = false;
     }
 
     void ConvertFromTokens(const std::vector<std::string>& tokens);
@@ -241,6 +243,7 @@ struct FP_TF {
         tf.child_frame_id = "";
         tf.translation.setZero();
         tf.rotation.setIdentity();
+        valid_tf = false;
     }
 };
 

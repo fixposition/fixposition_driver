@@ -28,14 +28,15 @@ struct FpOutputParams {
     double reconnect_delay;            //!< wait time in [s] until retry connection
     INPUT_TYPE type;                   //!< TCP or SERIAL
     std::vector<std::string> formats;  //!< data formats to convert, supports "FP" for now
+    std::string qos_type;              //!< ROS QoS type, supports "sensor_<short/long>" and "default_<short/long>"
 
     std::string ip;    //!< IP address for TCP connection
     std::string port;  //!< Port for TCP connection
     int baudrate;      //!< baudrate of serial connection
 };
 struct CustomerInputParams {
-    std::string speed_topic;
-    std::string rtcm_topic;
+    std::string speed_topic;  //!< Input ROS topic for Speed measurements
+    std::string rtcm_topic;   //!< Input ROS topic for RTCM3 messages
 };
 
 struct FixpositionDriverParams {

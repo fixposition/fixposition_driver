@@ -35,20 +35,19 @@ void GP_ZDA::ConvertFromTokens(const std::vector<std::string>& tokens) {
         return;
     }
 
-    // Check that critical message fields are populated
-    for (int i = 1; i < 6; i++) {
-        if (tokens.at(i).empty()) {
-            ResetData();
-            return;
-        }
+    // Populate time field
+    time_str = tokens.at(time_idx);
+
+    // Populate date field
+    std::string day = tokens.at(day_idx);
+    std::string month = tokens.at(month_idx);
+    std::string year = tokens.at(year_idx);
+    if (!day.empty() && !month.empty() && !year.empty()) {
+        date_str = day + '/' + month + '/' + year;
     }
 
-    // Populate time fields
-    time_str = tokens.at(time_idx);
-    date_str = tokens.at(day_idx) + '/' + tokens.at(month_idx) + '/' + tokens.at(year_idx);
-
     // Generate GPS timestamp
-    if (!time_str.empty()) {
+    if (!time_str.empty() && !date_str.empty()) {
         std::string utcTimeString = date_str + " " + time_str.substr(0,2) + ":" + time_str.substr(2,2) + ":" + time_str.substr(4);
         std::string gps_tow, gps_week;
         times::convertToGPSTime(utcTimeString, gps_week, gps_tow);
