@@ -98,6 +98,40 @@ To change the settings of TCP (IP, Port) or Serial (Baudrate, Port) connections,
 
 The output is published on the following:
 
+#### Vision-RTK2 I/O messages
+
+-   From **FP_A-**, at the configured frequency (default 10Hz, output generator -> Fusion frequency):
+
+    | Topic                       | Message Type                  | I/O message   | Frequency                      | Description                                   |
+    | --------------------------- | ----------------------------- | ------------- | ------------------------------ | --------------------------------------------- |
+    | `/fixposition/fpa/odometry` | `fixposition_msgs/odometry`   | FP_A-ODOMETRY | as configured on web-interface | https://docs.fixposition.com/fd/fp_a-odometry |
+    | `/fixposition/fpa/llh`      | `fixposition_msgs/llh`        | FP_A-LLH      | as configured on web-interface | https://docs.fixposition.com/fd/fp_a-llh      |
+    | `/fixposition/fpa/odomenu`  | `fixposition_msgs/odomenu`    | FP_A-ODOMENU  | as configured on web-interface | https://docs.fixposition.com/fd/fp_a-odomenu  |
+    | `/fixposition/fpa/odomsh`   | `fixposition_msgs/odomsh`     | FP_A-ODOMSH   | as configured on web-interface | https://docs.fixposition.com/fd/fp_a-odomsh   |
+    | `/fixposition/fpa/gnssant`  | `fixposition_msgs/gnssant`    | FP_A-GNSSANT  | as configured on web-interface | https://docs.fixposition.com/fd/fp_a-gnssant  |
+    | `/fixposition/fpa/gnsscorr` | `fixposition_msgs/gnsscorr`   | FP_A-GNSSCORR | as configured on web-interface | https://docs.fixposition.com/fd/fp_a-gnsscorr |
+    | `/fixposition/fpa/text`     | `fixposition_msgs/text`       | FP_A-TEXT     | as configured on web-interface | https://docs.fixposition.com/fd/fp_a-text     |
+
+-   From **NMEA-**, at the configured frequency (default 5Hz):
+
+    | Topic                     | Message Type             | I/O message | Frequency                      | Description                                 |
+    | ------------------------- | ------------------------ | ----------- | ------------------------------ | ------------------------------------------- |
+    | `/fixposition/nmea/gpgga` | `fixposition_msgs/gpgga` | NMEA-GP-GGA | as configured on web-interface | https://docs.fixposition.com/fd/nmea-gp-gga |
+    | `/fixposition/nmea/gpgll` | `fixposition_msgs/gpgll` | NMEA-GP-GLL | as configured on web-interface | https://docs.fixposition.com/fd/nmea-gp-gll |
+    | `/fixposition/nmea/gngsa` | `fixposition_msgs/gngsa` | NMEA-GN-GSA | as configured on web-interface | https://docs.fixposition.com/fd/nmea-gp-gsa |
+    | `/fixposition/nmea/gpgst` | `fixposition_msgs/gpgst` | NMEA-GP-GST | as configured on web-interface | https://docs.fixposition.com/fd/nmea-gp-gst |
+    | `/fixposition/nmea/gxgsv` | `fixposition_msgs/gxgsv` | NMEA-GX-GSV | as configured on web-interface | https://docs.fixposition.com/fd/nmea-gp-gsv |
+    | `/fixposition/nmea/gphdt` | `fixposition_msgs/gphdt` | NMEA-GP-HDT | as configured on web-interface | https://docs.fixposition.com/fd/nmea-gp-hdt |
+    | `/fixposition/nmea/gprmc` | `fixposition_msgs/gprmc` | NMEA-GP-RMC | as configured on web-interface | https://docs.fixposition.com/fd/nmea-gp-rmc |
+    | `/fixposition/nmea/gpvtg` | `fixposition_msgs/gpvtg` | NMEA-GP-VTG | as configured on web-interface | https://docs.fixposition.com/fd/nmea-gp-vtg |
+    | `/fixposition/nmea/gpzda` | `fixposition_msgs/gpzda` | NMEA-GP-ZDA | as configured on web-interface | https://docs.fixposition.com/fd/nmea-gp-zda |
+
+-   In addition, from **NMEA-**, at the configured frequency (default 5Hz):
+
+    | Topic               | Message Type             | Frequency                      | Description                                                                       |
+    | ------------------- | ------------------------ | ------------------------------ | --------------------------------------------------------------------------------- |
+    | `/fixposition/nmea` | `fixposition_msgs/nmea`  | as configured on web-interface | Collects and combines all NMEA messages and outputs at the end of the GNSS epoch. |
+
 #### Vision-RTK2 Fusion
 
 -   From **FP_A-ODOMETRY**, at the configured frequency (default 10Hz, output generator -> Fusion frequency):
