@@ -18,13 +18,9 @@ jobs:
           - name: "humble"
             container:
               image: "ghcr.io/fixposition/fixposition/fixposition-sdk:humble-ci"
-              # env:
-              #   ROS_DISTRO: humble
           - name: "jazzy"
             container:
               image: "ghcr.io/fixposition/fixposition/fixposition-sdk:jazzy-ci"
-              # env:
-              #   ROS_DISTRO: foxy
 
     container: ${{ matrix.config.container }}
 
@@ -41,10 +37,6 @@ jobs:
         with:
           repository: fixposition/fixposition_gnss_tf
           path: src/fixposition_gnss_tf
-      # - name: Set up Deps
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y libeigen3-dev libyaml-cpp-dev libgtest-dev python3-osrf-pycommon
       - name: Ignore ROS1 node
         run: |
           touch src/fixposition_driver/fixposition_driver_ros1/COLCON_IGNORE
