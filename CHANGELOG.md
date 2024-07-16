@@ -4,7 +4,8 @@ _For questions about compatibility, please contact Fixpositions Support support@
 
 ## x.x.x
 
-    - Remove support and CI for ROS 1 Melodic and ROS 2 Foxy
+    - Remove support and CI for ROS 1 Melodic and ROS 2 Dashing/Eloquent/Foxy/Galactic
+    - Do CI for Noetic, Humble and Jazzy
 
 ## [6.1.3](https://github.com/fixposition/fixposition_driver/releases/tag/6.1.3)
 
