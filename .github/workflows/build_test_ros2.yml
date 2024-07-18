@@ -17,10 +17,10 @@ jobs:
         config:
           - name: "humble"
             container:
-              image: "ghcr.io/fixposition/fixposition/fixposition-sdk:humble-ci"
+              image: "ghcr.io/fixposition/fixposition-sdk:humble-ci"
           - name: "jazzy"
             container:
-              image: "ghcr.io/fixposition/fixposition/fixposition-sdk:jazzy-ci"
+              image: "ghcr.io/fixposition/fixposition-sdk:jazzy-ci"
 
     container: ${{ matrix.config.container }}
 
