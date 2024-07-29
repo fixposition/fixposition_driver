@@ -15,14 +15,11 @@
 #ifndef __FIXPOSITION_DRIVER_ROS1_PARAMS_HPP__
 #define __FIXPOSITION_DRIVER_ROS1_PARAMS_HPP__
 
-/* SYSTEM / STL */
-
-/* EXTERNAL */
+/* ROS */
+#include <fixposition_driver_ros1/ros_msgs.hpp>
 
 /* FIXPOSITION */
 #include <fixposition_driver_lib/params.hpp>
-
-/* PACKAGE */
 
 namespace fixposition {
 

@@ -1,5 +1,8 @@
 fp_output:
-    formats: ["ODOMETRY", "ODOMSH", "LLH", "RAWIMU", "CORRIMU", "GPGGA", "GPZDA", "GPRMC", "TF"]
+    formats: [
+              "ODOMETRY", "LLH", "ODOMENU", "ODOMSH", "RAWIMU", "CORRIMU", "GNSSANT", "GNSSCORR", "TEXT", "TF", # FP_A
+              "GPGGA", "GPGLL", "GNGSA", "GPGST", "GPHDT", "GPRMC", "GPVTG", "GPZDA", "GXGSV" # NMEA
+             ]
     type: tcp
     port: "21000"
     ip: "10.0.2.1" # change to VRTK2's IP address in the network
@@ -8,3 +11,4 @@ fp_output:
 
 customer_input:
     speed_topic: "/fixposition/speed"
+    rtcm_topic: "/fixposition/rtcm"

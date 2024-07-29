@@ -14,37 +14,49 @@
 
 #ifndef __FIXPOSITION_DRIVER_ROS1_DATA_TO_ROS1__
 #define __FIXPOSITION_DRIVER_ROS1_DATA_TO_ROS1__
-/* ROS */
-#include <eigen_conversions/eigen_msg.h>
-#include <geometry_msgs/Vector3Stamped.h>
-#include <geometry_msgs/TransformStamped.h>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/Imu.h>
-#include <sensor_msgs/NavSatFix.h>
 
 /* FIXPOSITION DRIVER LIB */
-#include <fixposition_driver_lib/msg_data.hpp>
+#include <fixposition_driver_lib/messages/msg_data.hpp>
+#include <fixposition_driver_lib/fixposition_driver.hpp>
 
 /* PACKAGE */
-#include <fixposition_driver_ros1/VRTK.h>
-#include <fixposition_driver_ros1/NMEA.h>
+#include <fixposition_driver_ros1/fixposition_driver_node.hpp>
 
 namespace fixposition {
+
 /**
  * @brief
  *
  * @param[in] data
  * @param[out] msg
  */
-void ImuDataToMsg(const ImuData& data, sensor_msgs::Imu& msg);
+void FpToRosMsg(const OdometryData& data, ros::Publisher& pub);
+void FpToRosMsg(     const ImuData& data, ros::Publisher& pub);
+void FpToRosMsg(  const FP_GNSSANT& data, ros::Publisher& pub);
+void FpToRosMsg( const FP_GNSSCORR& data, ros::Publisher& pub);
+void FpToRosMsg(      const FP_LLH& data, ros::Publisher& pub);
+void FpToRosMsg(  const FP_ODOMENU& data, ros::Publisher& pub);
+void FpToRosMsg( const FP_ODOMETRY& data, ros::Publisher& pub);
+void FpToRosMsg(   const FP_ODOMSH& data, ros::Publisher& pub);
+void FpToRosMsg(     const FP_TEXT& data, ros::Publisher& pub);
+
+void FpToRosMsg(const GP_GGA& data, ros::Publisher& pub);
+void FpToRosMsg(const GP_GLL& data, ros::Publisher& pub);
+void FpToRosMsg(const GN_GSA& data, ros::Publisher& pub);
+void FpToRosMsg(const GP_GST& data, ros::Publisher& pub);
+void FpToRosMsg(const GX_GSV& data, ros::Publisher& pub);
+void FpToRosMsg(const GP_HDT& data, ros::Publisher& pub);
+void FpToRosMsg(const GP_RMC& data, ros::Publisher& pub);
+void FpToRosMsg(const GP_VTG& data, ros::Publisher& pub);
+void FpToRosMsg(const GP_ZDA& data, ros::Publisher& pub);
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  * @param[in] data
- * @param[in] msg
+ * @param[out] msg
  */
-void NavSatStatusDataToMsg(const NavSatStatusData& data, sensor_msgs::NavSatStatus& msg);
+void TfDataToMsg(const TfData& data, geometry_msgs::TransformStamped& msg);
 
 /**
  * @brief
@@ -76,7 +88,7 @@ void TwistWithCovDataToMsg(const TwistWithCovData& data, geometry_msgs::TwistWit
  * @param[in] data
  * @param[out] msg
  */
-void OdometryDataToMsg(const OdometryData& data, nav_msgs::Odometry& msg);
+void OdometryDataToTf(const FP_ODOMETRY& data, tf2_ros::TransformBroadcaster& pub);
 
 /**
  * @brief
@@ -84,7 +96,7 @@ void OdometryDataToMsg(const OdometryData& data, nav_msgs::Odometry& msg);
  * @param[in] data
  * @param[out] msg
  */
-void VrtkDataToMsg(const VrtkData& data, fixposition_driver_ros1::VRTK& msg);
+void OdomToNavSatFix(const FP_ODOMETRY& data, ros::Publisher& pub);
 
 /**
  * @brief
@@ -92,7 +104,15 @@ void VrtkDataToMsg(const VrtkData& data, fixposition_driver_ros1::VRTK& msg);
  * @param[in] data
  * @param[out] msg
  */
-void TfDataToMsg(const TfData& data, geometry_msgs::TransformStamped& msg);
+void OdomToImuMsg(const FP_ODOMETRY& data, ros::Publisher& pub);
+
+/**
+ * @brief
+ *
+ * @param[in] data
+ * @param[out] msg
+ */
+void OdomToYprMsg(const OdometryData& data, ros::Publisher& pub);
 
 }  // namespace fixposition
 

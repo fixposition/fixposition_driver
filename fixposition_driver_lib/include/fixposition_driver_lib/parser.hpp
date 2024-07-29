@@ -19,10 +19,6 @@
 #include <string>
 #include <vector>
 
-/* EXTERNAL */
-
-/* PACKAGE*/
-
 namespace fixposition {
 
 /**

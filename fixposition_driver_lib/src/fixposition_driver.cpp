@@ -16,19 +16,10 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
-
 #include <stdexcept>
 
 /* PACKAGE */
-#include <fixposition_driver_lib/converter/gpgga.hpp>
-#include <fixposition_driver_lib/converter/gprmc.hpp>
-#include <fixposition_driver_lib/converter/gpzda.hpp>
-#include <fixposition_driver_lib/converter/imu.hpp>
-#include <fixposition_driver_lib/converter/llh.hpp>
-#include <fixposition_driver_lib/converter/odometry.hpp>
-#include <fixposition_driver_lib/converter/tf.hpp>
 #include <fixposition_driver_lib/fixposition_driver.hpp>
-#include <fixposition_driver_lib/helper.hpp>
 #include <fixposition_driver_lib/parser.hpp>
 
 #ifndef B460800
@@ -148,6 +139,23 @@ void FixpositionDriver::WsCallback(
     }
 }
 
+void FixpositionDriver::RtcmCallback(const void *rtcm_msg, const size_t msg_size) {
+    // TODO: Check that RTCM message is valid
+
+    switch (params_.fp_output.type) {
+        case INPUT_TYPE::TCP:
+            send(this->client_fd_, rtcm_msg, msg_size, MSG_DONTWAIT);
+            break;
+        case INPUT_TYPE::SERIAL:
+            (void)!write(this->client_fd_, rtcm_msg, msg_size);
+            // Suppress warning - https://stackoverflow.com/a/64407070/7944565
+            break;
+        default:
+            std::cerr << "Unknown connection type!\n";
+            break;
+    }
+}
+
 bool FixpositionDriver::FillWsSensorMeas(const std::vector<std::pair<bool, int>>& meas_vec,
                                          const FpbMeasurementsMeasLoc meas_loc, FpbMeasurementsMeas& meas_fpb) {
     const size_t num_axis = meas_vec.size();
@@ -182,27 +190,48 @@ FpbMeasurementsMeasLoc FixpositionDriver::WsMeasStringToLoc(const std::string& m
 
 bool FixpositionDriver::InitializeConverters() {
     for (const auto& format : params_.fp_output.formats) {
+        
+        // FP_A messages
         if (format == "ODOMETRY") {
-            a_converters_["ODOMETRY"] = std::unique_ptr<OdometryConverter>(new OdometryConverter());
-            a_converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter());
+            a_converters_["ODOMETRY"] = std::unique_ptr<NmeaConverter<FP_ODOMETRY>>(new NmeaConverter<FP_ODOMETRY>());
+        } else if (format == "ODOMENU") {
+            a_converters_["ODOMENU"] = std::unique_ptr<NmeaConverter<FP_ODOMENU>>(new NmeaConverter<FP_ODOMENU>());
         } else if (format == "ODOMSH") {
-            a_converters_["ODOMSH"] = std::unique_ptr<OdometryConverter>(new OdometryConverter());
+            a_converters_["ODOMSH"] = std::unique_ptr<NmeaConverter<FP_ODOMSH>>(new NmeaConverter<FP_ODOMSH>());
         } else if (format == "LLH") {
-            a_converters_["LLH"] = std::unique_ptr<LlhConverter>(new LlhConverter());
-        } else if (format == "RAWIMU") {
-            a_converters_["RAWIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(false));
-        } else if (format == "CORRIMU") {
-            a_converters_["CORRIMU"] = std::unique_ptr<ImuConverter>(new ImuConverter(true));
-        } else if (format == "GPGGA") {
-            a_converters_["GPGGA"] = std::unique_ptr<GpggaConverter>(new GpggaConverter());
-        } else if (format == "GPZDA") {
-            a_converters_["GPZDA"] = std::unique_ptr<GpzdaConverter>(new GpzdaConverter());
-        } else if (format == "GPRMC") {
-            a_converters_["GPRMC"] = std::unique_ptr<GprmcConverter>(new GprmcConverter());
+            a_converters_["LLH"] = std::unique_ptr<NmeaConverter<FP_LLH>>(new NmeaConverter<FP_LLH>());
         } else if (format == "TF") {
-            if (a_converters_.find("TF") == a_converters_.end()) {
-                a_converters_["TF"] = std::unique_ptr<TfConverter>(new TfConverter());
-            }
+            a_converters_["TF"] = std::unique_ptr<NmeaConverter<FP_TF>>(new NmeaConverter<FP_TF>());
+        } else if (format == "RAWIMU") {
+            a_converters_["RAWIMU"] = std::unique_ptr<NmeaConverter<FP_RAWIMU>>(new NmeaConverter<FP_RAWIMU>());
+        } else if (format == "CORRIMU") {
+            a_converters_["CORRIMU"] = std::unique_ptr<NmeaConverter<FP_CORRIMU>>(new NmeaConverter<FP_CORRIMU>());
+        } else if (format == "GNSSANT") {
+            a_converters_["GNSSANT"] = std::unique_ptr<NmeaConverter<FP_GNSSANT>>(new NmeaConverter<FP_GNSSANT>());
+        } else if (format == "GNSSCORR") {
+            a_converters_["GNSSCORR"] = std::unique_ptr<NmeaConverter<FP_GNSSCORR>>(new NmeaConverter<FP_GNSSCORR>());
+        } else if (format == "TEXT") {
+            a_converters_["TEXT"] = std::unique_ptr<NmeaConverter<FP_TEXT>>(new NmeaConverter<FP_TEXT>());
+        
+        // NMEA messages
+        } else if (format == "GPGGA") {
+            a_converters_["GPGGA"] = std::unique_ptr<NmeaConverter<GP_GGA>>(new NmeaConverter<GP_GGA>());
+        } else if (format == "GPGLL") {
+            a_converters_["GPGLL"] = std::unique_ptr<NmeaConverter<GP_GLL>>(new NmeaConverter<GP_GLL>());
+        } else if (format == "GNGSA") {
+            a_converters_["GNGSA"] = std::unique_ptr<NmeaConverter<GN_GSA>>(new NmeaConverter<GN_GSA>());
+        } else if (format == "GPGST") {
+            a_converters_["GPGST"] = std::unique_ptr<NmeaConverter<GP_GST>>(new NmeaConverter<GP_GST>());
+        } else if (format == "GXGSV") {
+            a_converters_["GXGSV"] = std::unique_ptr<NmeaConverter<GX_GSV>>(new NmeaConverter<GX_GSV>());
+        } else if (format == "GPHDT") {
+            a_converters_["GPHDT"] = std::unique_ptr<NmeaConverter<GP_HDT>>(new NmeaConverter<GP_HDT>());
+        } else if (format == "GPRMC") {
+            a_converters_["GPRMC"] = std::unique_ptr<NmeaConverter<GP_RMC>>(new NmeaConverter<GP_RMC>());
+        } else if (format == "GPVTG") {
+            a_converters_["GPVTG"] = std::unique_ptr<NmeaConverter<GP_VTG>>(new NmeaConverter<GP_VTG>());
+        } else if (format == "GPZDA") {
+            a_converters_["GPZDA"] = std::unique_ptr<NmeaConverter<GP_ZDA>>(new NmeaConverter<GP_ZDA>());
         } else {
             std::cerr << "Unknown input format: " << format << "\n";
         }
@@ -251,7 +280,7 @@ bool FixpositionDriver::ReadAndPublish() {
         // Nov B
         msg_size = IsNovMessage((uint8_t*)&readBuf[start_id], rv - start_id);
         if (msg_size > 0) {
-            NovConvertAndPublish((uint8_t*)&readBuf[start_id], msg_size);
+            NovConvertAndPublish((uint8_t*)&readBuf[start_id]);
             start_id += msg_size;
             continue;
         }
@@ -292,7 +321,13 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
     SplitMessage(tokens, msg.substr(1, star_pos - 1), ",");
 
     // if it doesn't start with FP then do nothing
-    if ((tokens.at(0) != "FP") && (tokens.at(0) != "GPGGA") && (tokens.at(0) != "GPZDA") && (tokens.at(0) != "GPRMC")) {
+    if ((tokens.at(0) != "FP") && (tokens.at(0) != "GPGGA") && 
+        (tokens.at(0) != "GPGLL") && (tokens.at(0) != "GNGSA") &&
+        (tokens.at(0) != "GPGST") && (tokens.at(0) != "GPHDT") &&
+        (tokens.at(0) != "GPRMC") && (tokens.at(0) != "GPVTG") &&
+        (tokens.at(0) != "GPZDA") && (tokens.at(0) != "GPGSV") &&
+        (tokens.at(0) != "GAGSV") && (tokens.at(0) != "GBGSV") &&
+        (tokens.at(0) != "GLGSV")) {
         return;
     }
 
@@ -300,31 +335,34 @@ void FixpositionDriver::NmeaConvertAndPublish(const std::string& msg) {
     std::string _header;
     if (tokens.at(0) == "GPGGA") {
         _header = "GPGGA";
-    } else if (tokens.at(0) == "GPZDA") {
-        _header = "GPZDA";
+    } else if (tokens.at(0) == "GPGLL") {
+        _header = "GPGLL";
+    } else if (tokens.at(0) == "GNGSA") {
+        _header = "GNGSA";
+    } else if (tokens.at(0) == "GPGST") {
+        _header = "GPGST";
+    } else if (tokens.at(0) == "GPHDT") {
+        _header = "GPHDT";
     } else if (tokens.at(0) == "GPRMC") {
         _header = "GPRMC";
+    } else if (tokens.at(0) == "GPVTG") {
+        _header = "GPVTG";
+    } else if (tokens.at(0) == "GPZDA") {
+        _header = "GPZDA";
+    } else if (tokens.at(0) == "GPGSV" || tokens.at(0) == "GAGSV" || tokens.at(0) == "GBGSV" || tokens.at(0) == "GLGSV") {
+        _header = "GXGSV";
     } else {
         _header = tokens.at(1);
     }
     const std::string header = _header;
 
     // If we have a converter available, convert to ros.
-    // Currently supported are "FP", "LLH", "ODOMETRY", "ODOMSH", "TF", "RAWIMU", "CORRIMU", "GPGGA", "GPZDA", "GPRMC"
-
-    // Adapt ODOMSH message to be compatible with the ODOMETRY message
-    if (header == "ODOMSH") {
-        // Change software version
-        tokens[2] = "2";
-        // Add missing software field
-        tokens.push_back("");
-    }
     if (a_converters_[header] != nullptr) {
         a_converters_[header]->ConvertTokens(tokens);
     }
 }
 
-void FixpositionDriver::NovConvertAndPublish(const uint8_t* msg, int size) {
+void FixpositionDriver::NovConvertAndPublish(const uint8_t* msg) {
     auto* header = reinterpret_cast<const Oem7MessageHeaderMem*>(msg);
     const auto msg_id = header->message_id;
 

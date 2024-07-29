@@ -18,14 +18,12 @@
 /* SYSTEM / STL */
 #include <termios.h>
 
-#include <unordered_map>
-
 /* EXTERNAL */
-
-#include <fixposition_driver_lib/converter/base_converter.hpp>
-#include <fixposition_driver_lib/fpb.hpp>
-#include <fixposition_driver_lib/fpb_measurements.hpp>
-#include <fixposition_driver_lib/nov_type.hpp>
+#include <fixposition_driver_lib/messages/base_converter.hpp>
+#include <fixposition_driver_lib/messages/nmea_type.hpp>
+#include <fixposition_driver_lib/messages/fpa_type.hpp>
+#include <fixposition_driver_lib/messages/fpb_measurements.hpp>
+#include <fixposition_driver_lib/helper.hpp>
 #include <fixposition_driver_lib/params.hpp>
 
 namespace fixposition {
@@ -61,6 +59,13 @@ class FixpositionDriver {
     /**
      * @brief
      *
+     * @param[in] rtcm_msg string with ASCII data for RTK correction
+     */
+    virtual void RtcmCallback(const void *rtcm_msg, const size_t msg_size);
+
+    /**
+     * @brief
+     *
      * @param[in] meas_vec measurements from one specific wheelspeed sensor, with their validity flag
      * @param[in] meas_loc location from the specific wheelspeed sensor
      * @param[out] meas_fpb fpb measurement to be filled from the vector
@@ -88,9 +93,8 @@ class FixpositionDriver {
      * @brief Convert the buffer after identified as Nov msg
      *
      * @param[in] msg ptr to the start of the msg
-     * @param[in] size size of the msg
      */
-    virtual void NovConvertAndPublish(const uint8_t* msg, int size);
+    virtual void NovConvertAndPublish(const uint8_t* msg);
 
     /**
      * @brief Initialize convertes based on config
