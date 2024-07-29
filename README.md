@@ -1,7 +1,7 @@
 # Fixposition ROS Driver
 
--   [ROS1 melodic / noetic ![](./../../actions/workflows/build_test_ros.yml/badge.svg)](./../../actions/workflows/build_test_ros.yml)
--   [ROS2 foxy / humble ![](./../../actions/workflows/build_test_ros2.yml/badge.svg)](./../../actions/workflows/build_test_ros2.yml)
+-   [ROS1 Noetic ![](./../../actions/workflows/build_test_ros.yml/badge.svg)](./../../actions/workflows/build_test_ros.yml)
+-   [ROS2 Humble / Jazzy ![](./../../actions/workflows/build_test_ros2.yml/badge.svg)](./../../actions/workflows/build_test_ros2.yml)
 
 [ROS](https://www.ros.org/) (both ROS1 and ROS2) Driver for [Fixposition Vision-RTK 2](https://www.fixposition.com/product).
 
@@ -122,11 +122,11 @@ Then source your environment after the build:
 
 > [!NOTE]
 > ROS2, unlike ROS1, by default uses a `install` directory in the workspace. So when you do `ros2 launch xxx`, the configuration and launch files are taken from the `install` and not directly from the `src` directory.
-> 
+>
 > If you want to modify the parameters in the YAML files. You can:
 >   - Modify the YAML file in the `src` directory and then re-run `colcon build --packages-up-to fixposition_driver_ros2` to update them into the `install` directory.
 >
->       or 
+>       or
 >   - Modify the YAML file in `install`. However, the next time you do `colcon build` they will be overriden by the files in `src`.
 
 

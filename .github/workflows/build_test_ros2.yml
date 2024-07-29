@@ -17,14 +17,10 @@ jobs:
         config:
           - name: "humble"
             container:
-              image: "osrf/ros:humble-desktop-full"
-              env:
-                ROS_DISTRO: humble
-          - name: "foxy"
+              image: "ghcr.io/fixposition/fixposition-sdk:humble-ci"
+          - name: "jazzy"
             container:
-              image: "osrf/ros:foxy-desktop"
-              env:
-                ROS_DISTRO: foxy
+              image: "ghcr.io/fixposition/fixposition-sdk:jazzy-ci"
 
     container: ${{ matrix.config.container }}
 
@@ -33,22 +29,18 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: src/fixposition_driver
       - name: Checkout Deps
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: fixposition/fixposition_gnss_tf
-          path: src/fixposition_gnss_tf    
-      - name: Set up Deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libeigen3-dev libyaml-cpp-dev libgtest-dev python3-osrf-pycommon
+          path: src/fixposition_gnss_tf
       - name: Ignore ROS1 node
         run: |
-          touch src/fixposition_driver/fixposition_driver_ros1/COLCON_IGNORE      
-          touch src/fixposition_driver/fixposition_odometry_converter_ros1/COLCON_IGNORE    
+          touch src/fixposition_driver/fixposition_driver_ros1/COLCON_IGNORE
+          touch src/fixposition_driver/fixposition_odometry_converter_ros1/COLCON_IGNORE
       - name: Build and Test
         run: |
           source /opt/ros/$ROS_DISTRO/setup.bash
