@@ -146,7 +146,7 @@ void FixpositionDriverNode::RegisterObservers() {
                         br_.sendTransform(tf);
 
                         // Publish Pitch Roll based on IMU only
-                        Eigen::Vector3d imu_ypr_eigen = gnss_tf::QuatToEul(data.tf.rotation);
+                        Eigen::Vector3d imu_ypr_eigen = QuatToEul(data.tf.rotation);
                         imu_ypr_eigen.x() = 0.0;  // the yaw value is not observable using IMU alone
                         geometry_msgs::Vector3Stamped imu_ypr;
                         imu_ypr.header.stamp = tf.header.stamp;

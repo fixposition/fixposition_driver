@@ -11,7 +11,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # DEPENDENCIES =========================================================================================================
 find_package(Boost 1.65.0 REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(fixposition_gnss_tf REQUIRED)
 find_package(fixposition_driver_lib REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -65,7 +64,6 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${fixposition_gnss_tf_INCLUDE_DIRS}
   ${fixposition_driver_lib_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
@@ -82,7 +80,6 @@ add_executable(
 target_link_libraries(
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  ${fixposition_gnss_tf_LIBRARIES}
   ${fixposition_driver_lib_LIBRARIES}
   ${Boost_LIBRARIES}
   pthread

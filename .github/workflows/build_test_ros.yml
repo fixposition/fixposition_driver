@@ -29,11 +29,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: src/fixposition_driver
-      - name: Checkout Deps
-        uses: actions/checkout@v4
-        with:
-          repository: fixposition/fixposition_gnss_tf
-          path: src/fixposition_gnss_tf
       - name: Ignore ROS2 node
         run: |
           touch src/fixposition_driver/fixposition_driver_ros2/CATKIN_IGNORE

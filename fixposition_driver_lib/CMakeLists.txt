@@ -12,10 +12,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(Boost 1.65.0 REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-find_package(fixposition_gnss_tf REQUIRED)
-
 include_directories(include
-  ${fixposition_gnss_tf_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
 )
@@ -46,9 +43,10 @@ add_library(
   src/fixposition_driver.cpp
   src/helper.cpp
   src/parser.cpp
+  src/gnss_tf.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} ${fixposition_gnss_tf_LIBRARIES} ${Boost_LIBRARIES} pthread)
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} pthread)
 
 # INSTALL ==============================================================================================================
 list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})

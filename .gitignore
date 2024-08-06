@@ -1,2 +1,4 @@
+build/*
 doc_gen/*
+*/doc_gen/*
 *.vscode*

@@ -528,14 +528,14 @@ void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sen
         msg.header.frame_id = data.odom.frame_id;
         
         // Populate LLH position
-        const Eigen::Vector3d llh_pos = gnss_tf::TfWgs84LlhEcef(data.odom.pose.position);
+        const Eigen::Vector3d llh_pos = TfWgs84LlhEcef(data.odom.pose.position);
         msg.latitude  = RadToDeg(llh_pos(0));
         msg.longitude = RadToDeg(llh_pos(1));
         msg.altitude  = llh_pos(2);
 
         // Populate LLH covariance
         const Eigen::Matrix3d p_cov_e = data.odom.pose.cov.topLeftCorner(3, 3);
-        const Eigen::Matrix3d C_l_e = gnss_tf::RotEnuEcef(data.odom.pose.position);
+        const Eigen::Matrix3d C_l_e = RotEnuEcef(data.odom.pose.position);
         const Eigen::Matrix3d p_cov_l = C_l_e * p_cov_e * C_l_e.transpose();
         
         Eigen::Map<Eigen::Matrix<double, 3, 3>> cov_map =
@@ -603,7 +603,7 @@ void OdomToYprMsg(const OdometryData& data, rclcpp::Publisher<geometry_msgs::msg
         msg.header.frame_id = "FP_ENU";
 
         // Euler angle wrt. ENU frame in the order of Yaw Pitch Roll
-        Eigen::Vector3d enu_euler = gnss_tf::RotToEul(data.pose.orientation.toRotationMatrix());
+        Eigen::Vector3d enu_euler = RotToEul(data.pose.orientation.toRotationMatrix());
         msg.vector.set__x(enu_euler.x());
         msg.vector.set__y(enu_euler.y());
         msg.vector.set__z(enu_euler.z());
