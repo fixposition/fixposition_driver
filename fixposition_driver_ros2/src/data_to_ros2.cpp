@@ -525,7 +525,7 @@ void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sen
         } else {
             msg.header.stamp = GpsTimeToMsgTime(data.odom.stamp);
         }
-        msg.header.frame_id = data.odom.frame_id;
+        msg.header.frame_id = data.odom.child_frame_id;
         
         // Populate LLH position
         const Eigen::Vector3d llh_pos = TfWgs84LlhEcef(data.odom.pose.position);
