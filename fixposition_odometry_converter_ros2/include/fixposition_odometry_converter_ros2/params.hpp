@@ -21,7 +21,7 @@
 #include <string>
 
 /* PACKAGE */
-#include <fixposition_odometry_converter_ros2/ros_msgs.hpp>
+#include <fixposition_odometry_converter_ros2/ros2_msgs.hpp>
 
 namespace fixposition {
 

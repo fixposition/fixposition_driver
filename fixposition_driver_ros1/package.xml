@@ -17,6 +17,5 @@
     <depend>geometry_msgs</depend>
     <depend>message_generation</depend>
     <depend>message_runtime</depend>
-    <depend>fixposition_gnss_tf</depend>
     <depend>fixposition_driver_lib</depend>
 </package>

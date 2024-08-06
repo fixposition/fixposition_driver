@@ -16,7 +16,6 @@
     <build_depend>builtin_interfaces</build_depend>
 
     <depend>fixposition_driver_lib</depend>
-    <depend>fixposition_gnss_tf</depend>
     <depend>geometry_msgs</depend>
     <depend>nav_msgs</depend>
     <depend>sensor_msgs</depend>
