@@ -68,7 +68,7 @@ void FP_TF::ConvertFromTokens(const std::vector<std::string>& tokens) {
                                  tokens.at(orientation_y_idx), tokens.at(orientation_z_idx));
 
     // Check if TF is valid
-    if (!tf.rotation.vec().isZero() && !(tf.rotation.w() == 0)) valid_tf = true;
+    valid_tf = !(tf.rotation.w() == 0 && tf.rotation.vec().isZero());
 }
 
 }  // namespace fixposition
