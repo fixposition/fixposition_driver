@@ -530,20 +530,28 @@ void OdomToNavSatFix(const FP_ODOMETRY& data, ros::Publisher& pub) {
         msg.header.frame_id = data.odom.child_frame_id;
         
         // Populate LLH position
-        const Eigen::Vector3d llh_pos = TfWgs84LlhEcef(data.odom.pose.position);
-        msg.latitude  = RadToDeg(llh_pos(0));
-        msg.longitude = RadToDeg(llh_pos(1));
-        msg.altitude  = llh_pos(2);
-
-        // Populate LLH covariance
-        const Eigen::Matrix3d p_cov_e = data.odom.pose.cov.topLeftCorner(3, 3);
-        const Eigen::Matrix3d C_l_e = RotEnuEcef(data.odom.pose.position);
-        const Eigen::Matrix3d p_cov_l = C_l_e * p_cov_e * C_l_e.transpose();
-        
         Eigen::Map<Eigen::Matrix<double, 3, 3>> cov_map =
             Eigen::Map<Eigen::Matrix<double, 3, 3>>(msg.position_covariance.data());
-        cov_map = p_cov_l;
-        msg.position_covariance_type = 3;
+
+        if (data.odom.pose.position.isZero()) {
+            msg.latitude  = 0;
+            msg.longitude = 0;
+            msg.altitude  = 0;
+            msg.position_covariance_type = 0;
+            cov_map = Eigen::Matrix3d::Zero();
+        } else {
+            const Eigen::Vector3d llh_pos = TfWgs84LlhEcef(data.odom.pose.position);
+            msg.latitude  = RadToDeg(llh_pos(0));
+            msg.longitude = RadToDeg(llh_pos(1));
+            msg.altitude  = llh_pos(2);
+
+            // Populate LLH covariance
+            const Eigen::Matrix3d p_cov_e = data.odom.pose.cov.topLeftCorner(3, 3);
+            const Eigen::Matrix3d C_l_e = RotEnuEcef(data.odom.pose.position);
+            const Eigen::Matrix3d p_cov_l = C_l_e * p_cov_e * C_l_e.transpose();
+            cov_map = p_cov_l;
+            msg.position_covariance_type = 3;
+        }
 
         // Populate LLH status
         int status_flag = std::max(data.gnss1_status, data.gnss2_status);
