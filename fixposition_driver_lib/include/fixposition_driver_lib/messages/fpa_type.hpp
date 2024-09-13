@@ -143,7 +143,7 @@ struct FP_ODOMSH {
     int wheelspeed_status;
 
     // Message structure
-    const std::string frame_id = "FP_ENU0";
+    const std::string frame_id = "FP_ECEF";
     const std::string child_frame_id = "FP_POISH";
     const std::string header_ = "ODOMSH";
     static constexpr unsigned int kVersion_ = 1;
