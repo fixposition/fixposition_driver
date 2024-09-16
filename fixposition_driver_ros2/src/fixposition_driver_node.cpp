@@ -145,6 +145,11 @@ void FixpositionDriverNode::RegisterObservers() {
         } else if (format == "TF") {
             dynamic_cast<NmeaConverter<FP_TF>*>(a_converters_["TF"].get())->AddObserver([this](const FP_TF& data) {
                 if (data.valid_tf) {
+                    // Ensure rotation is a valid quaternion
+                    if (data.tf.rotation.vec().isZero() && (data.tf.rotation.w() == 0)) {
+                        return;
+                    }
+
                     // TF Observer Lambda
                     geometry_msgs::msg::TransformStamped tf;
                     TfDataToMsg(data.tf, tf);
