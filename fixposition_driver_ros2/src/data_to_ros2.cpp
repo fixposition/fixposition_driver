@@ -723,7 +723,8 @@ void OdomToYprMsg(const OdometryData& data, rclcpp::Publisher<geometry_msgs::msg
     }
 }
 
-void JumpWarningMsg(const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff, const Eigen::MatrixXd& prev_cov, rclcpp::Publisher<fixposition_driver_ros2::msg::COVWARN>::SharedPtr pub) {
+void JumpWarningMsg(std::shared_ptr<rclcpp::Node> node, const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff, 
+                    const Eigen::MatrixXd& prev_cov, rclcpp::Publisher<fixposition_driver_ros2::msg::COVWARN>::SharedPtr pub) {
     if (pub->get_subscription_count() > 0) {
         // Create message
         fixposition_driver_ros2::msg::COVWARN msg;
@@ -740,7 +741,7 @@ void JumpWarningMsg(const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff
                  << "Position difference: [" << pos_diff[0] << ", " << pos_diff[1] << ", " << pos_diff[2] << "], "
                  << "Covariances: [" << prev_cov(0,0) << ", " << prev_cov(1,1) << ", " << prev_cov(2,2) << "]";
 
-        RCLCPP_WARN("%s", warn_msg.str().c_str());
+        RCLCPP_WARN(node->get_logger(), "%s", warn_msg.str().c_str());
         tf2::toMsg(pos_diff, msg.jump);
         tf2::toMsg(Eigen::Vector3d(prev_cov(0,0),prev_cov(1,1),prev_cov(2,2)), msg.covariance);
 

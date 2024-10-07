@@ -147,7 +147,8 @@ void OdomToYprMsg(const OdometryData& data, rclcpp::Publisher<geometry_msgs::msg
  * @param[in] prev_cov
  * @param[out] msg
  */
-void JumpWarningMsg(const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff, const Eigen::MatrixXd& prev_cov, rclcpp::Publisher<fixposition_driver_ros2::msg::COVWARN>::SharedPtr pub);
+void JumpWarningMsg(std::shared_ptr<rclcpp::Node> node, const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff, 
+                    const Eigen::MatrixXd& prev_cov, rclcpp::Publisher<fixposition_driver_ros2::msg::COVWARN>::SharedPtr pub);
 
 }  // namespace fixposition
 
