@@ -41,7 +41,7 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     void Run();
 
-    void RegisterObservers(std::shared_ptr<rclcpp::Node> node);
+    void RegisterObservers();
 
     void WsCallback(const fixposition_driver_ros2::msg::Speed::ConstSharedPtr msg);
 

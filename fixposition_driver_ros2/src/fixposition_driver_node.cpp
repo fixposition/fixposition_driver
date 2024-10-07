@@ -83,7 +83,7 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
         prev_pos.setZero();
         prev_cov.setZero();
     }
-    RegisterObservers(node);
+    RegisterObservers();
 }
 
 void FixpositionDriverNode::Run() {
@@ -107,7 +107,7 @@ void FixpositionDriverNode::Run() {
     }
 }
 
-void FixpositionDriverNode::RegisterObservers(std::shared_ptr<rclcpp::Node> node) {
+void FixpositionDriverNode::RegisterObservers() {
     // NOV_B
     bestgnsspos_obs_.push_back(std::bind(&FixpositionDriverNode::BestGnssPosToPublishNavSatFix, this,
                                          std::placeholders::_1, std::placeholders::_2));
@@ -128,7 +128,7 @@ void FixpositionDriverNode::RegisterObservers(std::shared_ptr<rclcpp::Node> node
                             Eigen::Vector3d pos_diff = (prev_pos - data.odom.pose.position).cwiseAbs();
 
                             if ((pos_diff[0] > 0) || (pos_diff[1] > prev_cov(1,1)) || (pos_diff[2] > prev_cov(2,2))) {
-                                JumpWarningMsg(node, data.odom.stamp, pos_diff, prev_cov, extras_jump_pub_);
+                                JumpWarningMsg(node_, data.odom.stamp, pos_diff, prev_cov, extras_jump_pub_);
                             }
                         }
                         prev_pos = data.odom.pose.position;
