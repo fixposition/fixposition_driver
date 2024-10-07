@@ -30,11 +30,15 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/WheelSensor.msg
   msg/fpa/GNSSANT.msg
   msg/fpa/GNSSCORR.msg
+  msg/fpa/IMUBIAS.msg
+  msg/fpa/EOE.msg
   msg/fpa/LLH.msg
   msg/fpa/ODOMENU.msg
   msg/fpa/ODOMETRY.msg
   msg/fpa/ODOMSH.msg
+  msg/fpa/ODOMSTATUS.msg
   msg/fpa/TEXT.msg
+  msg/fpa/TP.msg
   msg/nmea/GPGGA.msg
   msg/nmea/GPGLL.msg
   msg/nmea/GNGSA.msg
@@ -44,6 +48,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/nmea/GPRMC.msg
   msg/nmea/GPVTG.msg
   msg/nmea/GPZDA.msg
+  msg/extras/CovWarn.msg
   DEPENDENCIES
   std_msgs
   nav_msgs

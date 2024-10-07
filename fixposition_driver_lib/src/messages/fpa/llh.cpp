@@ -56,7 +56,7 @@ void FP_LLH::ConvertFromTokens(const std::vector<std::string>& tokens) {
     }
 
     // Populate VRTK message header
-    stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));;
+    stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
 
     // LLH position
     llh = Vector3ToEigen(tokens.at(latitude_idx), tokens.at(longitude_idx), tokens.at(height_idx));

@@ -25,6 +25,8 @@ bool LoadParamsFromRos1(const std::string& ns, FpOutputParams& params) {
     const std::string IP = ns + "/ip";
     const std::string PORT = ns + "/port";
     const std::string BAUDRATE = ns + "/baudrate";
+    const std::string COV_WARNING = ns + "/cov_warning";
+
     // read parameters
     if (!ros::param::get(RATE, params.rate)) {
         params.rate = 100;
@@ -33,6 +35,10 @@ bool LoadParamsFromRos1(const std::string& ns, FpOutputParams& params) {
     if (!ros::param::get(RECONNECT_DELAY, params.reconnect_delay)) {
         params.reconnect_delay = 5.0;
         ROS_WARN("Using Default Reconnect Delay : %f", params.reconnect_delay);
+    }
+    if (!ros::param::get(COV_WARNING, params.cov_warning)) {
+        params.cov_warning = false;
+        ROS_WARN("Using Default Covariance Warning option : %i", params.cov_warning);
     }
 
     std::string type_str;

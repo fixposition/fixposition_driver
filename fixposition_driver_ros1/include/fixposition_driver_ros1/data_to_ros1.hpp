@@ -30,15 +30,19 @@ namespace fixposition {
  * @param[in] data
  * @param[out] msg
  */
-void FpToRosMsg(const OdometryData& data, ros::Publisher& pub);
-void FpToRosMsg(     const ImuData& data, ros::Publisher& pub);
-void FpToRosMsg(  const FP_GNSSANT& data, ros::Publisher& pub);
-void FpToRosMsg( const FP_GNSSCORR& data, ros::Publisher& pub);
-void FpToRosMsg(      const FP_LLH& data, ros::Publisher& pub);
-void FpToRosMsg(  const FP_ODOMENU& data, ros::Publisher& pub);
-void FpToRosMsg( const FP_ODOMETRY& data, ros::Publisher& pub);
-void FpToRosMsg(   const FP_ODOMSH& data, ros::Publisher& pub);
-void FpToRosMsg(     const FP_TEXT& data, ros::Publisher& pub);
+void FpToRosMsg( const OdometryData& data, ros::Publisher& pub);
+void FpToRosMsg(      const ImuData& data, ros::Publisher& pub);
+void FpToRosMsg(       const FP_EOE& data, ros::Publisher& pub);
+void FpToRosMsg(   const FP_GNSSANT& data, ros::Publisher& pub);
+void FpToRosMsg(  const FP_GNSSCORR& data, ros::Publisher& pub);
+void FpToRosMsg(   const FP_IMUBIAS& data, ros::Publisher& pub);
+void FpToRosMsg(       const FP_LLH& data, ros::Publisher& pub);
+void FpToRosMsg(   const FP_ODOMENU& data, ros::Publisher& pub);
+void FpToRosMsg(  const FP_ODOMETRY& data, ros::Publisher& pub);
+void FpToRosMsg(    const FP_ODOMSH& data, ros::Publisher& pub);
+void FpToRosMsg(const FP_ODOMSTATUS& data, ros::Publisher& pub);
+void FpToRosMsg(        const FP_TP& data, ros::Publisher& pub);
+void FpToRosMsg(      const FP_TEXT& data, ros::Publisher& pub);
 
 void FpToRosMsg(const GP_GGA& data, ros::Publisher& pub);
 void FpToRosMsg(const GP_GLL& data, ros::Publisher& pub);
@@ -113,6 +117,16 @@ void OdomToImuMsg(const FP_ODOMETRY& data, ros::Publisher& pub);
  * @param[out] msg
  */
 void OdomToYprMsg(const OdometryData& data, ros::Publisher& pub);
+
+/**
+ * @brief
+ *
+ * @param[in] stamp
+ * @param[in] pos_diff
+ * @param[in] prev_cov
+ * @param[out] msg
+ */
+void JumpWarningMsg(const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff, const Eigen::MatrixXd& prev_cov, ros::Publisher& pub);
 
 }  // namespace fixposition
 

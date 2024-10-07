@@ -21,15 +21,19 @@ include_directories(include
 add_library(
   ${PROJECT_NAME} SHARED
   src/messages/fpa/corrimu.cpp
+  src/messages/fpa/eoe.cpp
   src/messages/fpa/gnssant.cpp
   src/messages/fpa/gnsscorr.cpp
+  src/messages/fpa/imubias.cpp
   src/messages/fpa/llh.cpp
   src/messages/fpa/odomenu.cpp
   src/messages/fpa/odometry.cpp
   src/messages/fpa/odomsh.cpp
+  src/messages/fpa/odomstatus.cpp
   src/messages/fpa/rawimu.cpp
   src/messages/fpa/text.cpp
   src/messages/fpa/tf.cpp
+  src/messages/fpa/tp.cpp
   src/messages/nmea/gpgga.cpp
   src/messages/nmea/gpgll.cpp
   src/messages/nmea/gngsa.cpp

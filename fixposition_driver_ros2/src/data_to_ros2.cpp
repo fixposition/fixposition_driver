@@ -60,6 +60,34 @@ void FpToRosMsg(const ImuData& data, rclcpp::Publisher<sensor_msgs::msg::Imu>::S
     }
 }
 
+
+void FpToRosMsg(const FP_IMUBIAS& data, rclcpp::Publisher<fixposition_driver_ros2::msg::IMUBIAS>::SharedPtr pub) {
+    if (pub.getNumSubscribers() > 0) {
+        // Create message
+        fixposition_driver_ros2::msg::IMUBIAS msg;
+
+        // Populate message
+        if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+            msg.header.stamp = rclcpp::Clock().now();
+        } else {
+            msg.header.stamp = GpsTimeToMsgTime(data.stamp);
+        }
+        
+        msg.header.frame_id = data.frame_id;
+        msg.fusion_imu = data.fusion_imu;
+        msg.imu_status = data.imu_status;
+        msg.imu_noise = data.imu_noise;
+        msg.imu_conv = data.imu_conv;
+        tf2::toMsg(data.bias_acc, msg.bias_acc);
+        tf2::toMsg(data.bias_gyr, msg.bias_gyr);
+        tf2::toMsg(data.bias_cov_acc, msg.bias_cov_acc);
+        tf2::toMsg(data.bias_cov_gyr, msg.bias_cov_gyr);
+
+        // Publish message
+        pub.publish(msg);
+    }
+}
+
 void FpToRosMsg(const FP_GNSSANT& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSANT>::SharedPtr pub) {
     if (pub->get_subscription_count() > 0) {
         // Create message
@@ -229,6 +257,44 @@ void FpToRosMsg(const FP_ODOMSH& data, rclcpp::Publisher<fixposition_driver_ros2
     }
 }
 
+void FpToRosMsg(const FP_ODOMSTATUS& data, rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMSTATUS>::SharedPtr pub) {
+    if (pub.getNumSubscribers() > 0) {
+        // Create message
+        fixposition_driver_ros2::msg::ODOMSTATUS msg;
+
+        // Populate message
+        if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+            msg.header.stamp = rclcpp::Clock().now();
+        } else {
+            msg.header.stamp = GpsTimeToMsgTime(data.stamp);
+        }
+
+        msg.init_status = data.init_status;
+        msg.fusion_imu = data.fusion_imu;
+        msg.fusion_gnss1 = data.fusion_gnss1;
+        msg.fusion_gnss2 = data.fusion_gnss2;
+        msg.fusion_corr = data.fusion_corr;
+        msg.fusion_cam1 = data.fusion_cam1;
+        msg.fusion_ws = data.fusion_ws;
+        msg.fusion_markers = data.fusion_markers;
+        msg.imu_status = data.imu_status;
+        msg.imu_noise = data.imu_noise;
+        msg.imu_conv = data.imu_conv;
+        msg.gnss1_status = data.gnss1_status;
+        msg.gnss2_status = data.gnss2_status;
+        msg.baseline_status = data.baseline_status;
+        msg.corr_status = data.corr_status;
+        msg.cam1_status = data.cam1_status;
+        msg.ws_status = data.ws_status;
+        msg.ws_conv = data.ws_conv;
+        msg.markers_status = data.markers_status;
+        msg.markers_conv = data.markers_conv;
+
+        // Publish message
+        pub.publish(msg);
+    }
+}
+
 void FpToRosMsg(const FP_TEXT& data, rclcpp::Publisher<fixposition_driver_ros2::msg::TEXT>::SharedPtr pub) {
     if (pub->get_subscription_count() > 0) {
         // Create message
@@ -240,6 +306,42 @@ void FpToRosMsg(const FP_TEXT& data, rclcpp::Publisher<fixposition_driver_ros2::
 
         // Publish message
         pub->publish(msg);
+    }
+}
+
+void FpToRosMsg(const FP_TP& data, rclcpp::Publisher<fixposition_driver_ros2::msg::TP>::SharedPtr pub) {
+    if (pub.getNumSubscribers() > 0) {
+        // Create message
+        fixposition_driver_ros2::msg::TP msg;
+
+        // Populate message
+        msg.tp_name = data.tp_name;
+        msg.timebase = data.timebase;
+        msg.timeref = data.timeref;
+        msg.tp_tow_sec = data.tp_tow_sec;
+        msg.tp_tow_psec = data.tp_tow_psec;
+        msg.gps_leaps = data.gps_leaps;
+
+        // Publish message
+        pub.publish(msg);
+    }
+}
+
+void FpToRosMsg(const FP_EOE& data, rclcpp::Publisher<fixposition_driver_ros2::msg::EOE>::SharedPtr pub) {
+    if (pub.getNumSubscribers() > 0) {
+        // Create message
+        fixposition_driver_ros2::msg::EOE msg;
+
+        // Populate message
+        if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+            msg.header.stamp = rclcpp::Clock().now();
+        } else {
+            msg.header.stamp = GpsTimeToMsgTime(data.stamp);
+        }
+        msg.epoch = data.epoch;
+
+        // Publish message
+        pub.publish(msg);
     }
 }
 
@@ -618,6 +720,32 @@ void OdomToYprMsg(const OdometryData& data, rclcpp::Publisher<geometry_msgs::msg
 
         // Publish message
         pub->publish(msg);
+    }
+}
+
+void JumpWarningMsg(const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff, const Eigen::MatrixXd& prev_cov, rclcpp::Publisher<fixposition_driver_ros2::msg::CovWarn>::SharedPtr pub) {
+    if (pub.getNumSubscribers() > 0) {
+        // Create message
+        fixposition_driver_ros2::msg::CovWarn msg;
+
+        // Populate message
+        if (stamp.tow == 0.0 && stamp.wno == 0) {
+            msg.header.stamp = rclcpp::Clock().now();
+        } else {
+            msg.header.stamp = GpsTimeToMsgTime(stamp);
+        }
+
+        std::stringstream warn_msg;
+        warn_msg << "Position jump detected! The change in position is greater than the estimated covariances. "
+                 << "Position difference: [" << pos_diff[0] << ", " << pos_diff[1] << ", " << pos_diff[2] << "], "
+                 << "Covariances: [" << prev_cov(0,0) << ", " << prev_cov(1,1) << ", " << prev_cov(2,2) << "]";
+
+        ROS_WARN("%s", warn_msg.str().c_str());
+        tf2::toMsg(pos_diff, msg.jump);
+        tf2::toMsg(Eigen::Vector3d(prev_cov(0,0),prev_cov(1,1),prev_cov(2,2)), msg.covariance);
+
+        // Publish message
+        pub.publish(msg);
     }
 }
 

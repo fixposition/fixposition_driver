@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @brief Implementation of FP_A-GNSSANT parser
+ *  @brief Implementation of FP_A-EOE parser
  *
  * \verbatim
  *  ___    ___
@@ -23,18 +23,13 @@ static constexpr int msg_type_idx = 1;
 static constexpr int msg_version_idx = 2;
 static constexpr int gps_week_idx = 3;
 static constexpr int gps_tow_idx = 4;
-static constexpr int gnss1_state_idx = 5;
-static constexpr int gnss1_power_idx = 6;
-static constexpr int gnss1_age_idx = 7;
-static constexpr int gnss2_state_idx = 8;
-static constexpr int gnss2_power_idx = 9;
-static constexpr int gnss2_age_idx = 10;
+static constexpr int epoch_idx = 5;
 
-void FP_GNSSANT::ConvertFromTokens(const std::vector<std::string>& tokens) {
+void FP_EOE::ConvertFromTokens(const std::vector<std::string>& tokens) {
     bool ok = tokens.size() == kSize_;
     if (!ok) {
         // Size is wrong
-        std::cout << "Error in parsing FP_A-GNSSANT string with " << tokens.size() << " fields!\n";
+        std::cout << "Error in parsing FP_A-EOE string with " << tokens.size() << " fields!\n";
     } else {
         // If size is ok, check version
         const int _version = std::stoi(tokens.at(msg_version_idx));
@@ -42,7 +37,7 @@ void FP_GNSSANT::ConvertFromTokens(const std::vector<std::string>& tokens) {
         ok = _version == kVersion_;
         if (!ok) {
             // Version is wrong
-            std::cout << "Error in parsing FP_A-GNSSANT string with version " << _version << "!\n";
+            std::cout << "Error in parsing FP_A-EOE string with version " << _version << "!\n";
         }
     }
 
@@ -52,16 +47,11 @@ void FP_GNSSANT::ConvertFromTokens(const std::vector<std::string>& tokens) {
         return;
     }
 
-    // Populate VRTK message header
+    // Parse time
     stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
 
-    // GNSS status data
-    gnss1_state = tokens.at(gnss1_state_idx);
-    gnss1_power = tokens.at(gnss1_power_idx);
-    gnss1_age   = StringToInt(tokens.at(gnss1_age_idx));
-    gnss2_state = tokens.at(gnss2_state_idx);
-    gnss2_power = tokens.at(gnss2_power_idx);
-    gnss2_age   = StringToInt(tokens.at(gnss2_age_idx));
+    // Populate fields
+    epoch = tokens.at(epoch_idx);
 }
 
 }  // namespace fixposition

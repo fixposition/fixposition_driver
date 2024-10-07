@@ -26,6 +26,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     const std::string IP = ns + ".ip";
     const std::string PORT = ns + ".port";
     const std::string BAUDRATE = ns + ".baudrate";
+    const std::string COV_WARNING = ns + "/cov_warning";
 
     node->declare_parameter(RATE, 100);
     node->declare_parameter(RECONNECT_DELAY, 5.0);
@@ -35,6 +36,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     node->declare_parameter(PORT, "21000");
     node->declare_parameter(IP, "127.0.0.1");
     node->declare_parameter(BAUDRATE, 115200);
+    node->declare_parameter(COV_WARNING, false);
     // read parameters
     if (node->get_parameter(RATE, params.rate)) {
         RCLCPP_INFO(node->get_logger(), "%s : %d", RATE.c_str(), params.rate);
@@ -50,6 +52,11 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
         RCLCPP_INFO(node->get_logger(), "%s : %s", QOS_TYPE.c_str(), params.qos_type.c_str());
     } else {
         RCLCPP_WARN(node->get_logger(), "%s : %s", QOS_TYPE.c_str(), params.qos_type.c_str());
+    }
+    if (node->get_parameter(COV_WARNING, params.cov_warning)) {
+        RCLCPP_INFO(node->get_logger(), "%s : %d", COV_WARNING.c_str(), params.cov_warning);
+    } else {
+        RCLCPP_WARN(node->get_logger(), "%s : %d", COV_WARNING.c_str(), params.cov_warning);
     }
 
     std::string type_str;

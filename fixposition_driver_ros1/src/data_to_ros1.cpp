@@ -61,6 +61,33 @@ void FpToRosMsg(const ImuData& data, ros::Publisher& pub) {
     }
 }
 
+void FpToRosMsg(const FP_IMUBIAS& data, ros::Publisher& pub) {
+    if (pub.getNumSubscribers() > 0) {
+        // Create message
+        fixposition_driver_ros1::imubias msg;
+
+        // Populate message
+        if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+            msg.header.stamp = ros::Time::now();
+        } else {
+            msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
+        }
+        
+        msg.header.frame_id = data.frame_id;
+        msg.fusion_imu = data.fusion_imu;
+        msg.imu_status = data.imu_status;
+        msg.imu_noise = data.imu_noise;
+        msg.imu_conv = data.imu_conv;
+        tf::vectorEigenToMsg(data.bias_acc, msg.bias_acc);
+        tf::vectorEigenToMsg(data.bias_gyr, msg.bias_gyr);
+        tf::vectorEigenToMsg(data.bias_cov_acc, msg.bias_cov_acc);
+        tf::vectorEigenToMsg(data.bias_cov_gyr, msg.bias_cov_gyr);
+
+        // Publish message
+        pub.publish(msg);
+    }
+}
+
 void FpToRosMsg(const FP_GNSSANT& data, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         // Create message
@@ -230,6 +257,44 @@ void FpToRosMsg(const FP_ODOMSH& data, ros::Publisher& pub) {
     }
 }
 
+void FpToRosMsg(const FP_ODOMSTATUS& data, ros::Publisher& pub) {
+    if (pub.getNumSubscribers() > 0) {
+        // Create message
+        fixposition_driver_ros1::odomstatus msg;
+
+        // Populate message
+        if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+            msg.header.stamp = ros::Time::now();
+        } else {
+            msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
+        }
+
+        msg.init_status = data.init_status;
+        msg.fusion_imu = data.fusion_imu;
+        msg.fusion_gnss1 = data.fusion_gnss1;
+        msg.fusion_gnss2 = data.fusion_gnss2;
+        msg.fusion_corr = data.fusion_corr;
+        msg.fusion_cam1 = data.fusion_cam1;
+        msg.fusion_ws = data.fusion_ws;
+        msg.fusion_markers = data.fusion_markers;
+        msg.imu_status = data.imu_status;
+        msg.imu_noise = data.imu_noise;
+        msg.imu_conv = data.imu_conv;
+        msg.gnss1_status = data.gnss1_status;
+        msg.gnss2_status = data.gnss2_status;
+        msg.baseline_status = data.baseline_status;
+        msg.corr_status = data.corr_status;
+        msg.cam1_status = data.cam1_status;
+        msg.ws_status = data.ws_status;
+        msg.ws_conv = data.ws_conv;
+        msg.markers_status = data.markers_status;
+        msg.markers_conv = data.markers_conv;
+
+        // Publish message
+        pub.publish(msg);
+    }
+}
+
 void FpToRosMsg(const FP_TEXT& data, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         // Create message
@@ -238,6 +303,42 @@ void FpToRosMsg(const FP_TEXT& data, ros::Publisher& pub) {
         // Populate message
         msg.level = data.level;
         msg.text = data.text;
+
+        // Publish message
+        pub.publish(msg);
+    }
+}
+
+void FpToRosMsg(const FP_TP& data, ros::Publisher& pub) {
+    if (pub.getNumSubscribers() > 0) {
+        // Create message
+        fixposition_driver_ros1::tp msg;
+
+        // Populate message
+        msg.tp_name = data.tp_name;
+        msg.timebase = data.timebase;
+        msg.timeref = data.timeref;
+        msg.tp_tow_sec = data.tp_tow_sec;
+        msg.tp_tow_psec = data.tp_tow_psec;
+        msg.gps_leaps = data.gps_leaps;
+
+        // Publish message
+        pub.publish(msg);
+    }
+}
+
+void FpToRosMsg(const FP_EOE& data, ros::Publisher& pub) {
+    if (pub.getNumSubscribers() > 0) {
+        // Create message
+        fixposition_driver_ros1::eoe msg;
+
+        // Populate message
+        if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+            msg.header.stamp = ros::Time::now();
+        } else {
+            msg.header.stamp = ros::Time::fromBoost(GpsTimeToPtime(data.stamp));
+        }
+        msg.epoch = data.epoch;
 
         // Publish message
         pub.publish(msg);
@@ -615,6 +716,32 @@ void OdomToYprMsg(const OdometryData& data, ros::Publisher& pub) {
         // Euler angle wrt. ENU frame in the order of Yaw Pitch Roll
         Eigen::Vector3d enu_euler = RotToEul(data.pose.orientation.toRotationMatrix());
         tf::vectorEigenToMsg(enu_euler, msg.vector);
+
+        // Publish message
+        pub.publish(msg);
+    }
+}
+
+void JumpWarningMsg(const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff, const Eigen::MatrixXd& prev_cov, ros::Publisher& pub) {
+    if (pub.getNumSubscribers() > 0) {
+        // Create message
+        fixposition_driver_ros1::CovWarn msg;
+
+        // Populate message
+        if (stamp.tow == 0.0 && stamp.wno == 0) {
+            msg.header.stamp = ros::Time::now();
+        } else {
+            msg.header.stamp = ros::Time::fromBoost(times::GpsTimeToPtime(stamp));
+        }
+
+        std::stringstream warn_msg;
+        warn_msg << "Position jump detected! The change in position is greater than the estimated covariances. "
+                 << "Position difference: [" << pos_diff[0] << ", " << pos_diff[1] << ", " << pos_diff[2] << "], "
+                 << "Covariances: [" << prev_cov(0,0) << ", " << prev_cov(1,1) << ", " << prev_cov(2,2) << "]";
+
+        ROS_WARN("%s", warn_msg.str().c_str());
+        tf::vectorEigenToMsg(pos_diff, msg.jump);
+        tf::vectorEigenToMsg(Eigen::Vector3d(prev_cov(0,0),prev_cov(1,1),prev_cov(2,2)), msg.covariance);
 
         // Publish message
         pub.publish(msg);

@@ -180,6 +180,90 @@ struct FP_ODOMSH {
     }
 };
 
+// ------------ FP_A-ODOMSTATUS ------------
+
+struct FP_ODOMSTATUS {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
+    // Message fields
+    times::GpsTime stamp;
+    int init_status;
+    int fusion_imu;
+    int fusion_gnss1;
+    int fusion_gnss2;
+    int fusion_corr;
+    int fusion_cam1;
+    int fusion_ws;
+    int fusion_markers;
+    int imu_status;
+    int imu_noise;
+    int imu_conv;
+    int gnss1_status;
+    int gnss2_status;
+    int baseline_status;
+    int corr_status;
+    int cam1_status;
+    int ws_status;
+    int ws_conv;
+    int markers_status;
+    int markers_conv;
+
+    // Message structure
+    const std::string header_ = "ODOMSTATUS";
+    static constexpr unsigned int kVersion_ = 1;
+    static constexpr unsigned int kSize_ = 41;
+
+    FP_ODOMSTATUS() {
+        stamp = fixposition::times::GpsTime();
+        init_status = -1;
+        fusion_imu = -1;
+        fusion_gnss1 = -1;
+        fusion_gnss2 = -1;
+        fusion_corr = -1;
+        fusion_cam1 = -1;
+        fusion_ws = -1;
+        fusion_markers = -1;
+        imu_status = -1;
+        imu_noise = -1;
+        imu_conv = -1;
+        gnss1_status = -1;
+        gnss2_status = -1;
+        baseline_status = -1;
+        corr_status = -1;
+        cam1_status = -1;
+        ws_status = -1;
+        ws_conv = -1;
+        markers_status = -1;
+        markers_conv = -1;
+    }
+
+    void ConvertFromTokens(const std::vector<std::string>& tokens);
+
+    void ResetData() {
+        stamp = fixposition::times::GpsTime();
+        init_status = -1;
+        fusion_imu = -1;
+        fusion_gnss1 = -1;
+        fusion_gnss2 = -1;
+        fusion_corr = -1;
+        fusion_cam1 = -1;
+        fusion_ws = -1;
+        fusion_markers = -1;
+        imu_status = -1;
+        imu_noise = -1;
+        imu_conv = -1;
+        gnss1_status = -1;
+        gnss2_status = -1;
+        baseline_status = -1;
+        corr_status = -1;
+        cam1_status = -1;
+        ws_status = -1;
+        ws_conv = -1;
+        markers_status = -1;
+        markers_conv = -1;
+    }
+};
+
 // ------------ FP_A-LLH ------------
 
 struct FP_LLH {
@@ -277,6 +361,57 @@ struct FP_RAWIMU {
     }
 };
 
+// ------------ FP_A-IMUBIAS ------------
+
+struct FP_IMUBIAS {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
+    // Message fields
+    times::GpsTime stamp;
+    std::string frame_id;
+    int fusion_imu;
+    int imu_status;
+    int imu_noise;
+    int imu_conv;
+    Eigen::Vector3d bias_acc;
+    Eigen::Vector3d bias_gyr;
+    Eigen::Vector3d bias_cov_acc;
+    Eigen::Vector3d bias_cov_gyr;
+
+    // Message structure
+    const std::string header_ = "IMUBIAS";
+    static constexpr unsigned int kVersion_ = 1;
+    static constexpr unsigned int kSize_ = 21;
+
+    FP_IMUBIAS() {
+        stamp = fixposition::times::GpsTime();
+        frame_id = "";
+        fusion_imu = -1;
+        imu_status = -1;
+        imu_noise = -1;
+        imu_conv = -1;
+        bias_acc.setZero();
+        bias_gyr.setZero();
+        bias_cov_acc.setZero();
+        bias_cov_gyr.setZero();
+    }
+
+    void ConvertFromTokens(const std::vector<std::string>& tokens);
+
+    void ResetData() {
+        stamp = fixposition::times::GpsTime();
+        frame_id = "";
+        fusion_imu = -1;
+        imu_status = -1;
+        imu_noise = -1;
+        imu_conv = -1;
+        bias_acc.setZero();
+        bias_gyr.setZero();
+        bias_cov_acc.setZero();
+        bias_cov_gyr.setZero();
+    }
+};
+
 // ------------ FP_A-CORRIMU ------------
 
 struct FP_CORRIMU {
@@ -362,10 +497,10 @@ struct FP_GNSSCORR {
     int gnss2_fix;
     int gnss2_nsig_l1;
     int gnss2_nsig_l2;
-    float corr_latency;
-    float corr_update_rate;
-    float corr_data_rate;
-    float corr_msg_rate;
+    double corr_latency;
+    double corr_update_rate;
+    double corr_data_rate;
+    double corr_msg_rate;
     int sta_id;
     Eigen::Vector3d sta_llh;
     int sta_dist;
@@ -436,6 +571,72 @@ struct FP_TEXT {
     void ResetData() {
         level = "";
         text = "";
+    }
+};
+
+// ------------ FP_A-EOE ------------
+
+struct FP_EOE {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
+    // Message fields
+    times::GpsTime stamp;
+    std::string epoch;
+
+    // Message structure
+    const std::string header_ = "EOE";
+    static constexpr unsigned int kVersion_ = 1;
+    static constexpr unsigned int kSize_ = 6;
+
+    FP_EOE() {
+        stamp = fixposition::times::GpsTime();
+        epoch = "";
+    }
+
+    void ConvertFromTokens(const std::vector<std::string>& tokens);
+
+    void ResetData() {
+        stamp = fixposition::times::GpsTime();
+        epoch = "";
+    }
+};
+
+// ------------ FP_A-TP ------------
+
+struct FP_TP {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
+    // Message fields
+    std::string tp_name;
+    std::string timebase;
+    std::string timeref;
+    int tp_tow_sec;
+    double tp_tow_psec;
+    int gps_leaps;
+
+    // Message structure
+    const std::string header_ = "TP";
+    static constexpr unsigned int kVersion_ = 1;
+    static constexpr unsigned int kSize_ = 9;
+
+    FP_TP() {
+        tp_name = "";
+        timebase = "";
+        timeref = "";
+        tp_tow_sec = 0;
+        tp_tow_psec = 0.0;
+        gps_leaps = 0;
+    }
+
+    void ConvertFromTokens(const std::vector<std::string>& tokens);
+
+    void ResetData() {
+        tp_name = "";
+        timebase = "";
+        timeref = "";
+        tp_tow_sec = 0;
+        tp_tow_psec = 0.0;
+        gps_leaps = 0;
     }
 };
 
