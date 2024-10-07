@@ -53,7 +53,7 @@ void FP_GNSSANT::ConvertFromTokens(const std::vector<std::string>& tokens) {
     }
 
     // Populate VRTK message header
-    stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));;
+    stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
 
     // GNSS status data
     gnss1_state = tokens.at(gnss1_state_idx);

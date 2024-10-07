@@ -28,4 +28,4 @@ float64 corr_msg_rate      # Average correction message rate (10s window)
 
 int16 sta_id                    # Correction station ID, range 0–4095
 geometry_msgs/Vector3 sta_llh   # Correction station LLH position (latitude, longitude, height)
-int16 sta_dist                  # Correction station baseline length
+int32 sta_dist                  # Correction station baseline length

@@ -2,7 +2,8 @@ fixposition_driver_ros2:
   ros__parameters:
     fp_output:
       formats: [
-                "ODOMETRY", "LLH", "ODOMENU", "ODOMSH", "RAWIMU", "CORRIMU", "GNSSANT", "GNSSCORR", "TEXT", "TF", # FP_A
+                "ODOMETRY", "LLH", "ODOMENU", "ODOMSH", "ODOMSTATUS", "RAWIMU", "CORRIMU", 
+                "IMUBIAS", "GNSSANT", "GNSSCORR", "EOE", "TEXT", "TF", "TP", # FP_A
                 "GPGGA", "GPGLL", "GNGSA", "GPGST", "GPHDT", "GPRMC", "GPVTG", "GPZDA", "GXGSV" # NMEA
                ]
       type: "tcp"
@@ -11,6 +12,8 @@ fixposition_driver_ros2:
       rate: 200
       reconnect_delay: 5.0 # wait time in [s] until retry connection
       qos_type: "sensor_short" # Supported types: "sensor_short", "sensor_long", "default_short", "default_long"
+      cov_warning: false
+
     customer_input:
       speed_topic: "/fixposition/speed"
       rtcm_topic: "/fixposition/rtcm"

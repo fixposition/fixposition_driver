@@ -198,20 +198,28 @@ bool FixpositionDriver::InitializeConverters() {
             a_converters_["ODOMENU"] = std::unique_ptr<NmeaConverter<FP_ODOMENU>>(new NmeaConverter<FP_ODOMENU>());
         } else if (format == "ODOMSH") {
             a_converters_["ODOMSH"] = std::unique_ptr<NmeaConverter<FP_ODOMSH>>(new NmeaConverter<FP_ODOMSH>());
+        } else if (format == "ODOMSTATUS") {
+            a_converters_["ODOMSTATUS"] = std::unique_ptr<NmeaConverter<FP_ODOMSTATUS>>(new NmeaConverter<FP_ODOMSTATUS>());
         } else if (format == "LLH") {
             a_converters_["LLH"] = std::unique_ptr<NmeaConverter<FP_LLH>>(new NmeaConverter<FP_LLH>());
         } else if (format == "TF") {
             a_converters_["TF"] = std::unique_ptr<NmeaConverter<FP_TF>>(new NmeaConverter<FP_TF>());
+        } else if (format == "TP") {
+            a_converters_["TP"] = std::unique_ptr<NmeaConverter<FP_TP>>(new NmeaConverter<FP_TP>());
         } else if (format == "RAWIMU") {
             a_converters_["RAWIMU"] = std::unique_ptr<NmeaConverter<FP_RAWIMU>>(new NmeaConverter<FP_RAWIMU>());
         } else if (format == "CORRIMU") {
             a_converters_["CORRIMU"] = std::unique_ptr<NmeaConverter<FP_CORRIMU>>(new NmeaConverter<FP_CORRIMU>());
+        } else if (format == "IMUBIAS") {
+            a_converters_["IMUBIAS"] = std::unique_ptr<NmeaConverter<FP_IMUBIAS>>(new NmeaConverter<FP_IMUBIAS>());
         } else if (format == "GNSSANT") {
             a_converters_["GNSSANT"] = std::unique_ptr<NmeaConverter<FP_GNSSANT>>(new NmeaConverter<FP_GNSSANT>());
         } else if (format == "GNSSCORR") {
             a_converters_["GNSSCORR"] = std::unique_ptr<NmeaConverter<FP_GNSSCORR>>(new NmeaConverter<FP_GNSSCORR>());
         } else if (format == "TEXT") {
             a_converters_["TEXT"] = std::unique_ptr<NmeaConverter<FP_TEXT>>(new NmeaConverter<FP_TEXT>());
+        } else if (format == "EOE") {
+            a_converters_["EOE"] = std::unique_ptr<NmeaConverter<FP_EOE>>(new NmeaConverter<FP_EOE>());
         
         // NMEA messages
         } else if (format == "GPGGA") {

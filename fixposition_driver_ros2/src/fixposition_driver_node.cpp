@@ -23,12 +23,16 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
 
       // FP_A messages
       fpa_odometry_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMETRY>("/fixposition/fpa/odometry", qos_settings)),
+      fpa_imubias_pub_(node_->create_publisher<fixposition_driver_ros2::msg::IMUBIAS>("/fixposition/fpa/imubias", qos_settings)),
+      fpa_eoe_pub_(node_->create_publisher<fixposition_driver_ros2::msg::EOE>("/fixposition/fpa/eoe", qos_settings)),
       fpa_llh_pub_(node_->create_publisher<fixposition_driver_ros2::msg::LLH>("/fixposition/fpa/llh", qos_settings)),
       fpa_odomenu_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMENU>("/fixposition/fpa/odomenu", qos_settings)),
       fpa_odomsh_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMSH>("/fixposition/fpa/odomsh", qos_settings)),
+      fpa_odomstatus_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMSTATUS>("/fixposition/fpa/odomstatus", qos_settings)),
       fpa_gnssant_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GNSSANT>("/fixposition/fpa/gnssant", qos_settings)),
       fpa_gnsscorr_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GNSSCORR>("/fixposition/fpa/gnsscorr", qos_settings)),
       fpa_text_pub_(node_->create_publisher<fixposition_driver_ros2::msg::TEXT>("/fixposition/fpa/text", qos_settings)),
+      fpa_tp_pub_(node_->create_publisher<fixposition_driver_ros2::msg::TP>("/fixposition/fpa/tp", qos_settings)),
 
       // NMEA messages
       nmea_gpgga_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPGGA>("/fixposition/nmea/gpgga", qos_settings)),
@@ -72,6 +76,13 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
     rtcm_sub_ = node_->create_subscription<std_msgs::msg::UInt8MultiArray>(
         params_.customer_input.rtcm_topic, 10,
         std::bind(&FixpositionDriverNode::RtcmCallback, this, std::placeholders::_1));
+
+    // Configure jump warning message
+    if (params_.fp_output.cov_warning) {
+        extras_jump_pub_ = node_->create_publisher<fixposition_driver_ros2::msg::COVWARN>("/fixposition/extras/jump", qos_settings);
+        prev_pos.setZero();
+        prev_cov.setZero();
+    }
     RegisterObservers();
 }
 
@@ -110,6 +121,19 @@ void FixpositionDriverNode::RegisterObservers() {
                     OdomToImuMsg(data, poiimu_pub_);
                     OdomToNavSatFix(data, odometry_llh_pub_);
                     OdometryDataToTf(data, br_);
+
+                    // Output jump warning
+                    if (params_.fp_output.cov_warning) {
+                        if (!prev_pos.isZero() && !prev_cov.isZero()) {
+                            Eigen::Vector3d pos_diff = (prev_pos - data.odom.pose.position).cwiseAbs();
+
+                            if ((pos_diff[0] > 0) || (pos_diff[1] > prev_cov(1,1)) || (pos_diff[2] > prev_cov(2,2))) {
+                                JumpWarningMsg(node_, data.odom.stamp, pos_diff, prev_cov, extras_jump_pub_);
+                            }
+                        }
+                        prev_pos = data.odom.pose.position;
+                        prev_cov = data.odom.pose.cov;
+                    }
                 });
         } else if (format == "ODOMENU") {
             dynamic_cast<NmeaConverter<FP_ODOMENU>*>(a_converters_["ODOMENU"].get())
@@ -124,6 +148,15 @@ void FixpositionDriverNode::RegisterObservers() {
                     FpToRosMsg(data, fpa_odomsh_pub_);
                     FpToRosMsg(data.odom, odometry_smooth_pub_);
                 });
+        } else if (format == "ODOMSTATUS") {
+            dynamic_cast<NmeaConverter<FP_ODOMSTATUS>*>(a_converters_["ODOMSTATUS"].get())
+                ->AddObserver([this](const FP_ODOMSTATUS& data) { FpToRosMsg(data, fpa_odomstatus_pub_); });
+        } else if (format == "IMUBIAS") {
+            dynamic_cast<NmeaConverter<FP_IMUBIAS>*>(a_converters_["IMUBIAS"].get())
+                ->AddObserver([this](const FP_IMUBIAS& data) { FpToRosMsg(data, fpa_imubias_pub_); });
+        } else if (format == "EOE") {
+            dynamic_cast<NmeaConverter<FP_EOE>*>(a_converters_["EOE"].get())
+                ->AddObserver([this](const FP_EOE& data) { FpToRosMsg(data, fpa_eoe_pub_); });
         } else if (format == "LLH") {
             dynamic_cast<NmeaConverter<FP_LLH>*>(a_converters_["LLH"].get())
                 ->AddObserver([this](const FP_LLH& data) { FpToRosMsg(data, fpa_llh_pub_); });
@@ -169,6 +202,9 @@ void FixpositionDriverNode::RegisterObservers() {
                     }
                 }
             });
+        } else if (format == "TP") {
+            dynamic_cast<NmeaConverter<FP_TP>*>(a_converters_["TP"].get())
+                ->AddObserver([this](const FP_TP& data) { FpToRosMsg(data, fpa_tp_pub_); });
         } else if (format == "GPGGA") {
             dynamic_cast<NmeaConverter<GP_GGA>*>(a_converters_["GPGGA"].get())->AddObserver([this](const GP_GGA& data) {
                 FpToRosMsg(data, nmea_gpgga_pub_);

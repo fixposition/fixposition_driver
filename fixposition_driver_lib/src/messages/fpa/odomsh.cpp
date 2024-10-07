@@ -94,7 +94,7 @@ void FP_ODOMSH::ConvertFromTokens(const std::vector<std::string>& tokens) {
 
     if (fusion_status >= static_cast<int>(FusionStatus::INERTIAL_GNSS_FUSION)) {
         // Message header
-        odom.stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));;
+        odom.stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
 
         // Pose & Cov
         odom.pose.position = Vector3ToEigen(tokens.at(pos_x_idx), tokens.at(pos_y_idx), tokens.at(pos_z_idx));

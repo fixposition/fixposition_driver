@@ -1,6 +1,7 @@
 fp_output:
     formats: [
-              "ODOMETRY", "LLH", "ODOMENU", "ODOMSH", "RAWIMU", "CORRIMU", "GNSSANT", "GNSSCORR", "TEXT", "TF", # FP_A
+              "ODOMETRY", "LLH", "ODOMENU", "ODOMSH", "ODOMSTATUS", "RAWIMU", "CORRIMU", 
+              "IMUBIAS", "GNSSANT", "GNSSCORR", "EOE", "TEXT", "TF", "TP", # FP_A
               "GPGGA", "GPGLL", "GNGSA", "GPGST", "GPHDT", "GPRMC", "GPVTG", "GPZDA", "GXGSV" # NMEA
              ]
     type: tcp
@@ -8,6 +9,7 @@ fp_output:
     ip: "10.0.2.1" # change to VRTK2's IP address in the network
     rate: 200
     reconnect_delay: 5.0 # wait time in [s] until retry connection
+    cov_warning: false
 
 customer_input:
     speed_topic: "/fixposition/speed"

@@ -73,12 +73,16 @@ class FixpositionDriverNode : public FixpositionDriver {
     // ROS publishers
     // FP_A messages
     ros::Publisher fpa_odometry_pub_;    //!< FP_A-ODOMETRY message
+    ros::Publisher fpa_imubias_pub_;     //!< FP_A-IMUBIAS message
+    ros::Publisher fpa_eoe_pub_;         //!< FP_A-EOE message
     ros::Publisher fpa_llh_pub_;         //!< FP_A-LLH message
     ros::Publisher fpa_odomenu_pub_;     //!< FP_A-ODOMENU message
     ros::Publisher fpa_odomsh_pub_;      //!< FP_A-ODOMSH message
+    ros::Publisher fpa_odomstatus_pub_;  //!< FP_A-ODOMSTATUS message
     ros::Publisher fpa_gnssant_pub_;     //!< FP_A-GNSSANT message
     ros::Publisher fpa_gnsscorr_pub_;    //!< FP_A-GNSSCORR message
     ros::Publisher fpa_text_pub_;        //!< FP_A-TEXT message
+    ros::Publisher fpa_tp_pub_;          //!< FP_A-TP message
 
     // NMEA messages
     ros::Publisher nmea_gpgga_pub_;      //!< NMEA-GP-GGA message
@@ -115,6 +119,13 @@ class FixpositionDriverNode : public FixpositionDriver {
     // TF
     tf2_ros::TransformBroadcaster br_;
     tf2_ros::StaticTransformBroadcaster static_br_;
+
+    // Jump warning topic
+    ros::Publisher extras_jump_pub_;     //!< Jump warning topic
+
+    // Previous state
+    Eigen::Vector3d prev_pos;
+    Eigen::MatrixXd prev_cov;
 };
 
 }  // namespace fixposition

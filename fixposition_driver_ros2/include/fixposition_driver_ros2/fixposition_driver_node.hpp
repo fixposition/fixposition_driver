@@ -72,24 +72,28 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     // ROS publishers
     // FP_A messages
-    rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMETRY>::SharedPtr fpa_odometry_pub_; //!< FP_A-ODOMETRY message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::LLH>::SharedPtr fpa_llh_pub_;           //!< FP_A-LLH message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMENU>::SharedPtr fpa_odomenu_pub_;   //!< FP_A-ODOMENU message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMSH>::SharedPtr fpa_odomsh_pub_;     //!< FP_A-ODOMSH message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSANT>::SharedPtr fpa_gnssant_pub_;   //!< FP_A-GNSSANT message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSCORR>::SharedPtr fpa_gnsscorr_pub_; //!< FP_A-GNSSCORR message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::TEXT>::SharedPtr fpa_text_pub_;         //!< FP_A-TEXT message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMETRY>::SharedPtr fpa_odometry_pub_;      //!< FP_A-ODOMETRY message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::IMUBIAS>::SharedPtr fpa_imubias_pub_;        //!< FP_A-IMUBIAS message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::EOE>::SharedPtr fpa_eoe_pub_;                //!< FP_A-EOE message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::LLH>::SharedPtr fpa_llh_pub_;                //!< FP_A-LLH message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMENU>::SharedPtr fpa_odomenu_pub_;        //!< FP_A-ODOMENU message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMSH>::SharedPtr fpa_odomsh_pub_;          //!< FP_A-ODOMSH message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMSTATUS>::SharedPtr fpa_odomstatus_pub_;  //!< FP_A-ODOMSTATUS message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSANT>::SharedPtr fpa_gnssant_pub_;        //!< FP_A-GNSSANT message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::GNSSCORR>::SharedPtr fpa_gnsscorr_pub_;      //!< FP_A-GNSSCORR message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::TEXT>::SharedPtr fpa_text_pub_;              //!< FP_A-TEXT message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::TP>::SharedPtr fpa_tp_pub_;                  //!< FP_A-TP message
 
     // NMEA messages
-    rclcpp::Publisher<fixposition_driver_ros2::msg::GPGGA>::SharedPtr nmea_gpgga_pub_;      //!< NMEA-GP-GGA message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::GPGLL>::SharedPtr nmea_gpgll_pub_;      //!< NMEA-GP-GLL message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::GNGSA>::SharedPtr nmea_gngsa_pub_;      //!< NMEA-GP-GSA message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::GPGST>::SharedPtr nmea_gpgst_pub_;      //!< NMEA-GP-GST message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::GXGSV>::SharedPtr nmea_gxgsv_pub_;      //!< NMEA-GP-GSV message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::GPHDT>::SharedPtr nmea_gphdt_pub_;      //!< NMEA-GP-HDT message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::GPRMC>::SharedPtr nmea_gprmc_pub_;      //!< NMEA-GP-RMC message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::GPVTG>::SharedPtr nmea_gpvtg_pub_;      //!< NMEA-GP-VTG message
-    rclcpp::Publisher<fixposition_driver_ros2::msg::GPZDA>::SharedPtr nmea_gpzda_pub_;      //!< NMEA-GP-ZDA message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::GPGGA>::SharedPtr nmea_gpgga_pub_;           //!< NMEA-GP-GGA message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::GPGLL>::SharedPtr nmea_gpgll_pub_;           //!< NMEA-GP-GLL message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::GNGSA>::SharedPtr nmea_gngsa_pub_;           //!< NMEA-GP-GSA message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::GPGST>::SharedPtr nmea_gpgst_pub_;           //!< NMEA-GP-GST message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::GXGSV>::SharedPtr nmea_gxgsv_pub_;           //!< NMEA-GP-GSV message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::GPHDT>::SharedPtr nmea_gphdt_pub_;           //!< NMEA-GP-HDT message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::GPRMC>::SharedPtr nmea_gprmc_pub_;           //!< NMEA-GP-RMC message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::GPVTG>::SharedPtr nmea_gpvtg_pub_;           //!< NMEA-GP-VTG message
+    rclcpp::Publisher<fixposition_driver_ros2::msg::GPZDA>::SharedPtr nmea_gpzda_pub_;           //!< NMEA-GP-ZDA message
 
     // ODOMETRY
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_ecef_pub_;    //!< ECEF Odometry
@@ -115,6 +119,13 @@ class FixpositionDriverNode : public FixpositionDriver {
     // TF
     std::shared_ptr<tf2_ros::TransformBroadcaster> br_;
     std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_br_;
+
+    // Jump warning topic
+    rclcpp::Publisher<fixposition_driver_ros2::msg::COVWARN>::SharedPtr extras_jump_pub_;   //!< Jump warning topic
+
+    // Previous state
+    Eigen::Vector3d prev_pos;
+    Eigen::MatrixXd prev_cov;
 };
 
 }  // namespace fixposition

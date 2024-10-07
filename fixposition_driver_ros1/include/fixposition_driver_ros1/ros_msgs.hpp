@@ -23,18 +23,28 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 
+// Include generic
 #include <fixposition_driver_ros1/Speed.h>
 #include <fixposition_driver_ros1/GnssSats.h>
 #include <fixposition_driver_ros1/NMEA.h>
 
+// Include extras
+#include <fixposition_driver_ros1/CovWarn.h>
+
+// Include FP-A
 #include <fixposition_driver_ros1/gnssant.h>
 #include <fixposition_driver_ros1/gnsscorr.h>
+#include <fixposition_driver_ros1/imubias.h>
+#include <fixposition_driver_ros1/eoe.h>
 #include <fixposition_driver_ros1/llh.h>
 #include <fixposition_driver_ros1/odomenu.h>
 #include <fixposition_driver_ros1/odometry.h>
 #include <fixposition_driver_ros1/odomsh.h>
+#include <fixposition_driver_ros1/odomstatus.h>
 #include <fixposition_driver_ros1/text.h>
+#include <fixposition_driver_ros1/tp.h>
 
+// Include NMEA
 #include <fixposition_driver_ros1/gpgga.h>
 #include <fixposition_driver_ros1/gpgll.h>
 #include <fixposition_driver_ros1/gngsa.h>

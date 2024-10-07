@@ -1,6 +1,6 @@
 # Fixposition Driver Lib
 
-This is a CMake library used to parse [Fixposition ASCII messages](../README.md#fixposition-ascii-messages). The message content will be converted into a generic struct and can be processed further from there.
+This is a CMake library used to parse [Fixposition ASCII messages](https://docs.fixposition.com/fd/i-o-messages). The message content will be converted into a generic struct and can be processed further from there.
 
 It can be built using plain CMake, or using catkin or colcon depending on which ROS version is used.
 

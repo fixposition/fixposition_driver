@@ -22,12 +22,16 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
       nh_("~"),
       // FP_A messages
       fpa_odometry_pub_(nh_.advertise<fixposition_driver_ros1::odometry>("/fixposition/fpa/odometry", 5)),
+      fpa_imubias_pub_(nh_.advertise<fixposition_driver_ros1::imubias>("/fixposition/fpa/imubias", 5)),
+      fpa_eoe_pub_(nh_.advertise<fixposition_driver_ros1::eoe>("/fixposition/fpa/eoe", 5)),
       fpa_llh_pub_(nh_.advertise<fixposition_driver_ros1::llh>("/fixposition/fpa/llh", 5)),
       fpa_odomenu_pub_(nh_.advertise<fixposition_driver_ros1::odomenu>("/fixposition/fpa/odomenu", 5)),
       fpa_odomsh_pub_(nh_.advertise<fixposition_driver_ros1::odomsh>("/fixposition/fpa/odomsh", 5)),
+      fpa_odomstatus_pub_(nh_.advertise<fixposition_driver_ros1::odomstatus>("/fixposition/fpa/odomstatus", 5)),
       fpa_gnssant_pub_(nh_.advertise<fixposition_driver_ros1::gnssant>("/fixposition/fpa/gnssant", 5)),
       fpa_gnsscorr_pub_(nh_.advertise<fixposition_driver_ros1::gnsscorr>("/fixposition/fpa/gnsscorr", 5)),
       fpa_text_pub_(nh_.advertise<fixposition_driver_ros1::text>("/fixposition/fpa/text", 5)),
+      fpa_tp_pub_(nh_.advertise<fixposition_driver_ros1::tp>("/fixposition/fpa/tp", 5)),
 
       // NMEA messages
       nmea_gpgga_pub_(nh_.advertise<fixposition_driver_ros1::gpgga>("/fixposition/nmea/gpgga", 5)),
@@ -67,6 +71,13 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
     rtcm_sub_ = nh_.subscribe<std_msgs::UInt8MultiArray>(params_.customer_input.rtcm_topic, 10,
                                                          &FixpositionDriverNode::RtcmCallback, this,
                                                          ros::TransportHints().tcpNoDelay());
+
+    // Configure jump warning message
+    if (params_.fp_output.cov_warning) {
+        extras_jump_pub_ = nh_.advertise<fixposition_driver_ros1::CovWarn>("/fixposition/extras/jump", 5);
+        prev_pos.setZero();
+        prev_cov.setZero();
+    }
     RegisterObservers();
 }
 
@@ -104,6 +115,19 @@ void FixpositionDriverNode::RegisterObservers() {
                     OdomToImuMsg(data, poiimu_pub_);
                     OdomToNavSatFix(data, odometry_llh_pub_);
                     OdometryDataToTf(data, br_);
+
+                    // Output jump warning
+                    if (params_.fp_output.cov_warning) {
+                        if (!prev_pos.isZero() && !prev_cov.isZero()) {
+                            Eigen::Vector3d pos_diff = (prev_pos - data.odom.pose.position).cwiseAbs();
+
+                            if ((pos_diff[0] > 0) || (pos_diff[1] > prev_cov(1,1)) || (pos_diff[2] > prev_cov(2,2))) {
+                                JumpWarningMsg(data.odom.stamp, pos_diff, prev_cov, extras_jump_pub_);
+                            }
+                        }
+                        prev_pos = data.odom.pose.position;
+                        prev_cov = data.odom.pose.cov;
+                    }
                 });
         } else if (format == "ODOMENU") {
             dynamic_cast<NmeaConverter<FP_ODOMENU>*>(a_converters_["ODOMENU"].get())
@@ -118,6 +142,15 @@ void FixpositionDriverNode::RegisterObservers() {
                     FpToRosMsg(data, fpa_odomsh_pub_);
                     FpToRosMsg(data.odom, odometry_smooth_pub_);
                 });
+        } else if (format == "ODOMSTATUS") {
+            dynamic_cast<NmeaConverter<FP_ODOMSTATUS>*>(a_converters_["ODOMSTATUS"].get())
+                ->AddObserver([this](const FP_ODOMSTATUS& data) { FpToRosMsg(data, fpa_odomstatus_pub_); });
+        } else if (format == "IMUBIAS") {
+            dynamic_cast<NmeaConverter<FP_IMUBIAS>*>(a_converters_["IMUBIAS"].get())
+                ->AddObserver([this](const FP_IMUBIAS& data) { FpToRosMsg(data, fpa_imubias_pub_); });
+        } else if (format == "EOE") {
+            dynamic_cast<NmeaConverter<FP_EOE>*>(a_converters_["EOE"].get())
+                ->AddObserver([this](const FP_EOE& data) { FpToRosMsg(data, fpa_eoe_pub_); });
         } else if (format == "LLH") {
             dynamic_cast<NmeaConverter<FP_LLH>*>(a_converters_["LLH"].get())
                 ->AddObserver([this](const FP_LLH& data) { FpToRosMsg(data, fpa_llh_pub_); });
@@ -161,6 +194,9 @@ void FixpositionDriverNode::RegisterObservers() {
                     }
                 }
             });
+        } else if (format == "TP") {
+            dynamic_cast<NmeaConverter<FP_TP>*>(a_converters_["TP"].get())
+                ->AddObserver([this](const FP_TP& data) { FpToRosMsg(data, fpa_tp_pub_); });
         } else if (format == "GPGGA") {
             dynamic_cast<NmeaConverter<GP_GGA>*>(a_converters_["GPGGA"].get())->AddObserver([this](const GP_GGA& data) {
                 FpToRosMsg(data, nmea_gpgga_pub_);

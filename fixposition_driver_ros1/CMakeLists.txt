@@ -28,13 +28,17 @@ add_message_files(
   WheelSensor.msg
   GnssSats.msg
   NMEA.msg
+  fpa/eoe.msg
   fpa/gnssant.msg
   fpa/gnsscorr.msg
+  fpa/imubias.msg
   fpa/llh.msg
   fpa/odomenu.msg
   fpa/odometry.msg
   fpa/odomsh.msg
+  fpa/odomstatus.msg
   fpa/text.msg
+  fpa/tp.msg
   nmea/gpgga.msg
   nmea/gpgll.msg
   nmea/gngsa.msg
@@ -44,6 +48,7 @@ add_message_files(
   nmea/gprmc.msg
   nmea/gpvtg.msg
   nmea/gpzda.msg
+  extras/CovWarn.msg
 )
 
 generate_messages(
