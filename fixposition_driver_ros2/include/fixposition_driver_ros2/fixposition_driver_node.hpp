@@ -121,7 +121,7 @@ class FixpositionDriverNode : public FixpositionDriver {
     std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_br_;
 
     // Jump warning topic
-    rclcpp::Publisher<fixposition_driver_ros2::msg::CovWarn>::SharedPtr extras_jump_pub_;   //!< Jump warning topic
+    rclcpp::Publisher<fixposition_driver_ros2::msg::COVWARN>::SharedPtr extras_jump_pub_;   //!< Jump warning topic
 
     // Previous state
     Eigen::Vector3d prev_pos;

@@ -48,7 +48,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/nmea/GPRMC.msg
   msg/nmea/GPVTG.msg
   msg/nmea/GPZDA.msg
-  msg/extras/CovWarn.msg
+  msg/extras/COVWARN.msg
   DEPENDENCIES
   std_msgs
   nav_msgs

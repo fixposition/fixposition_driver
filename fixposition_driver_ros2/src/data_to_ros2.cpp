@@ -62,7 +62,7 @@ void FpToRosMsg(const ImuData& data, rclcpp::Publisher<sensor_msgs::msg::Imu>::S
 
 
 void FpToRosMsg(const FP_IMUBIAS& data, rclcpp::Publisher<fixposition_driver_ros2::msg::IMUBIAS>::SharedPtr pub) {
-    if (pub.getNumSubscribers() > 0) {
+    if (pub->get_subscription_count() > 0) {
         // Create message
         fixposition_driver_ros2::msg::IMUBIAS msg;
 
@@ -84,7 +84,7 @@ void FpToRosMsg(const FP_IMUBIAS& data, rclcpp::Publisher<fixposition_driver_ros
         tf2::toMsg(data.bias_cov_gyr, msg.bias_cov_gyr);
 
         // Publish message
-        pub.publish(msg);
+        pub->publish(msg);
     }
 }
 
@@ -258,7 +258,7 @@ void FpToRosMsg(const FP_ODOMSH& data, rclcpp::Publisher<fixposition_driver_ros2
 }
 
 void FpToRosMsg(const FP_ODOMSTATUS& data, rclcpp::Publisher<fixposition_driver_ros2::msg::ODOMSTATUS>::SharedPtr pub) {
-    if (pub.getNumSubscribers() > 0) {
+    if (pub->get_subscription_count() > 0) {
         // Create message
         fixposition_driver_ros2::msg::ODOMSTATUS msg;
 
@@ -291,7 +291,7 @@ void FpToRosMsg(const FP_ODOMSTATUS& data, rclcpp::Publisher<fixposition_driver_
         msg.markers_conv = data.markers_conv;
 
         // Publish message
-        pub.publish(msg);
+        pub->publish(msg);
     }
 }
 
@@ -310,7 +310,7 @@ void FpToRosMsg(const FP_TEXT& data, rclcpp::Publisher<fixposition_driver_ros2::
 }
 
 void FpToRosMsg(const FP_TP& data, rclcpp::Publisher<fixposition_driver_ros2::msg::TP>::SharedPtr pub) {
-    if (pub.getNumSubscribers() > 0) {
+    if (pub->get_subscription_count() > 0) {
         // Create message
         fixposition_driver_ros2::msg::TP msg;
 
@@ -323,12 +323,12 @@ void FpToRosMsg(const FP_TP& data, rclcpp::Publisher<fixposition_driver_ros2::ms
         msg.gps_leaps = data.gps_leaps;
 
         // Publish message
-        pub.publish(msg);
+        pub->publish(msg);
     }
 }
 
 void FpToRosMsg(const FP_EOE& data, rclcpp::Publisher<fixposition_driver_ros2::msg::EOE>::SharedPtr pub) {
-    if (pub.getNumSubscribers() > 0) {
+    if (pub->get_subscription_count() > 0) {
         // Create message
         fixposition_driver_ros2::msg::EOE msg;
 
@@ -341,7 +341,7 @@ void FpToRosMsg(const FP_EOE& data, rclcpp::Publisher<fixposition_driver_ros2::m
         msg.epoch = data.epoch;
 
         // Publish message
-        pub.publish(msg);
+        pub->publish(msg);
     }
 }
 
@@ -723,10 +723,10 @@ void OdomToYprMsg(const OdometryData& data, rclcpp::Publisher<geometry_msgs::msg
     }
 }
 
-void JumpWarningMsg(const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff, const Eigen::MatrixXd& prev_cov, rclcpp::Publisher<fixposition_driver_ros2::msg::CovWarn>::SharedPtr pub) {
-    if (pub.getNumSubscribers() > 0) {
+void JumpWarningMsg(const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff, const Eigen::MatrixXd& prev_cov, rclcpp::Publisher<fixposition_driver_ros2::msg::COVWARN>::SharedPtr pub) {
+    if (pub->get_subscription_count() > 0) {
         // Create message
-        fixposition_driver_ros2::msg::CovWarn msg;
+        fixposition_driver_ros2::msg::COVWARN msg;
 
         // Populate message
         if (stamp.tow == 0.0 && stamp.wno == 0) {
@@ -740,12 +740,12 @@ void JumpWarningMsg(const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff
                  << "Position difference: [" << pos_diff[0] << ", " << pos_diff[1] << ", " << pos_diff[2] << "], "
                  << "Covariances: [" << prev_cov(0,0) << ", " << prev_cov(1,1) << ", " << prev_cov(2,2) << "]";
 
-        ROS_WARN("%s", warn_msg.str().c_str());
+        RCLCPP_WARN("%s", warn_msg.str().c_str());
         tf2::toMsg(pos_diff, msg.jump);
         tf2::toMsg(Eigen::Vector3d(prev_cov(0,0),prev_cov(1,1),prev_cov(2,2)), msg.covariance);
 
         // Publish message
-        pub.publish(msg);
+        pub->publish(msg);
     }
 }
 

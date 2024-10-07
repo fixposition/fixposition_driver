@@ -79,7 +79,7 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
 
     // Configure jump warning message
     if (params_.fp_output.cov_warning) {
-        extras_jump_pub_ = node_->create_publisher<fixposition_driver_ros2::msg::CovWarn>("/fixposition/extras/jump", qos_settings);
+        extras_jump_pub_ = node_->create_publisher<fixposition_driver_ros2::msg::COVWARN>("/fixposition/extras/jump", qos_settings);
         prev_pos.setZero();
         prev_cov.setZero();
     }
