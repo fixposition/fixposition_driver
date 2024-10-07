@@ -24,10 +24,15 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 
+// Include generic
 #include <fixposition_driver_ros2/msg/speed.hpp>
 #include <fixposition_driver_ros2/msg/gnsssats.hpp>
 #include <fixposition_driver_ros2/msg/nmea.hpp>
 
+// Include extras
+#include <fixposition_driver_ros2/msg/covwarn.hpp>
+
+// Include FP-A
 #include <fixposition_driver_ros2/msg/gnssant.hpp>
 #include <fixposition_driver_ros2/msg/gnsscorr.hpp>
 #include <fixposition_driver_ros2/msg/imubias.hpp>
@@ -40,6 +45,7 @@
 #include <fixposition_driver_ros2/msg/text.hpp>
 #include <fixposition_driver_ros2/msg/tp.hpp>
 
+// Include NMEA
 #include <fixposition_driver_ros2/msg/gpgga.hpp>
 #include <fixposition_driver_ros2/msg/gpgll.hpp>
 #include <fixposition_driver_ros2/msg/gngsa.hpp>
