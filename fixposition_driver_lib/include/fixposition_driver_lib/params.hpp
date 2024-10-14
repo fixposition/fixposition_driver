@@ -30,6 +30,7 @@ struct FpOutputParams {
     std::vector<std::string> formats;  //!< data formats to convert, supports "FP" for now
     std::string qos_type;              //!< ROS QoS type, supports "sensor_<short/long>" and "default_<short/long>"
     bool cov_warning;                  //!< enable/disable covariance warning
+    bool nav2_mode;                    //!< enable/disable nav2 mode
 
     std::string ip;    //!< IP address for TCP connection
     std::string port;  //!< Port for TCP connection

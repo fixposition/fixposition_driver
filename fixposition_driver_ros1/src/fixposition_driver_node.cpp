@@ -121,7 +121,7 @@ void FixpositionDriverNode::RegisterObservers() {
                         if (!prev_pos.isZero() && !prev_cov.isZero()) {
                             Eigen::Vector3d pos_diff = (prev_pos - data.odom.pose.position).cwiseAbs();
 
-                            if ((pos_diff[0] > 0) || (pos_diff[1] > prev_cov(1,1)) || (pos_diff[2] > prev_cov(2,2))) {
+                            if ((pos_diff[0] > prev_cov(0,0)) || (pos_diff[1] > prev_cov(1,1)) || (pos_diff[2] > prev_cov(2,2))) {
                                 JumpWarningMsg(data.odom.stamp, pos_diff, prev_cov, extras_jump_pub_);
                             }
                         }
@@ -135,12 +135,28 @@ void FixpositionDriverNode::RegisterObservers() {
                     FpToRosMsg(data, fpa_odomenu_pub_);
                     FpToRosMsg(data.odom, odometry_enu_pub_);
                     OdomToYprMsg(data.odom, eul_pub_);
+
+                    // Append TF if Nav2 mode is selected
+                    if (params_.fp_output.nav2_mode) {
+                        // Get FP_ENU0 -> FP_POI
+                        geometry_msgs::TransformStamped tf;
+                        OdomToTf(data.odom, tf);
+                        tf_map["ENU0POI"] = std::make_shared<geometry_msgs::TransformStamped>(tf);
+                    }
                 });
         } else if (format == "ODOMSH") {
             dynamic_cast<NmeaConverter<FP_ODOMSH>*>(a_converters_["ODOMSH"].get())
                 ->AddObserver([this](const FP_ODOMSH& data) {
                     FpToRosMsg(data, fpa_odomsh_pub_);
                     FpToRosMsg(data.odom, odometry_smooth_pub_);
+
+                    // Append TF if Nav2 mode is selected
+                    if (params_.fp_output.nav2_mode) {
+                        // Get FP_ECEF -> FP_POISH
+                        geometry_msgs::TransformStamped tf;
+                        OdomToTf(data.odom, tf);
+                        tf_map["ECEFPOISH"] = std::make_shared<geometry_msgs::TransformStamped>(tf);
+                    }
                 });
         } else if (format == "ODOMSTATUS") {
             dynamic_cast<NmeaConverter<FP_ODOMSTATUS>*>(a_converters_["ODOMSTATUS"].get())
@@ -150,7 +166,14 @@ void FixpositionDriverNode::RegisterObservers() {
                 ->AddObserver([this](const FP_IMUBIAS& data) { FpToRosMsg(data, fpa_imubias_pub_); });
         } else if (format == "EOE") {
             dynamic_cast<NmeaConverter<FP_EOE>*>(a_converters_["EOE"].get())
-                ->AddObserver([this](const FP_EOE& data) { FpToRosMsg(data, fpa_eoe_pub_); });
+                ->AddObserver([this](const FP_EOE& data) {
+                    FpToRosMsg(data, fpa_eoe_pub_);
+
+                    // Generate Nav2 TF tree
+                    if (data.epoch == "FUSION" && params_.fp_output.nav2_mode) {
+                        PublishNav2Tf(tf_map, static_br_, br_);
+                    }
+                });
         } else if (format == "LLH") {
             dynamic_cast<NmeaConverter<FP_LLH>*>(a_converters_["LLH"].get())
                 ->AddObserver([this](const FP_LLH& data) { FpToRosMsg(data, fpa_llh_pub_); });
@@ -189,6 +212,20 @@ void FixpositionDriverNode::RegisterObservers() {
 
                     } else if (tf.child_frame_id == "FP_POISH" && tf.header.frame_id == "FP_POI") {
                         br_.sendTransform(tf);
+
+                        // Append TF if Nav2 mode is selected
+                        if (params_.fp_output.nav2_mode) {
+                            // Get FP_POI -> FP_POISH
+                            tf_map["POIPOISH"] = std::make_shared<geometry_msgs::TransformStamped>(tf);
+                        }
+                    } else if (tf.child_frame_id == "FP_ENU0" && tf.header.frame_id == "FP_ECEF") {
+                        static_br_.sendTransform(tf);
+
+                        // Append TF if Nav2 mode is selected
+                        if (params_.fp_output.nav2_mode) {
+                            // Get FP_ECEF -> FP_ENU0
+                            tf_map["ECEFENU0"] = std::make_shared<geometry_msgs::TransformStamped>(tf);
+                        }
                     } else {
                         static_br_.sendTransform(tf);
                     }

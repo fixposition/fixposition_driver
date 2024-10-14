@@ -126,6 +126,14 @@ class FixpositionDriverNode : public FixpositionDriver {
     // Previous state
     Eigen::Vector3d prev_pos;
     Eigen::MatrixXd prev_cov;
+
+    // Nav2 TF map
+    std::map<std::string, std::shared_ptr<geometry_msgs::msg::TransformStamped>> tf_map = {
+        {"ECEFENU0", nullptr},
+        {"POIPOISH", nullptr},
+        {"ECEFPOISH", nullptr},
+        {"ENU0POI", nullptr}
+    };
 };
 
 }  // namespace fixposition

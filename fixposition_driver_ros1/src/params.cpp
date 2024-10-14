@@ -26,6 +26,7 @@ bool LoadParamsFromRos1(const std::string& ns, FpOutputParams& params) {
     const std::string PORT = ns + "/port";
     const std::string BAUDRATE = ns + "/baudrate";
     const std::string COV_WARNING = ns + "/cov_warning";
+    const std::string NAV2_MODE = ns + "/nav2_mode";
 
     // read parameters
     if (!ros::param::get(RATE, params.rate)) {
@@ -39,6 +40,10 @@ bool LoadParamsFromRos1(const std::string& ns, FpOutputParams& params) {
     if (!ros::param::get(COV_WARNING, params.cov_warning)) {
         params.cov_warning = false;
         ROS_WARN("Using Default Covariance Warning option : %i", params.cov_warning);
+    }
+    if (!ros::param::get(NAV2_MODE, params.nav2_mode)) {
+        params.nav2_mode = false;
+        ROS_WARN("Using Default Nav2 mode option : %i", params.nav2_mode);
     }
 
     std::string type_str;

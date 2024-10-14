@@ -26,7 +26,8 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     const std::string IP = ns + ".ip";
     const std::string PORT = ns + ".port";
     const std::string BAUDRATE = ns + ".baudrate";
-    const std::string COV_WARNING = ns + "/cov_warning";
+    const std::string COV_WARNING = ns + ".cov_warning";
+    const std::string NAV2_MODE = ns + ".nav2_mode";
 
     node->declare_parameter(RATE, 100);
     node->declare_parameter(RECONNECT_DELAY, 5.0);
@@ -37,6 +38,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     node->declare_parameter(IP, "127.0.0.1");
     node->declare_parameter(BAUDRATE, 115200);
     node->declare_parameter(COV_WARNING, false);
+    node->declare_parameter(NAV2_MODE, false);
     // read parameters
     if (node->get_parameter(RATE, params.rate)) {
         RCLCPP_INFO(node->get_logger(), "%s : %d", RATE.c_str(), params.rate);
@@ -57,6 +59,11 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
         RCLCPP_INFO(node->get_logger(), "%s : %d", COV_WARNING.c_str(), params.cov_warning);
     } else {
         RCLCPP_WARN(node->get_logger(), "%s : %d", COV_WARNING.c_str(), params.cov_warning);
+    }
+    if (node->get_parameter(NAV2_MODE, params.nav2_mode)) {
+        RCLCPP_INFO(node->get_logger(), "%s : %d", NAV2_MODE.c_str(), params.nav2_mode);
+    } else {
+        RCLCPP_WARN(node->get_logger(), "%s : %d", NAV2_MODE.c_str(), params.nav2_mode);
     }
 
     std::string type_str;
