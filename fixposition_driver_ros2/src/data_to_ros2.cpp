@@ -619,7 +619,7 @@ void OdomToTf(const OdometryData& data, geometry_msgs::msg::TransformStamped& tf
     tf2::toMsg(data.pose.position, tf.transform.translation);
 }
 
-void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::TransformStamped>>& tf_map, std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_br_, std::shared_ptr<tf2_ros::TransformBroadcaster> br_) {
+void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::msg::TransformStamped>>& tf_map, std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_br_, std::shared_ptr<tf2_ros::TransformBroadcaster> br_) {
     if (tf_map.at("ECEFENU0") && tf_map.at("POIPOISH") && tf_map.at("ECEFPOISH") && tf_map.at("ENU0POI")) {
         // Publish FP_ECEF -> map
         tf_map.at("ECEFENU0")->child_frame_id = "map";
@@ -657,7 +657,7 @@ void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::Tr
         tf2::Transform tf_combined = tf_ENU0POI * tf_ENU0POISH.inverse();
 
         // Create a new TransformStamped message
-        geometry_msgs::TransformStamped tf_map_odom;
+        geometry_msgs::msg::TransformStamped tf_map_odom;
         tf_map_odom.header.stamp = ros::Time::now();
         tf_map_odom.header.frame_id = "map";
         tf_map_odom.child_frame_id = "odom";
@@ -665,7 +665,7 @@ void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::Tr
         br_->sendTransform(tf_map_odom);
 
         // Publish odom -> base_link
-        geometry_msgs::TransformStamped tf_odom_base;
+        geometry_msgs::msg::TransformStamped tf_odom_base;
         tf_odom_base.header.stamp = ros::Time::now();
         tf_odom_base.header.frame_id = "odom";
         tf_odom_base.child_frame_id = "base_link";

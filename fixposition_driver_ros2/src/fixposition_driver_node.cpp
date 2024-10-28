@@ -224,7 +224,7 @@ void FixpositionDriverNode::RegisterObservers() {
                         // Append TF if Nav2 mode is selected
                         if (params_.fp_output.nav2_mode) {
                             // Get FP_POI -> FP_POISH
-                            tf_map["POIPOISH"] = std::make_shared<geometry_msgs::TransformStamped>(tf);
+                            tf_map["POIPOISH"] = std::make_shared<geometry_msgs::msg::TransformStamped>(tf);
                         }
                     } else if (tf.child_frame_id == "FP_ENU0" && tf.header.frame_id == "FP_ECEF") {
                         static_br_->sendTransform(tf);
@@ -232,7 +232,7 @@ void FixpositionDriverNode::RegisterObservers() {
                         // Append TF if Nav2 mode is selected
                         if (params_.fp_output.nav2_mode) {
                             // Get FP_ECEF -> FP_ENU0
-                            tf_map["ECEFENU0"] = std::make_shared<geometry_msgs::TransformStamped>(tf);
+                            tf_map["ECEFENU0"] = std::make_shared<geometry_msgs::msg::TransformStamped>(tf);
                         }
                     } else {
                         static_br_->sendTransform(tf);

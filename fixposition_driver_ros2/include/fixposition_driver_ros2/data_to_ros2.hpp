@@ -130,7 +130,7 @@ void OdomToTf(const OdometryData& data, geometry_msgs::msg::TransformStamped& tf
  * @param[out] static_br_
  * @param[out] br_
  */
-void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::TransformStamped>>& tf_map, std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_br_, std::shared_ptr<tf2_ros::TransformBroadcaster> br_);
+void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::msg::TransformStamped>>& tf_map, std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_br_, std::shared_ptr<tf2_ros::TransformBroadcaster> br_);
 
 /**
  * @brief
