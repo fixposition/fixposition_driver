@@ -72,10 +72,10 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
 {
     ws_sub_ = node_->create_subscription<fixposition_driver_ros2::msg::Speed>(
         params_.customer_input.speed_topic, 100,
-        std::bind(&FixpositionDriverNode::WsCallback, this, std::placeholders::_1));
-    rtcm_sub_ = node_->create_subscription<fixposition_driver_ros2::msg::RTCM>(
+        std::bind(&FixpositionDriverNode::WsCallbackRos, this, std::placeholders::_1));
+    rtcm_sub_ = node_->create_subscription<rtcm_msgs::msg::Message>(
         params_.customer_input.rtcm_topic, 10,
-        std::bind(&FixpositionDriverNode::RtcmCallback, this, std::placeholders::_1));
+        std::bind(&FixpositionDriverNode::RtcmCallbackRos, this, std::placeholders::_1));
 
     // Configure jump warning message
     if (params_.fp_output.cov_warning) {
@@ -413,20 +413,20 @@ void FixpositionDriverNode::PublishNmea() {
     }
 }
 
-void FixpositionDriverNode::WsCallback(const fixposition_driver_ros2::msg::Speed::ConstSharedPtr msg) {
+void FixpositionDriverNode::WsCallbackRos(const fixposition_driver_ros2::msg::Speed::ConstSharedPtr msg) {
     std::unordered_map<std::string, std::vector<std::pair<bool, int>>> measurements;
     for (const auto& sensor : msg->sensors) {
         measurements[sensor.location].push_back({sensor.vx_valid, sensor.vx});
         measurements[sensor.location].push_back({sensor.vy_valid, sensor.vy});
         measurements[sensor.location].push_back({sensor.vz_valid, sensor.vz});
     }
-    FixpositionDriver::WsCallback(measurements);
+    WsCallback(measurements);
 }
 
-void FixpositionDriverNode::RtcmCallback(const fixposition_driver_ros2::msg::RTCM::ConstSharedPtr msg) {
+void FixpositionDriverNode::RtcmCallbackRos(const rtcm_msgs::msg::Message::ConstSharedPtr msg) {
     const void* rtcm_msg = &(msg->message[0]);
     size_t msg_size = msg->message.size();
-    FixpositionDriver::RtcmCallback(rtcm_msg, msg_size);
+    RtcmCallback(rtcm_msg, msg_size);
 }
 
 void FixpositionDriverNode::BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header,

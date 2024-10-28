@@ -30,7 +30,9 @@
 #include <fixposition_driver_ros2/msg/speed.hpp>
 #include <fixposition_driver_ros2/msg/gnsssats.hpp>
 #include <fixposition_driver_ros2/msg/nmea.hpp>
-#include <fixposition_driver_ros2/msg/rtcm.hpp>
+
+// Include RTCM
+#include <rtcm_msgs/msg/message.hpp>
 
 // Include extras
 #include <fixposition_driver_ros2/msg/covwarn.hpp>

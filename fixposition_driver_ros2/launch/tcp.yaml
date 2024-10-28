@@ -17,4 +17,4 @@ fixposition_driver_ros2:
 
     customer_input:
       speed_topic: "/fixposition/speed"
-      rtcm_topic: "/fixposition/rtcm"
+      rtcm_topic: "/rtcm"

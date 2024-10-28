@@ -29,7 +29,9 @@
 #include <fixposition_driver_ros1/Speed.h>
 #include <fixposition_driver_ros1/GnssSats.h>
 #include <fixposition_driver_ros1/NMEA.h>
-#include <fixposition_driver_ros1/RTCM.h>
+
+// Include RTCM
+#include <rtcm_msgs/Message.h>
 
 // Include extras
 #include <fixposition_driver_ros1/CovWarn.h>
