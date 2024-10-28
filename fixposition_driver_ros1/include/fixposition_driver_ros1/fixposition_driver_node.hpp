@@ -45,7 +45,7 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     void WsCallback(const fixposition_driver_ros1::SpeedConstPtr& msg);
 
-    void RtcmCallback(const std_msgs::UInt8MultiArray::ConstPtr& msg);
+    void RtcmCallback(const fixposition_driver_ros1::RTCMConstPtr& msg);
 
    private:
     /**

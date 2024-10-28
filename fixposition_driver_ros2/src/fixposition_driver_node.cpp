@@ -73,7 +73,7 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
     ws_sub_ = node_->create_subscription<fixposition_driver_ros2::msg::Speed>(
         params_.customer_input.speed_topic, 100,
         std::bind(&FixpositionDriverNode::WsCallback, this, std::placeholders::_1));
-    rtcm_sub_ = node_->create_subscription<std_msgs::msg::UInt8MultiArray>(
+    rtcm_sub_ = node_->create_subscription<fixposition_driver_ros2::msg::RTCM>(
         params_.customer_input.rtcm_topic, 10,
         std::bind(&FixpositionDriverNode::RtcmCallback, this, std::placeholders::_1));
 
@@ -423,9 +423,9 @@ void FixpositionDriverNode::WsCallback(const fixposition_driver_ros2::msg::Speed
     FixpositionDriver::WsCallback(measurements);
 }
 
-void FixpositionDriverNode::RtcmCallback(const std_msgs::msg::UInt8MultiArray::ConstSharedPtr msg) {
-    const void* rtcm_msg = &(msg->data[0]);
-    size_t msg_size = msg->layout.dim[0].size;
+void FixpositionDriverNode::RtcmCallback(const fixposition_driver_ros2::msg::RTCM::ConstSharedPtr msg) {
+    const void* rtcm_msg = &(msg->message[0]);
+    size_t msg_size = msg->message.size();
     FixpositionDriver::RtcmCallback(rtcm_msg, msg_size);
 }
 

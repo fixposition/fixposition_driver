@@ -27,6 +27,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/Speed.msg
   msg/Gnsssats.msg
   msg/NMEA.msg
+  msg/RTCM.msg
   msg/WheelSensor.msg
   msg/fpa/GNSSANT.msg
   msg/fpa/GNSSCORR.msg

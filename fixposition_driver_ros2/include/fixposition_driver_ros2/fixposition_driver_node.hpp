@@ -45,7 +45,7 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     void WsCallback(const fixposition_driver_ros2::msg::Speed::ConstSharedPtr msg);
 
-    void RtcmCallback(const std_msgs::msg::UInt8MultiArray::ConstSharedPtr msg);
+    void RtcmCallback(const fixposition_driver_ros2::msg::RTCM::ConstSharedPtr msg);
 
    private:
     /**
@@ -68,7 +68,7 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     // ROS subscribers
     rclcpp::Subscription<fixposition_driver_ros2::msg::Speed>::SharedPtr ws_sub_;  //!< wheelspeed message subscriber
-    rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr rtcm_sub_;  //!< RTCM3 message subscriber
+    rclcpp::Subscription<fixposition_driver_ros2::msg::RTCM>::SharedPtr rtcm_sub_; //!< RTCM3 message subscriber
 
     // ROS publishers
     // FP_A messages
