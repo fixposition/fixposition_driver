@@ -30,7 +30,6 @@ add_message_files(
   WheelSensor.msg
   GnssSats.msg
   NMEA.msg
-  RTCM.msg
   fpa/eoe.msg
   fpa/gnssant.msg
   fpa/gnsscorr.msg
