@@ -658,7 +658,7 @@ void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::ms
 
         // Create a new TransformStamped message
         geometry_msgs::msg::TransformStamped tf_map_odom;
-        tf_map_odom.header.stamp = ros::Time::now();
+        tf_map_odom.header.stamp = rclcpp::Clock().now();
         tf_map_odom.header.frame_id = "map";
         tf_map_odom.child_frame_id = "odom";
         tf_map_odom.transform = tf2::toMsg(tf_combined);
@@ -666,7 +666,7 @@ void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::ms
 
         // Publish odom -> base_link
         geometry_msgs::msg::TransformStamped tf_odom_base;
-        tf_odom_base.header.stamp = ros::Time::now();
+        tf_odom_base.header.stamp = rclcpp::Clock().now();
         tf_odom_base.header.frame_id = "odom";
         tf_odom_base.child_frame_id = "base_link";
         tf_odom_base.transform = tf2::toMsg(tf_ENU0POISH);
