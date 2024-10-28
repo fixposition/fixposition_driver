@@ -627,15 +627,15 @@ void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::ms
 
         // Compute FP_ENU0 -> FP_POISH
         // Extract translation and rotation from ECEFENU0
-        geometry_msgs::Vector3 trans_ecef_enu0 = tf_map.at("ECEFENU0")->transform.translation;
-        geometry_msgs::Quaternion rot_ecef_enu0 = tf_map.at("ECEFENU0")->transform.rotation;
+        geometry_msgs::msg::Vector3 trans_ecef_enu0 = tf_map.at("ECEFENU0")->transform.translation;
+        geometry_msgs::msg::Quaternion rot_ecef_enu0 = tf_map.at("ECEFENU0")->transform.rotation;
         Eigen::Vector3d t_ecef_enu0_;
         t_ecef_enu0_ << trans_ecef_enu0.x, trans_ecef_enu0.y, trans_ecef_enu0.z;
         Eigen::Quaterniond q_ecef_enu0_(rot_ecef_enu0.w, rot_ecef_enu0.x, rot_ecef_enu0.y, rot_ecef_enu0.z);
 
         // Extract translation and rotation from ECEFPOISH
-        geometry_msgs::Vector3 trans_ecef_poish = tf_map.at("ECEFPOISH")->transform.translation;
-        geometry_msgs::Quaternion rot_ecef_poish = tf_map.at("ECEFPOISH")->transform.rotation;
+        geometry_msgs::msg::Vector3 trans_ecef_poish = tf_map.at("ECEFPOISH")->transform.translation;
+        geometry_msgs::msg::Quaternion rot_ecef_poish = tf_map.at("ECEFPOISH")->transform.rotation;
         Eigen::Vector3d t_ecef_poish;
         t_ecef_poish << trans_ecef_poish.x, trans_ecef_poish.y, trans_ecef_poish.z;
         Eigen::Quaterniond q_ecef_poish(rot_ecef_poish.w, rot_ecef_poish.x, rot_ecef_poish.y, rot_ecef_poish.z);
