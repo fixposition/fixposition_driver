@@ -21,6 +21,7 @@ find_package(rclcpp REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_eigen REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(fixposition_driver_lib REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -106,7 +107,7 @@ install(DIRECTORY
   "launch"
   DESTINATION share/${PROJECT_NAME}/
 )
-ament_target_dependencies(${PROJECT_NAME}_exec rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs tf2_ros tf2_eigen fixposition_driver_lib)
+ament_target_dependencies(${PROJECT_NAME}_exec rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs tf2_ros tf2_eigen fixposition_driver_lib tf2_geometry_msgs)
 
 # define ament package for this project
 ament_package()
