@@ -43,9 +43,9 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     void RegisterObservers();
 
-    void WsCallback(const fixposition_driver_ros1::SpeedConstPtr& msg);
+    void WsCallbackRos(const fixposition_driver_ros1::SpeedConstPtr& msg);
 
-    void RtcmCallback(const std_msgs::UInt8MultiArray::ConstPtr& msg);
+    void RtcmCallbackRos(const rtcm_msgs::MessageConstPtr& msg);
 
    private:
     /**
@@ -126,6 +126,14 @@ class FixpositionDriverNode : public FixpositionDriver {
     // Previous state
     Eigen::Vector3d prev_pos;
     Eigen::MatrixXd prev_cov;
+
+    // Nav2 TF map
+    std::map<std::string, std::shared_ptr<geometry_msgs::TransformStamped>> tf_map = {
+        {"ECEFENU0", nullptr},
+        {"POIPOISH", nullptr},
+        {"ECEFPOISH", nullptr},
+        {"ENU0POI", nullptr}
+    };
 };
 
 }  // namespace fixposition

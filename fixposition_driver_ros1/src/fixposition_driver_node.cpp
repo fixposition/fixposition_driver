@@ -66,11 +66,11 @@ FixpositionDriverNode::FixpositionDriverNode(const FixpositionDriverParams& para
 
 {
     ws_sub_ = nh_.subscribe<fixposition_driver_ros1::Speed>(params_.customer_input.speed_topic, 10,
-                                                            &FixpositionDriverNode::WsCallback, this,
+                                                            &FixpositionDriverNode::WsCallbackRos, this,
                                                             ros::TransportHints().tcpNoDelay());
-    rtcm_sub_ = nh_.subscribe<std_msgs::UInt8MultiArray>(params_.customer_input.rtcm_topic, 10,
-                                                         &FixpositionDriverNode::RtcmCallback, this,
-                                                         ros::TransportHints().tcpNoDelay());
+    rtcm_sub_ = nh_.subscribe<rtcm_msgs::Message>(params_.customer_input.rtcm_topic, 10,
+                                                  &FixpositionDriverNode::RtcmCallbackRos, this,
+                                                  ros::TransportHints().tcpNoDelay());
 
     // Configure jump warning message
     if (params_.fp_output.cov_warning) {
@@ -121,7 +121,7 @@ void FixpositionDriverNode::RegisterObservers() {
                         if (!prev_pos.isZero() && !prev_cov.isZero()) {
                             Eigen::Vector3d pos_diff = (prev_pos - data.odom.pose.position).cwiseAbs();
 
-                            if ((pos_diff[0] > 0) || (pos_diff[1] > prev_cov(1,1)) || (pos_diff[2] > prev_cov(2,2))) {
+                            if ((pos_diff[0] > prev_cov(0,0)) || (pos_diff[1] > prev_cov(1,1)) || (pos_diff[2] > prev_cov(2,2))) {
                                 JumpWarningMsg(data.odom.stamp, pos_diff, prev_cov, extras_jump_pub_);
                             }
                         }
@@ -135,12 +135,28 @@ void FixpositionDriverNode::RegisterObservers() {
                     FpToRosMsg(data, fpa_odomenu_pub_);
                     FpToRosMsg(data.odom, odometry_enu_pub_);
                     OdomToYprMsg(data.odom, eul_pub_);
+
+                    // Append TF if Nav2 mode is selected
+                    if (params_.fp_output.nav2_mode) {
+                        // Get FP_ENU0 -> FP_POI
+                        geometry_msgs::TransformStamped tf;
+                        OdomToTf(data.odom, tf);
+                        tf_map["ENU0POI"] = std::make_shared<geometry_msgs::TransformStamped>(tf);
+                    }
                 });
         } else if (format == "ODOMSH") {
             dynamic_cast<NmeaConverter<FP_ODOMSH>*>(a_converters_["ODOMSH"].get())
                 ->AddObserver([this](const FP_ODOMSH& data) {
                     FpToRosMsg(data, fpa_odomsh_pub_);
                     FpToRosMsg(data.odom, odometry_smooth_pub_);
+
+                    // Append TF if Nav2 mode is selected
+                    if (params_.fp_output.nav2_mode) {
+                        // Get FP_ECEF -> FP_POISH
+                        geometry_msgs::TransformStamped tf;
+                        OdomToTf(data.odom, tf);
+                        tf_map["ECEFPOISH"] = std::make_shared<geometry_msgs::TransformStamped>(tf);
+                    }
                 });
         } else if (format == "ODOMSTATUS") {
             dynamic_cast<NmeaConverter<FP_ODOMSTATUS>*>(a_converters_["ODOMSTATUS"].get())
@@ -150,7 +166,14 @@ void FixpositionDriverNode::RegisterObservers() {
                 ->AddObserver([this](const FP_IMUBIAS& data) { FpToRosMsg(data, fpa_imubias_pub_); });
         } else if (format == "EOE") {
             dynamic_cast<NmeaConverter<FP_EOE>*>(a_converters_["EOE"].get())
-                ->AddObserver([this](const FP_EOE& data) { FpToRosMsg(data, fpa_eoe_pub_); });
+                ->AddObserver([this](const FP_EOE& data) {
+                    FpToRosMsg(data, fpa_eoe_pub_);
+
+                    // Generate Nav2 TF tree
+                    if (data.epoch == "FUSION" && params_.fp_output.nav2_mode) {
+                        PublishNav2Tf(tf_map, static_br_, br_);
+                    }
+                });
         } else if (format == "LLH") {
             dynamic_cast<NmeaConverter<FP_LLH>*>(a_converters_["LLH"].get())
                 ->AddObserver([this](const FP_LLH& data) { FpToRosMsg(data, fpa_llh_pub_); });
@@ -189,6 +212,20 @@ void FixpositionDriverNode::RegisterObservers() {
 
                     } else if (tf.child_frame_id == "FP_POISH" && tf.header.frame_id == "FP_POI") {
                         br_.sendTransform(tf);
+
+                        // Append TF if Nav2 mode is selected
+                        if (params_.fp_output.nav2_mode) {
+                            // Get FP_POI -> FP_POISH
+                            tf_map["POIPOISH"] = std::make_shared<geometry_msgs::TransformStamped>(tf);
+                        }
+                    } else if (tf.child_frame_id == "FP_ENU0" && tf.header.frame_id == "FP_ECEF") {
+                        static_br_.sendTransform(tf);
+
+                        // Append TF if Nav2 mode is selected
+                        if (params_.fp_output.nav2_mode) {
+                            // Get FP_ECEF -> FP_ENU0
+                            tf_map["ECEFENU0"] = std::make_shared<geometry_msgs::TransformStamped>(tf);
+                        }
                     } else {
                         static_br_.sendTransform(tf);
                     }
@@ -368,20 +405,20 @@ void FixpositionDriverNode::PublishNmea() {
     }
 }
 
-void FixpositionDriverNode::WsCallback(const fixposition_driver_ros1::SpeedConstPtr& msg) {
+void FixpositionDriverNode::WsCallbackRos(const fixposition_driver_ros1::SpeedConstPtr& msg) {
     std::unordered_map<std::string, std::vector<std::pair<bool, int>>> measurements;
     for (const auto& sensor : msg->sensors) {
         measurements[sensor.location].push_back({sensor.vx_valid, sensor.vx});
         measurements[sensor.location].push_back({sensor.vy_valid, sensor.vy});
         measurements[sensor.location].push_back({sensor.vz_valid, sensor.vz});
     }
-    FixpositionDriver::WsCallback(measurements);
+    WsCallback(measurements);
 }
 
-void FixpositionDriverNode::RtcmCallback(const std_msgs::UInt8MultiArray::ConstPtr& msg) {
-    const void* rtcm_msg = &(msg->data[0]);
-    size_t msg_size = msg->layout.dim[0].size;
-    FixpositionDriver::RtcmCallback(rtcm_msg, msg_size);
+void FixpositionDriverNode::RtcmCallbackRos(const rtcm_msgs::MessageConstPtr& msg) {
+    const void* rtcm_msg = &(msg->message[0]);
+    size_t msg_size = msg->message.size();
+    RtcmCallback(rtcm_msg, msg_size);
 }
 
 void FixpositionDriverNode::BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header,

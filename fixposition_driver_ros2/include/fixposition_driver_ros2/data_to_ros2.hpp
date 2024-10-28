@@ -119,6 +119,23 @@ void OdometryDataToTf(const FP_ODOMETRY& data, std::shared_ptr<tf2_ros::Transfor
  * @brief
  *
  * @param[in] data
+ * @param[out] tf
+ */
+void OdomToTf(const OdometryData& data, geometry_msgs::msg::TransformStamped& tf);
+
+/**
+ * @brief
+ *
+ * @param[in] tf_map
+ * @param[out] static_br_
+ * @param[out] br_
+ */
+void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::msg::TransformStamped>>& tf_map, std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_br_, std::shared_ptr<tf2_ros::TransformBroadcaster> br_);
+
+/**
+ * @brief
+ *
+ * @param[in] data
  * @param[out] msg
  */
 void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr pub);

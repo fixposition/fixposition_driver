@@ -595,24 +595,84 @@ void OdometryDataToTf(const FP_ODOMETRY& data, std::shared_ptr<tf2_ros::Transfor
             return;
         }
 
-        // Create message
-        geometry_msgs::msg::TransformStamped msg;
-
         // Populate message
-        msg.header.frame_id = data.odom.frame_id;
-        msg.child_frame_id = data.odom.child_frame_id;
-
-        if (data.odom.stamp.tow == 0.0 && data.odom.stamp.wno == 0) {
-            msg.header.stamp = rclcpp::Clock().now();
-        } else {
-            msg.header.stamp = GpsTimeToMsgTime(data.odom.stamp);
-        }
-
-        msg.transform.rotation = tf2::toMsg(data.odom.pose.orientation);
-        tf2::toMsg(data.odom.pose.position, msg.transform.translation);
+        geometry_msgs::msg::TransformStamped msg;
+        OdomToTf(data.odom, msg);
 
         // Publish message
         pub->sendTransform(msg);
+    }
+}
+
+void OdomToTf(const OdometryData& data, geometry_msgs::msg::TransformStamped& tf) {
+    // Populate message
+    tf.header.frame_id = data.frame_id;
+    tf.child_frame_id = data.child_frame_id;
+
+    if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
+        tf.header.stamp = rclcpp::Clock().now();
+    } else {
+        tf.header.stamp = GpsTimeToMsgTime(data.stamp);
+    }
+
+    tf.transform.rotation = tf2::toMsg(data.pose.orientation);
+    tf2::toMsg(data.pose.position, tf.transform.translation);
+}
+
+void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::msg::TransformStamped>>& tf_map, std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_br_, std::shared_ptr<tf2_ros::TransformBroadcaster> br_) {
+    if (tf_map.at("ECEFENU0") && tf_map.at("POIPOISH") && tf_map.at("ECEFPOISH") && tf_map.at("ENU0POI")) {
+        // Publish FP_ECEF -> map
+        tf_map.at("ECEFENU0")->child_frame_id = "map";
+        static_br_->sendTransform(*tf_map.at("ECEFENU0"));
+
+        // Compute FP_ENU0 -> FP_POISH
+        // Extract translation and rotation from ECEFENU0
+        geometry_msgs::msg::Vector3 trans_ecef_enu0 = tf_map.at("ECEFENU0")->transform.translation;
+        geometry_msgs::msg::Quaternion rot_ecef_enu0 = tf_map.at("ECEFENU0")->transform.rotation;
+        Eigen::Vector3d t_ecef_enu0_;
+        t_ecef_enu0_ << trans_ecef_enu0.x, trans_ecef_enu0.y, trans_ecef_enu0.z;
+        Eigen::Quaterniond q_ecef_enu0_(rot_ecef_enu0.w, rot_ecef_enu0.x, rot_ecef_enu0.y, rot_ecef_enu0.z);
+
+        // Extract translation and rotation from ECEFPOISH
+        geometry_msgs::msg::Vector3 trans_ecef_poish = tf_map.at("ECEFPOISH")->transform.translation;
+        geometry_msgs::msg::Quaternion rot_ecef_poish = tf_map.at("ECEFPOISH")->transform.rotation;
+        Eigen::Vector3d t_ecef_poish;
+        t_ecef_poish << trans_ecef_poish.x, trans_ecef_poish.y, trans_ecef_poish.z;
+        Eigen::Quaterniond q_ecef_poish(rot_ecef_poish.w, rot_ecef_poish.x, rot_ecef_poish.y, rot_ecef_poish.z);
+
+        // Compute the ENU transformation
+        const Eigen::Vector3d t_enu0_poish = fixposition::TfEnuEcef(t_ecef_poish, fixposition::TfWgs84LlhEcef(t_ecef_enu0_));
+        const Eigen::Quaterniond q_enu0_poish = q_ecef_enu0_.inverse() * q_ecef_poish;
+
+        // Create tf2::Transform tf_ENU0POISH
+        tf2::Transform tf_ENU0POISH;
+        tf_ENU0POISH.setOrigin(tf2::Vector3(t_enu0_poish.x(), t_enu0_poish.y(), t_enu0_poish.z()));
+        tf2::Quaternion tf_q_enu0_poish(q_enu0_poish.x(), q_enu0_poish.y(), q_enu0_poish.z(), q_enu0_poish.w());
+        tf_ENU0POISH.setRotation(tf_q_enu0_poish);
+
+        // Publish map -> odom
+        // Multiply the transforms
+        tf2::Transform tf_ENU0POI;
+        tf2::fromMsg(tf_map.at("ENU0POI")->transform, tf_ENU0POI);
+        tf2::Transform tf_combined = tf_ENU0POI * tf_ENU0POISH.inverse();
+
+        // Create a new TransformStamped message
+        geometry_msgs::msg::TransformStamped tf_map_odom;
+        tf_map_odom.header.stamp = rclcpp::Clock().now();
+        tf_map_odom.header.frame_id = "map";
+        tf_map_odom.child_frame_id = "odom";
+        tf_map_odom.transform = tf2::toMsg(tf_combined);
+        br_->sendTransform(tf_map_odom);
+
+        // Publish odom -> base_link
+        geometry_msgs::msg::TransformStamped tf_odom_base;
+        tf_odom_base.header.stamp = rclcpp::Clock().now();
+        tf_odom_base.header.frame_id = "odom";
+        tf_odom_base.child_frame_id = "base_link";
+        tf_odom_base.transform = tf2::toMsg(tf_ENU0POISH);
+
+        // Send the transform
+        br_->sendTransform(tf_odom_base);
     }
 }
 

@@ -21,6 +21,8 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   message_generation
   eigen_conversions
+  tf2_ros
+  tf2_geometry_msgs
 )
 add_message_files(
   FILES
@@ -61,8 +63,8 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS
-  tf
-  roscpp geometry_msgs
+  tf tf2_ros
+  roscpp geometry_msgs tf2_geometry_msgs
   nav_msgs std_msgs message_runtime
 )
 

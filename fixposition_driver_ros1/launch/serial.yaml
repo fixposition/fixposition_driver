@@ -10,7 +10,8 @@ fp_output:
     rate: 200
     reconnect_delay: 5.0 # wait time in [s] until retry connection
     cov_warning: false
+    nav2_mode: false
 
 customer_input:
     speed_topic: "/fixposition/speed"
-    rtcm_topic: "/fixposition/rtcm"
+    rtcm_topic: "/rtcm"

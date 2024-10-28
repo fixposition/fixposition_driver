@@ -257,66 +257,67 @@ bool FixpositionDriver::RunOnce() {
 }
 
 bool FixpositionDriver::ReadAndPublish() {
-    char readBuf[8192];
-
-    ssize_t rv;
-    if (params_.fp_output.type == INPUT_TYPE::TCP) {
-        rv = recv(client_fd_, (void*)&readBuf, sizeof(readBuf), MSG_DONTWAIT);
-    } else if (params_.fp_output.type == INPUT_TYPE::SERIAL) {
-        rv = read(client_fd_, (void*)&readBuf, sizeof(readBuf));
-    } else {
-        rv = 0;
-    }
-
-    if (rv == 0) {
-        std::cerr << "Connection closed.\n";
-        return false;
-    }
-
-    if (rv < 0 && errno == EAGAIN) {
-        /* no data for now, call back when the socket is readable */
+    int msg_size = 0;
+    // Nov B
+    msg_size = IsNovMessage(readBuf, buf_size);
+    if (msg_size > 0) {
+        NovConvertAndPublish(readBuf);
+        buf_size -= msg_size;
+        if (buf_size > 0) {
+            memmove(readBuf, &readBuf[msg_size], buf_size);
+        }
         return true;
-    }
-    if (rv < 0) {
-        std::cerr << "Connection error.\n";
-        return false;
-    }
-
-    ssize_t start_id = 0;
-    while (start_id < rv) {
-        int msg_size = 0;
-        // Nov B
-        msg_size = IsNovMessage((uint8_t*)&readBuf[start_id], rv - start_id);
-        if (msg_size > 0) {
-            NovConvertAndPublish((uint8_t*)&readBuf[start_id]);
-            start_id += msg_size;
-            continue;
-        }
-        if (msg_size == 0) {
-            // do nothing
-        }
-        if (msg_size < 0) {
-            break;
-        }
-
+    } else if (msg_size == 0) {
         // Nmea (incl. FP_A)
-        msg_size = IsNmeaMessage(&readBuf[start_id], rv - start_id);
+        msg_size = IsNmeaMessage((char*)readBuf, buf_size);
         if (msg_size > 0) {
-            // NovConvertAndPublish(start, msg_size);
-            std::string msg(&readBuf[start_id], msg_size);
-            NmeaConvertAndPublish(msg);
-            start_id += msg_size;
-            continue;
+            NmeaConvertAndPublish({(const char*)readBuf, (const char*)readBuf + msg_size});
+            buf_size -= msg_size;
+            if (buf_size > 0) {
+                memmove(readBuf, &readBuf[msg_size], buf_size);
+            }
+            return true;
+        } else if (msg_size == 0) {
+            // If not NOV_B nor NMEA, remove 1 char
+            if (buf_size > 0) {
+                buf_size -= 1;
+                memmove(readBuf, &readBuf[1], buf_size);
+            }
+        } else {
+            // Wait for more data
         }
-        if (msg_size == 0) {
-            // do nothing
-        }
-        if (msg_size < 0) {
-            break;
+    } else {
+        // wait for more data
+    }
+
+    // Read more data from the TCP/Serial port
+    int rem_size = sizeof(readBuf) - buf_size;
+    if (rem_size > 0) {
+        ssize_t rv;
+        if (params_.fp_output.type == INPUT_TYPE::TCP) {
+            rv = recv(client_fd_, (void*)&readBuf[buf_size], sizeof(readBuf) - buf_size, MSG_DONTWAIT);
+        } else if (params_.fp_output.type == INPUT_TYPE::SERIAL) {
+            rv = read(client_fd_, (void*)&readBuf[buf_size], sizeof(readBuf) - buf_size);
+        } else {
+            rv = 0;
         }
 
-        // No Match, increment by 1
-        ++start_id;
+        if (rv == 0) {
+            std::cerr << "Connection closed.\n";
+            return false;
+        }
+        
+        if (rv < 0 && errno == EAGAIN) {
+            /* no data for now, call back when the socket is readable */
+            return true;
+        } 
+        
+        if (rv < 0) {
+            std::cerr << "Connection error.\n";
+            return false;
+        }
+
+        buf_size += rv;
     }
 
     return true;

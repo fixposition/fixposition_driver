@@ -149,6 +149,8 @@ class FixpositionDriver {
     int client_fd_ = -1;  //!< TCP or Serial file descriptor
     int connection_status_ = -1;
     struct termios options_save_;
+    uint8_t readBuf[8192];
+    int buf_size = 0;
 };
 }  // namespace fixposition
 #endif  //__FIXPOSITION_DRIVER_LIB_FIXPOSITION_DRIVER__

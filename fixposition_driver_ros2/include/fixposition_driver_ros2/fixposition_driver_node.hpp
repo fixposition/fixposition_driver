@@ -43,9 +43,9 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     void RegisterObservers();
 
-    void WsCallback(const fixposition_driver_ros2::msg::Speed::ConstSharedPtr msg);
+    void WsCallbackRos(const fixposition_driver_ros2::msg::Speed::ConstSharedPtr msg);
 
-    void RtcmCallback(const std_msgs::msg::UInt8MultiArray::ConstSharedPtr msg);
+    void RtcmCallbackRos(const rtcm_msgs::msg::Message::ConstSharedPtr msg);
 
    private:
     /**
@@ -68,7 +68,7 @@ class FixpositionDriverNode : public FixpositionDriver {
 
     // ROS subscribers
     rclcpp::Subscription<fixposition_driver_ros2::msg::Speed>::SharedPtr ws_sub_;  //!< wheelspeed message subscriber
-    rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr rtcm_sub_;  //!< RTCM3 message subscriber
+    rclcpp::Subscription<rtcm_msgs::msg::Message>::SharedPtr rtcm_sub_;            //!< RTCM3 message subscriber
 
     // ROS publishers
     // FP_A messages
@@ -126,6 +126,14 @@ class FixpositionDriverNode : public FixpositionDriver {
     // Previous state
     Eigen::Vector3d prev_pos;
     Eigen::MatrixXd prev_cov;
+
+    // Nav2 TF map
+    std::map<std::string, std::shared_ptr<geometry_msgs::msg::TransformStamped>> tf_map = {
+        {"ECEFENU0", nullptr},
+        {"POIPOISH", nullptr},
+        {"ECEFPOISH", nullptr},
+        {"ENU0POI", nullptr}
+    };
 };
 
 }  // namespace fixposition
