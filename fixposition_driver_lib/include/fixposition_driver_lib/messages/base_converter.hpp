@@ -186,6 +186,8 @@ inline times::GpsTime ConvertGpsTime(const std::string& gps_wno, const std::stri
 inline Eigen::Matrix<double, 3, 3> BuildCovMat3D(const double xx, const double yy, const double zz, 
                                                  const double xy, const double yz, const double xz) {
     Eigen::Matrix<double, 3, 3> cov;
+    cov.setZero();
+
     // Diagonals
     cov(0, 0) = xx;   // 0
     cov(1, 1) = yy;   // 4
@@ -227,6 +229,8 @@ inline Eigen::Matrix<double, 6, 6> BuildCovMat6D(const double xx, const double y
                                                  const double yz, const double xz, double xx1, const double yy1,
                                                  const double zz1, const double xy1, const double yz1, double xz1) {
     Eigen::Matrix<double, 6, 6> cov;
+    cov.setZero();
+
     // Diagonals
     cov(0, 0) = xx;   // 0
     cov(1, 1) = yy;   // 7
