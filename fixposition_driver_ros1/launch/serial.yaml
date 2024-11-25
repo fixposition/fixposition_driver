@@ -6,7 +6,7 @@ fp_output:
              ]
     type: serial
     port: "/dev/ttyUSB0"
-    serial_baudrate: 115200
+    baudrate: 115200
     rate: 200
     reconnect_delay: 5.0 # wait time in [s] until retry connection
     cov_warning: false
