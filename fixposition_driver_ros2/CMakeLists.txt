@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 project(fixposition_driver_ros2)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic\
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror\
     -Wshadow -Wunused-parameter -Wformat -Wpointer-arith")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -24,6 +24,8 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(fixposition_driver_lib REQUIRED)
 find_package(rtcm_msgs REQUIRED)
+find_package(fpsdk_common REQUIRED)
+find_package(fpsdk_ros2 REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   msg/Speed.msg
@@ -66,6 +68,7 @@ include_directories(
   ${rtcm_msgs_INCLUDE_DIR}
   ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
+  ${fpsdk_common_INLCUDE_DIR} ${fpsdk_ros2_INLCUDE_DIR}
 )
 
 add_executable(
@@ -91,6 +94,7 @@ target_link_libraries(
   ${Boost_LIBRARIES}
   ${EIGEN3_LIBRARIES}
   ${cpp_typesupport_target}
+  ${fpsdk_common_LIBRARIES} ${fpsdk_ros2_LIBRARIES}
   pthread
 )
 

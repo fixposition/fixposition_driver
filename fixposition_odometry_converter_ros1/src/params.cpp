@@ -1,22 +1,27 @@
 /**
- *  @file
- *  @brief Implementation of Parameter Loading for the odometry parameters
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of Parameter Loading for the odometry parameters
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+
 /* PACKAGE */
-#include <fixposition_odometry_converter_ros1/params.hpp>
-#include <fixposition_odometry_converter_ros1/ros_msgs.hpp>
+#include "fixposition_odometry_converter_ros1/params.hpp"
+
+#include "fixposition_odometry_converter_ros1/ros_msgs.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 bool OdomInputParams::LoadFromRos(const std::string& ns) {
     if (!ros::param::get(ns + "/fixposition_speed_topic", fixposition_speed_topic))
@@ -48,4 +53,5 @@ bool OdomInputParams::LoadFromRos(const std::string& ns) {
     return true;
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition

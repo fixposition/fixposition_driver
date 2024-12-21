@@ -1,22 +1,27 @@
 /**
- *  @file
- *  @brief Implementation of NMEA-GP-GGA parser
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of NMEA-GP-GGA parser
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+#include <fpsdk_common/logging.hpp>
+
 /* PACKAGE */
-#include <fixposition_driver_lib/messages/nmea_type.hpp>
-#include <fixposition_driver_lib/messages/base_converter.hpp>
+#include "fixposition_driver_lib/messages/base_converter.hpp"
+#include "fixposition_driver_lib/messages/nmea_type.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 /// msg field indices
 static constexpr int time_idx = 1;
@@ -49,7 +54,7 @@ void GP_GGA::ConvertFromTokens(const std::vector<std::string>& tokens) {
     // Check if message size is wrong
     bool ok = tokens.size() == kSize_;
     if (!ok) {
-        std::cout << "Error in parsing NMEA-GP-GGA string with " << tokens.size() << " fields!\n";
+        WARNING_S("Error in parsing NMEA-GP-GGA string with " << tokens.size() << " fields");
         ResetData();
         return;
     }
@@ -64,23 +69,23 @@ void GP_GGA::ConvertFromTokens(const std::vector<std::string>& tokens) {
     const std::string _lonstr = tokens.at(lon_idx);
 
     if (!_latstr.empty()) {
-        _lat = StringToDouble(_latstr.substr(0,2)) + StringToDouble((_latstr.substr(2))) / 60;
+        _lat = StringToDouble(_latstr.substr(0, 2)) + StringToDouble((_latstr.substr(2))) / 60;
         if (tokens.at(lat_ns_idx).compare("S") == 0) _lat *= -1;
     }
 
     if (!_lonstr.empty()) {
-        _lon = StringToDouble(_lonstr.substr(0,3)) + StringToDouble((_lonstr.substr(3))) / 60;
+        _lon = StringToDouble(_lonstr.substr(0, 3)) + StringToDouble((_lonstr.substr(3))) / 60;
         if (tokens.at(lon_ew_idx).compare("W") == 0) _lon *= -1;
     }
 
     llh = Eigen::Vector3d(_lat, _lon, StringToDouble(tokens.at(alt_idx)));
 
     // LLH indicators
-    lat_ns   = StringToChar(tokens.at(lat_ns_idx));
-    lon_ew   = StringToChar(tokens.at(lon_ew_idx));
+    lat_ns = StringToChar(tokens.at(lat_ns_idx));
+    lon_ew = StringToChar(tokens.at(lon_ew_idx));
     alt_unit = StringToChar(tokens.at(alt_unit_idx));
-    quality  = ParseStatusFlag(tokens, quality_idx);
-    num_sv   = StringToInt(tokens.at(num_sv_idx));
+    quality = ParseStatusFlag(tokens, quality_idx);
+    num_sv = StringToInt(tokens.at(num_sv_idx));
 
     // Dilution of precision
     hdop = StringToDouble(tokens.at(hdop_idx));
@@ -93,4 +98,5 @@ void GP_GGA::ConvertFromTokens(const std::vector<std::string>& tokens) {
     sentence = join(tokens, ',');
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition

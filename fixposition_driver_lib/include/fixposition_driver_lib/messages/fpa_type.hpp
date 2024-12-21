@@ -1,25 +1,29 @@
 /**
- *  @file
- *  @brief Declaration of FP_A type messages
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Declaration of FP_A type messages
  */
 
-#ifndef __FIXPOSITION_DRIVER_LIB_CONVERTER_FPA_TYPE__
-#define __FIXPOSITION_DRIVER_LIB_CONVERTER_FPA_TYPE__
+#ifndef __FIXPOSITION_DRIVER_LIB_CONVERTER_FPA_TYPE_HPP__
+#define __FIXPOSITION_DRIVER_LIB_CONVERTER_FPA_TYPE_HPP__
+
+/* LIBC/STL */
+
+/* EXTERNAL */
 
 /* PACKAGE */
-#include <fixposition_driver_lib/messages/msg_data.hpp>
-#include <fixposition_driver_lib/time_conversions.hpp>
+#include "fixposition_driver_lib/messages/msg_data.hpp"
+#include "fixposition_driver_lib/time_conversions.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 // ------------ FP_A-ODOMETRY ------------
 
@@ -35,7 +39,7 @@ struct FP_ODOMETRY {
     int gnss2_status;
     int wheelspeed_status;
     std::string version;
-    
+
     // Message structure
     const std::string frame_id = "FP_ECEF";
     const std::string child_frame_id = "FP_POI";
@@ -80,7 +84,7 @@ struct FP_ODOMETRY {
 
 struct FP_ODOMENU {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    
+
     // Message fields
     OdometryData odom;
     Eigen::Vector3d acceleration;
@@ -132,7 +136,7 @@ struct FP_ODOMENU {
 
 struct FP_ODOMSH {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    
+
     // Message fields
     OdometryData odom;
     Eigen::Vector3d acceleration;
@@ -184,7 +188,7 @@ struct FP_ODOMSH {
 
 struct FP_ODOMSTATUS {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    
+
     // Message fields
     times::GpsTime stamp;
     int init_status;
@@ -268,9 +272,9 @@ struct FP_ODOMSTATUS {
 
 struct FP_LLH {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    
+
     // Message fields
-    times::GpsTime stamp;    
+    times::GpsTime stamp;
     Eigen::Vector3d llh;
     Eigen::Matrix<double, 3, 3> cov;
 
@@ -300,7 +304,7 @@ struct FP_LLH {
 
 struct FP_TF {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    
+
     // Message fields
     TfData tf;
     bool valid_tf;
@@ -335,7 +339,7 @@ struct FP_TF {
 
 struct FP_RAWIMU {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    
+
     // Message fields
     ImuData imu;
 
@@ -365,7 +369,7 @@ struct FP_RAWIMU {
 
 struct FP_IMUBIAS {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    
+
     // Message fields
     times::GpsTime stamp;
     std::string frame_id;
@@ -416,7 +420,7 @@ struct FP_IMUBIAS {
 
 struct FP_CORRIMU {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    
+
     // Message fields
     ImuData imu;
 
@@ -446,7 +450,7 @@ struct FP_CORRIMU {
 
 struct FP_GNSSANT {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    
+
     // Message fields
     times::GpsTime stamp;
     std::string gnss1_state;
@@ -488,7 +492,7 @@ struct FP_GNSSANT {
 
 struct FP_GNSSCORR {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    
+
     // Message fields
     times::GpsTime stamp;
     int gnss1_fix;
@@ -551,7 +555,7 @@ struct FP_GNSSCORR {
 
 struct FP_TEXT {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    
+
     // Message fields
     std::string level;
     std::string text;
@@ -578,7 +582,7 @@ struct FP_TEXT {
 
 struct FP_EOE {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    
+
     // Message fields
     times::GpsTime stamp;
     std::string epoch;
@@ -605,7 +609,7 @@ struct FP_EOE {
 
 struct FP_TP {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    
+
     // Message fields
     std::string tp_name;
     std::string timebase;
@@ -640,5 +644,6 @@ struct FP_TP {
     }
 };
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
-#endif  // __FIXPOSITION_DRIVER_LIB_CONVERTER_FPA_TYPE__
+#endif  // __FIXPOSITION_DRIVER_LIB_CONVERTER_FPA_TYPE_HPP__

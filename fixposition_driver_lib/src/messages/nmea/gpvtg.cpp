@@ -1,22 +1,27 @@
 /**
- *  @file
- *  @brief Implementation of NMEA-GP-VTG parser
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of NMEA-GP-VTG parser
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+#include <fpsdk_common/logging.hpp>
+
 /* PACKAGE */
-#include <fixposition_driver_lib/messages/nmea_type.hpp>
-#include <fixposition_driver_lib/messages/base_converter.hpp>
+#include "fixposition_driver_lib/messages/base_converter.hpp"
+#include "fixposition_driver_lib/messages/nmea_type.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 /// msg field indices
 static constexpr int cog_true_idx = 1;
@@ -33,7 +38,7 @@ void GP_VTG::ConvertFromTokens(const std::vector<std::string>& tokens) {
     // Check if message size is wrong
     bool ok = tokens.size() == kSize_;
     if (!ok) {
-        std::cout << "Error in parsing NMEA-GP-VTG string with " << tokens.size() << " fields!\n";
+        WARNING_S("Error in parsing NMEA-GP-VTG string with " << tokens.size() << " fields");
         ResetData();
         return;
     }
@@ -54,4 +59,5 @@ void GP_VTG::ConvertFromTokens(const std::vector<std::string>& tokens) {
     mode = StringToChar(tokens.at(mode_idx));
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition

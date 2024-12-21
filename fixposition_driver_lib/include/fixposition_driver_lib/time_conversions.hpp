@@ -1,28 +1,33 @@
 /**
- *  @file
- *  @brief Declaration of time conversion functions
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Declaration of time conversion functions
  */
 
-#ifndef __FIXPOSITION_DRIVER_LIB_TIME_CONVERSIONS__
-#define __FIXPOSITION_DRIVER_LIB_TIME_CONVERSIONS__
+#ifndef __FIXPOSITION_DRIVER_LIB_TIME_CONVERSIONS_HPP__
+#define __FIXPOSITION_DRIVER_LIB_TIME_CONVERSIONS_HPP__
+
+/* LIBC/STL */
 
 /* EXTERNAL */
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Geometry>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <fpsdk_common/logging.hpp>
+
+/* PACKAGE */
 
 namespace BOOST_POSIX = boost::posix_time;
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 namespace times {
 /**
@@ -88,9 +93,7 @@ class GpsTime {
 
     GpsTime& operator+=(const double sec) {
         double gps_sec_tmp = tow + sec;
-        // std::cout << gps_sec_tmp << std::endl;
         int delta_week = std::floor(gps_sec_tmp / Constants::sec_per_week);
-        // std::cout << delta_week << std::endl;
         wno += delta_week;
         tow = gps_sec_tmp - delta_week * Constants::sec_per_week;
         return *this;
@@ -197,21 +200,6 @@ inline BOOST_POSIX::ptime GpsTimeToPtime(const GpsTime& gps_time) {
 }
 
 /**
- * @brief
- *  Only work after 2017.1.1
- *
- * @param[in] boost_ptime
- * @return GpsTime
- */
-inline GpsTime PtimeToGpsTime(const BOOST_POSIX::ptime& boost_ptime) {
-    BOOST_POSIX::time_duration gps_duration = boost_ptime - Constants::gps_epoch_begin;
-    int weekcount = gps_duration.total_seconds() / Constants::sec_per_week;
-    double sec_in_week =
-        gps_duration.total_microseconds() / 1e6 - weekcount * Constants::sec_per_week + Constants::gps_leap_time_s;
-    return GpsTime(weekcount, sec_in_week);
-}
-
-/**
  * @brief Convert UTC time with milliseconds to GPS time
  *
  * @param[in] utcTimeString
@@ -221,7 +209,7 @@ inline GpsTime PtimeToGpsTime(const BOOST_POSIX::ptime& boost_ptime) {
  */
 inline void convertToGPSTime(const std::string& utcTimeString, std::string& gpsWeek, std::string& gpsTimeOfWeek) {
     // Define constants
-    const double secondsInWeek = 604800.0; // 7 days in seconds
+    const double secondsInWeek = 604800.0;  // 7 days in seconds
 
     // Parse the input string
     std::tm tmTime = {};
@@ -233,20 +221,20 @@ inline void convertToGPSTime(const std::string& utcTimeString, std::string& gpsW
     std::string milliseconds;
     iss >> dot >> milliseconds;
     double ms = std::stod("0." + milliseconds);
-    
+
     if (iss.fail()) {
-        std::cerr << "Error parsing input string.\n";
+        WARNING("Error parsing input string.");
         return;
     }
-    
+
     // Convert UTC time to time since epoch
     std::time_t utcTime = std::mktime(&tmTime);
 
     // GPS epoch time (January 6, 1980)
     std::tm gpsEpoch = {};
-    gpsEpoch.tm_year = 80; // years since 1900
-    gpsEpoch.tm_mon = 0;   // months since January
-    gpsEpoch.tm_mday = 6;  // day of the month
+    gpsEpoch.tm_year = 80;  // years since 1900
+    gpsEpoch.tm_mon = 0;    // months since January
+    gpsEpoch.tm_mday = 6;   // day of the month
     std::time_t gpsEpochTime = std::mktime(&gpsEpoch);
 
     // Calculate GPS time of week and GPS week number
@@ -267,5 +255,7 @@ inline void convertToGPSTime(const std::string& utcTimeString, std::string& gpsW
 }
 
 }  // namespace times
+
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
-#endif  // __FIXPOSITION_DRIVER_LIB_TIME_CONVERSIONS__
+#endif  // __FIXPOSITION_DRIVER_LIB_TIME_CONVERSIONS_HPP__

@@ -2,7 +2,7 @@ fixposition_driver_ros2:
   ros__parameters:
     fp_output:
       formats: [
-                "ODOMETRY", "LLH", "ODOMENU", "ODOMSH", "ODOMSTATUS", "RAWIMU", "CORRIMU", 
+                "ODOMETRY", "LLH", "ODOMENU", "ODOMSH", "ODOMSTATUS", "RAWIMU", "CORRIMU",
                 "IMUBIAS", "GNSSANT", "GNSSCORR", "EOE", "TEXT", "TF", "TP", # FP_A
                 "GPGGA", "GPGLL", "GNGSA", "GPGST", "GPHDT", "GPRMC", "GPVTG", "GPZDA", "GXGSV" # NMEA
                ]

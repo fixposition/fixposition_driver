@@ -1,24 +1,28 @@
 /**
- *  @file
- *  @brief Implementation of Parameter Loading
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of Parameter Loading
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+#include <fpsdk_ros2/ext/rclcpp.hpp>
+
 /* PACKAGE */
-#include <fixposition_driver_ros2/params.hpp>
+#include "fixposition_driver_ros2/params.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
-bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& ns, FpOutputParams& params) {
-    const std::string RATE = ns + ".rate";
+bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& node, const std::string& ns, FpOutputParams& params) {
     const std::string RECONNECT_DELAY = ns + ".reconnect_delay";
     const std::string TYPE = ns + ".type";
     const std::string FORMATS = ns + ".formats";
@@ -29,7 +33,6 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     const std::string COV_WARNING = ns + ".cov_warning";
     const std::string NAV2_MODE = ns + ".nav2_mode";
 
-    node->declare_parameter(RATE, 100);
     node->declare_parameter(RECONNECT_DELAY, 5.0);
     node->declare_parameter(TYPE, "tcp");
     node->declare_parameter(FORMATS, std::vector<std::string>());
@@ -40,11 +43,6 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     node->declare_parameter(COV_WARNING, false);
     node->declare_parameter(NAV2_MODE, false);
     // read parameters
-    if (node->get_parameter(RATE, params.rate)) {
-        RCLCPP_INFO(node->get_logger(), "%s : %d", RATE.c_str(), params.rate);
-    } else {
-        RCLCPP_WARN(node->get_logger(), "Using Default %s : %d", RATE.c_str(), params.rate);
-    }
     if (node->get_parameter(RECONNECT_DELAY, params.reconnect_delay)) {
         RCLCPP_INFO(node->get_logger(), "%s : %f", RECONNECT_DELAY.c_str(), params.reconnect_delay);
     } else {
@@ -106,7 +104,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     return true;
 }
 
-bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& ns, CustomerInputParams& params) {
+bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& node, const std::string& ns, CustomerInputParams& params) {
     const std::string SPEED_TOPIC = ns + ".speed_topic";
     node->declare_parameter(SPEED_TOPIC, "/fixposition/speed");
     node->get_parameter(SPEED_TOPIC, params.speed_topic);
@@ -120,7 +118,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& n
     return true;
 }
 
-bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, FixpositionDriverParams& params) {
+bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& node, FixpositionDriverParams& params) {
     bool ok = true;
 
     ok &= LoadParamsFromRos2(node, "fp_output", params.fp_output);
@@ -129,4 +127,5 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, FixpositionDriverPar
     return ok;
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition

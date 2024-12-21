@@ -1,0 +1,15 @@
+fail_fast: false
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+      #- id: check-json
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
+    hooks:
+      - id: clang-format
+        args:
+          - "-i"
+exclude: '(.*\.svg|.*/test/data/.*|\.devcontainer/.*|\.vscode/.*)'

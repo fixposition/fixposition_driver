@@ -1,4 +1,8 @@
-build/*
+build
 doc_gen/*
 */doc_gen/*
-*.vscode*
+/.vscode*
+CATKIN_IGNORE
+COLCON_IGNORE
+/ros1_ws
+/ros2_ws

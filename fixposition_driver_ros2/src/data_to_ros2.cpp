@@ -1,27 +1,34 @@
 /**
- *  @file
- *  @brief Convert Data classes to ROS2 msgs
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Convert Data classes to ROS2 msgs
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+#include <fpsdk_common/trafo.hpp>
+
 /* PACKAGE */
-#include <fixposition_driver_ros2/data_to_ros2.hpp>
+#include "fixposition_driver_ros2/data_to_ros2.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
+
+using namespace fpsdk::common;
 
 void FpToRosMsg(const fixposition::OdometryData& data, rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub) {
     if (pub->get_subscription_count() > 0) {
         // Create message
         nav_msgs::msg::Odometry msg;
-        
+
         // Populate message
         if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
             msg.header.stamp = rclcpp::Clock().now();
@@ -43,7 +50,7 @@ void FpToRosMsg(const ImuData& data, rclcpp::Publisher<sensor_msgs::msg::Imu>::S
     if (pub->get_subscription_count() > 0) {
         // Create message
         sensor_msgs::msg::Imu msg;
-        
+
         // Populate message
         if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
             msg.header.stamp = rclcpp::Clock().now();
@@ -60,7 +67,6 @@ void FpToRosMsg(const ImuData& data, rclcpp::Publisher<sensor_msgs::msg::Imu>::S
     }
 }
 
-
 void FpToRosMsg(const FP_IMUBIAS& data, rclcpp::Publisher<fixposition_driver_ros2::msg::IMUBIAS>::SharedPtr pub) {
     if (pub->get_subscription_count() > 0) {
         // Create message
@@ -72,7 +78,7 @@ void FpToRosMsg(const FP_IMUBIAS& data, rclcpp::Publisher<fixposition_driver_ros
         } else {
             msg.header.stamp = GpsTimeToMsgTime(data.stamp);
         }
-        
+
         msg.header.frame_id = data.frame_id;
         msg.fusion_imu = data.fusion_imu;
         msg.imu_status = data.imu_status;
@@ -92,7 +98,7 @@ void FpToRosMsg(const FP_GNSSANT& data, rclcpp::Publisher<fixposition_driver_ros
     if (pub->get_subscription_count() > 0) {
         // Create message
         fixposition_driver_ros2::msg::GNSSANT msg;
-        
+
         // Populate message
         if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
             msg.header.stamp = rclcpp::Clock().now();
@@ -106,7 +112,7 @@ void FpToRosMsg(const FP_GNSSANT& data, rclcpp::Publisher<fixposition_driver_ros
         msg.gnss2_state = data.gnss2_state;
         msg.gnss2_power = data.gnss2_power;
         msg.gnss2_age = data.gnss2_age;
-        
+
         // Publish message
         pub->publish(msg);
     }
@@ -116,7 +122,7 @@ void FpToRosMsg(const FP_GNSSCORR& data, rclcpp::Publisher<fixposition_driver_ro
     if (pub->get_subscription_count() > 0) {
         // Create message
         fixposition_driver_ros2::msg::GNSSCORR msg;
-        
+
         // Populate message
         if (data.stamp.tow == 0.0 && data.stamp.wno == 0) {
             msg.header.stamp = rclcpp::Clock().now();
@@ -177,7 +183,7 @@ void FpToRosMsg(const FP_ODOMENU& data, rclcpp::Publisher<fixposition_driver_ros
         } else {
             msg.header.stamp = GpsTimeToMsgTime(data.odom.stamp);
         }
-        
+
         msg.header.frame_id = data.odom.frame_id;
         msg.pose_frame = data.odom.child_frame_id;
         msg.kin_frame = data.odom.child_frame_id;
@@ -207,7 +213,7 @@ void FpToRosMsg(const FP_ODOMETRY& data, rclcpp::Publisher<fixposition_driver_ro
         } else {
             msg.header.stamp = GpsTimeToMsgTime(data.odom.stamp);
         }
-        
+
         msg.header.frame_id = data.odom.frame_id;
         msg.pose_frame = data.odom.child_frame_id;
         msg.kin_frame = data.odom.child_frame_id;
@@ -221,7 +227,7 @@ void FpToRosMsg(const FP_ODOMETRY& data, rclcpp::Publisher<fixposition_driver_ro
         msg.gnss2_status = data.gnss2_status;
         msg.wheelspeed_status = data.wheelspeed_status;
         msg.version = data.version;
-        
+
         // Publish message
         pub->publish(msg);
     }
@@ -238,7 +244,7 @@ void FpToRosMsg(const FP_ODOMSH& data, rclcpp::Publisher<fixposition_driver_ros2
         } else {
             msg.header.stamp = GpsTimeToMsgTime(data.odom.stamp);
         }
-        
+
         msg.header.frame_id = data.odom.frame_id;
         msg.pose_frame = data.odom.child_frame_id;
         msg.kin_frame = data.odom.child_frame_id;
@@ -397,11 +403,11 @@ void FpToRosMsg(const GN_GSA& data, rclcpp::Publisher<fixposition_driver_ros2::m
         // Populate message
         msg.mode_op = data.mode_op;
         msg.mode_nav = data.mode_nav;
-        
+
         for (unsigned int i = 0; i < data.ids.size(); i++) {
-           msg.ids.push_back(data.ids.at(i));
+            msg.ids.push_back(data.ids.at(i));
         }
-        
+
         msg.pdop = data.pdop;
         msg.hdop = data.hdop;
         msg.vdop = data.vdop;
@@ -426,7 +432,7 @@ void FpToRosMsg(const GP_GST& data, rclcpp::Publisher<fixposition_driver_ros2::m
         msg.std_lat = data.std_lat;
         msg.std_lon = data.std_lon;
         msg.std_alt = data.std_alt;
-        
+
         // Publish message
         pub->publish(msg);
     }
@@ -441,7 +447,7 @@ void FpToRosMsg(const GX_GSV& data, rclcpp::Publisher<fixposition_driver_ros2::m
         msg.sentences = data.sentences;
         msg.sent_num = data.sent_num;
         msg.num_sats = data.num_sats;
-        
+
         for (unsigned int i = 0; i < data.sat_id.size(); i++) {
             msg.sat_id.push_back(data.sat_id.at(i));
             msg.elev.push_back(data.elev.at(i));
@@ -455,7 +461,6 @@ void FpToRosMsg(const GX_GSV& data, rclcpp::Publisher<fixposition_driver_ros2::m
         pub->publish(msg);
     }
 }
-
 
 void FpToRosMsg(const GP_HDT& data, rclcpp::Publisher<fixposition_driver_ros2::msg::GPHDT>::SharedPtr pub) {
     if (pub->get_subscription_count() > 0) {
@@ -619,7 +624,9 @@ void OdomToTf(const OdometryData& data, geometry_msgs::msg::TransformStamped& tf
     tf2::toMsg(data.pose.position, tf.transform.translation);
 }
 
-void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::msg::TransformStamped>>& tf_map, std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_br_, std::shared_ptr<tf2_ros::TransformBroadcaster> br_) {
+void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::msg::TransformStamped>>& tf_map,
+                   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_br_,
+                   std::shared_ptr<tf2_ros::TransformBroadcaster> br_) {
     if (tf_map.at("ECEFENU0") && tf_map.at("POIPOISH") && tf_map.at("ECEFPOISH") && tf_map.at("ENU0POI")) {
         // Publish FP_ECEF -> map
         tf_map.at("ECEFENU0")->child_frame_id = "map";
@@ -641,7 +648,7 @@ void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::ms
         Eigen::Quaterniond q_ecef_poish(rot_ecef_poish.w, rot_ecef_poish.x, rot_ecef_poish.y, rot_ecef_poish.z);
 
         // Compute the ENU transformation
-        const Eigen::Vector3d t_enu0_poish = fixposition::TfEnuEcef(t_ecef_poish, fixposition::TfWgs84LlhEcef(t_ecef_enu0_));
+        const Eigen::Vector3d t_enu0_poish = trafo::TfEnuEcef(t_ecef_poish, trafo::TfWgs84LlhEcef(t_ecef_enu0_));
         const Eigen::Quaterniond q_enu0_poish = q_ecef_enu0_.inverse() * q_ecef_poish;
 
         // Create tf2::Transform tf_ENU0POISH
@@ -676,11 +683,12 @@ void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::ms
     }
 }
 
-void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr pub) {
+void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data,
+                     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr pub) {
     if (pub->get_subscription_count() > 0) {
         // Create message
         sensor_msgs::msg::NavSatFix msg;
-    
+
         // Populate message header
         if (data.odom.stamp.tow == 0.0 && data.odom.stamp.wno == 0) {
             msg.header.stamp = rclcpp::Clock().now();
@@ -688,26 +696,26 @@ void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sen
             msg.header.stamp = GpsTimeToMsgTime(data.odom.stamp);
         }
         msg.header.frame_id = data.odom.child_frame_id;
-        
+
         // Populate LLH position
         Eigen::Map<Eigen::Matrix<double, 3, 3>> cov_map =
             Eigen::Map<Eigen::Matrix<double, 3, 3>>(msg.position_covariance.data());
-        
+
         if (data.odom.pose.position.isZero()) {
-            msg.latitude  = 0;
+            msg.latitude = 0;
             msg.longitude = 0;
-            msg.altitude  = 0;
+            msg.altitude = 0;
             msg.position_covariance_type = 0;
             cov_map = Eigen::Matrix3d::Zero();
         } else {
-            const Eigen::Vector3d llh_pos = TfWgs84LlhEcef(data.odom.pose.position);
-            msg.latitude  = RadToDeg(llh_pos(0));
+            const Eigen::Vector3d llh_pos = trafo::TfWgs84LlhEcef(data.odom.pose.position);
+            msg.latitude = RadToDeg(llh_pos(0));
             msg.longitude = RadToDeg(llh_pos(1));
-            msg.altitude  = llh_pos(2);
+            msg.altitude = llh_pos(2);
 
             // Populate LLH covariance
             const Eigen::Matrix3d p_cov_e = data.odom.pose.cov.topLeftCorner(3, 3);
-            const Eigen::Matrix3d C_l_e = RotEnuEcef(data.odom.pose.position);
+            const Eigen::Matrix3d C_l_e = trafo::RotEnuEcef(data.odom.pose.position);
             const Eigen::Matrix3d p_cov_l = C_l_e * p_cov_e * C_l_e.transpose();
             cov_map = p_cov_l;
             msg.position_covariance_type = 3;
@@ -720,7 +728,8 @@ void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sen
             msg.status.status = static_cast<int8_t>(NavSatStatusData::Status::STATUS_NO_FIX);
             msg.status.service = static_cast<uint16_t>(NavSatStatusData::Service::SERVICE_NONE);
 
-        } else if (status_flag >= static_cast<int8_t>(GnssStatus::FIX_TYPE_S2D) || status_flag < static_cast<int8_t>(GnssStatus::FIX_TYPE_RTK_FLOAT)) {
+        } else if (status_flag >= static_cast<int8_t>(GnssStatus::FIX_TYPE_S2D) ||
+                   status_flag < static_cast<int8_t>(GnssStatus::FIX_TYPE_RTK_FLOAT)) {
             msg.status.status = static_cast<int8_t>(NavSatStatusData::Status::STATUS_FIX);
             msg.status.service = static_cast<uint16_t>(NavSatStatusData::Service::SERVICE_ALL);
 
@@ -742,14 +751,14 @@ void OdomToImuMsg(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sensor
     if (pub->get_subscription_count() > 0) {
         // Create message
         sensor_msgs::msg::Imu msg;
-    
+
         // Populate message
         if (data.odom.stamp.tow == 0.0 && data.odom.stamp.wno == 0) {
             msg.header.stamp = rclcpp::Clock().now();
         } else {
             msg.header.stamp = GpsTimeToMsgTime(data.odom.stamp);
         }
-        
+
         msg.header.frame_id = data.odom.frame_id;
         tf2::toMsg(data.acceleration, msg.linear_acceleration);
         tf2::toMsg(data.odom.twist.angular, msg.angular_velocity);
@@ -773,7 +782,7 @@ void OdomToYprMsg(const OdometryData& data, rclcpp::Publisher<geometry_msgs::msg
         msg.header.frame_id = "FP_ENU";
 
         // Euler angle wrt. ENU frame in the order of Yaw Pitch Roll
-        Eigen::Vector3d enu_euler = RotToEul(data.pose.orientation.toRotationMatrix());
+        Eigen::Vector3d enu_euler = trafo::RotToEul(data.pose.orientation.toRotationMatrix());
         msg.vector.set__x(enu_euler.x());
         msg.vector.set__y(enu_euler.y());
         msg.vector.set__z(enu_euler.z());
@@ -783,8 +792,9 @@ void OdomToYprMsg(const OdometryData& data, rclcpp::Publisher<geometry_msgs::msg
     }
 }
 
-void JumpWarningMsg(std::shared_ptr<rclcpp::Node> node, const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff, 
-                    const Eigen::MatrixXd& prev_cov, rclcpp::Publisher<fixposition_driver_ros2::msg::COVWARN>::SharedPtr pub) {
+void JumpWarningMsg(std::shared_ptr<rclcpp::Node> node, const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff,
+                    const Eigen::MatrixXd& prev_cov,
+                    rclcpp::Publisher<fixposition_driver_ros2::msg::COVWARN>::SharedPtr pub) {
     if (pub->get_subscription_count() > 0) {
         // Create message
         fixposition_driver_ros2::msg::COVWARN msg;
@@ -799,15 +809,16 @@ void JumpWarningMsg(std::shared_ptr<rclcpp::Node> node, const times::GpsTime& st
         std::stringstream warn_msg;
         warn_msg << "Position jump detected! The change in position is greater than the estimated covariances. "
                  << "Position difference: [" << pos_diff[0] << ", " << pos_diff[1] << ", " << pos_diff[2] << "], "
-                 << "Covariances: [" << prev_cov(0,0) << ", " << prev_cov(1,1) << ", " << prev_cov(2,2) << "]";
+                 << "Covariances: [" << prev_cov(0, 0) << ", " << prev_cov(1, 1) << ", " << prev_cov(2, 2) << "]";
 
         RCLCPP_WARN(node->get_logger(), "%s", warn_msg.str().c_str());
         tf2::toMsg(pos_diff, msg.jump);
-        tf2::toMsg(Eigen::Vector3d(prev_cov(0,0),prev_cov(1,1),prev_cov(2,2)), msg.covariance);
+        tf2::toMsg(Eigen::Vector3d(prev_cov(0, 0), prev_cov(1, 1), prev_cov(2, 2)), msg.covariance);
 
         // Publish message
         pub->publish(msg);
     }
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition

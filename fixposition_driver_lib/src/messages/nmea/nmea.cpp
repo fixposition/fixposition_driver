@@ -1,22 +1,26 @@
 /**
- *  @file
- *  @brief Implementation of NMEA-GX-GSV parser
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of NMEA-GX-GSV parser
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+
 /* PACKAGE */
-#include <fixposition_driver_lib/messages/nmea_type.hpp>
-#include <fixposition_driver_lib/messages/base_converter.hpp>
+#include "fixposition_driver_lib/messages/base_converter.hpp"
+#include "fixposition_driver_lib/messages/nmea_type.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 void NmeaMessage::AddNmeaEpoch(const GP_GGA& msg) {
     // Populate time if empty
@@ -24,7 +28,7 @@ void NmeaMessage::AddNmeaEpoch(const GP_GGA& msg) {
         time_str = msg.time_str;
     }
     gpgga_time_str = msg.time_str;
-    
+
     // Populate LLH position
     llh = msg.llh;
 
@@ -40,7 +44,7 @@ void NmeaMessage::AddNmeaEpoch(const GP_GGA& msg) {
     // Populate differential data information
     diff_age = msg.diff_age;
     diff_sta = msg.diff_sta;
-    
+
     // Populate position covariance [m^2]
     cov(0, 0) = msg.hdop * msg.hdop;
     cov(1, 1) = msg.hdop * msg.hdop;
@@ -55,7 +59,7 @@ void NmeaMessage::AddNmeaEpoch(const GP_GLL& msg) {
     if (time_str == "") {
         time_str = msg.time_str;
     }
-    
+
     // Populate latitude and longitude if the vector is empty
     if (llh.isZero()) {
         llh(0) = msg.latlon(0);
@@ -89,14 +93,18 @@ void NmeaMessage::AddNmeaEpoch(const GP_GST& msg) {
     std_alt = msg.std_alt;
 }
 
-void NmeaMessage::AddNmeaEpoch(const GX_GSV& msg) {    
+void NmeaMessage::AddNmeaEpoch(const GX_GSV& msg) {
     // Populate GNSS signal stats
     for (u_int8_t i = 0; i < msg.sat_id.size(); i++) {
-        GnssSignalStats *stats = &gnss_signals[msg.type][msg.sat_id.at(i)];
+        GnssSignalStats* stats = &gnss_signals[msg.type][msg.sat_id.at(i)];
 
         // Populate necessary fields
-        if (stats->elev == 0) { stats->elev = msg.elev.at(i); }
-        if (stats->azim == 0) { stats->azim = msg.azim.at(i); }
+        if (stats->elev == 0) {
+            stats->elev = msg.elev.at(i);
+        }
+        if (stats->azim == 0) {
+            stats->azim = msg.azim.at(i);
+        }
 
         // Populate CNO
         if (msg.signal_id == "1" || msg.signal_id == "7") {
@@ -115,7 +123,7 @@ void NmeaMessage::AddNmeaEpoch(const GP_HDT& msg) {
 void NmeaMessage::AddNmeaEpoch(const GP_VTG& msg) {
     // Populate SOG and COG if empty
     if (speed == 0.0) {
-        speed = msg.sog_kph / 3.6; // Convert km/h to m/s
+        speed = msg.sog_kph / 3.6;  // Convert km/h to m/s
     }
 
     if (course == 0.0) {
@@ -137,7 +145,7 @@ void NmeaMessage::AddNmeaEpoch(const GP_RMC& msg) {
     // Populate SOG and COG (priority)
     speed = msg.speed_ms;
     course = msg.course;
-    
+
     // Populate latitude and longitude if the vector is empty
     if (llh.isZero()) {
         llh(0) = msg.latlon(0);
@@ -152,4 +160,5 @@ void NmeaMessage::AddNmeaEpoch(const GP_ZDA& msg) {
     gpzda_time_str = msg.time_str;
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition

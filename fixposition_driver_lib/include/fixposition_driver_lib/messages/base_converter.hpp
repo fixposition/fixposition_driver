@@ -1,80 +1,83 @@
 /**
- *  @file
- *  @brief Base Converter to define the interfaces
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Base Converter to define the interfaces
  */
 
-#ifndef __FIXPOSITION_DRIVER_LIB_CONVERTER_BASE_CONVERTER__
-#define __FIXPOSITION_DRIVER_LIB_CONVERTER_BASE_CONVERTER__
+#ifndef __FIXPOSITION_DRIVER_LIB_CONVERTER_BASE_CONVERTER_HPP__
+#define __FIXPOSITION_DRIVER_LIB_CONVERTER_BASE_CONVERTER_HPP__
 
-/* SYSTEM / STL */
+/* LIBC/STL */
 #include <iostream>
 #include <vector>
 
+/* EXTERNAL */
+
 /* PACKAGE */
-#include <fixposition_driver_lib/time_conversions.hpp>
+#include "fixposition_driver_lib/time_conversions.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 class BaseAsciiConverter {
-    public:
-        BaseAsciiConverter() = default;
-        ~BaseAsciiConverter() = default;
+   public:
+    BaseAsciiConverter() = default;
+    ~BaseAsciiConverter() = default;
 
-        /**
-         * @brief Virtual interface to convert the split tokens into ros messages
-         *
-         * @param[in] tokens vector of strings split by comma
-         */
-        virtual void ConvertTokens(const std::vector<std::string>& tokens) = 0;
+    /**
+     * @brief Virtual interface to convert the split tokens into ros messages
+     *
+     * @param[in] tokens vector of strings split by comma
+     */
+    virtual void ConvertTokens(const std::vector<std::string>& tokens) = 0;
 };
 
-template <typename MessageType> class NmeaConverter : public BaseAsciiConverter {
-    public:
-        using Observer = std::function<void(const MessageType&)>;
+template <typename MessageType>
+class NmeaConverter : public BaseAsciiConverter {
+   public:
+    using Observer = std::function<void(const MessageType&)>;
 
-        /**
-         * @brief Construct a new Fixposition Msg Converter object
-         *
-         */
-        
-        NmeaConverter() : BaseAsciiConverter() {}
+    /**
+     * @brief Construct a new Fixposition Msg Converter object
+     *
+     */
 
-        ~NmeaConverter() = default;
+    NmeaConverter() : BaseAsciiConverter() {}
 
-        /**
-         * @brief Comma Delimited FP_A message, convert to Data structs and, if available, call observers
-         *
-         * @param[in] state state message as string
-         * @return FP_A message struct
-         */
-        void ConvertTokens(const std::vector<std::string>& tokens) {
-            msg_.ConvertFromTokens(tokens);
+    ~NmeaConverter() = default;
 
-            // process all observers
-            for (auto& ob : obs_) {
-                ob(msg_);
-            }
-        };
+    /**
+     * @brief Comma Delimited FP_A message, convert to Data structs and, if available, call observers
+     *
+     * @param[in] state state message as string
+     * @return FP_A message struct
+     */
+    void ConvertTokens(const std::vector<std::string>& tokens) {
+        msg_.ConvertFromTokens(tokens);
 
-        /**
-         * @brief Add Observer to call at the end of ConvertTokens()
-         *
-         * @param[in] ob
-         */
-        void AddObserver(Observer ob) { obs_.push_back(ob); }
+        // process all observers
+        for (auto& ob : obs_) {
+            ob(msg_);
+        }
+    };
 
-    private:
-        MessageType msg_;
-        std::vector<Observer> obs_;
+    /**
+     * @brief Add Observer to call at the end of ConvertTokens()
+     *
+     * @param[in] ob
+     */
+    void AddObserver(Observer ob) { obs_.push_back(ob); }
+
+   private:
+    MessageType msg_;
+    std::vector<Observer> obs_;
 };
 
 //===================================================
@@ -183,20 +186,20 @@ inline times::GpsTime ConvertGpsTime(const std::string& gps_wno, const std::stri
  * @param[in] xz
  * @return Eigen::Matrix<double, 3, 3> the 3x3 matrix
  */
-inline Eigen::Matrix<double, 3, 3> BuildCovMat3D(const double xx, const double yy, const double zz, 
-                                                 const double xy, const double yz, const double xz) {
+inline Eigen::Matrix<double, 3, 3> BuildCovMat3D(const double xx, const double yy, const double zz, const double xy,
+                                                 const double yz, const double xz) {
     Eigen::Matrix<double, 3, 3> cov;
     cov.setZero();
 
     // Diagonals
-    cov(0, 0) = xx;   // 0
-    cov(1, 1) = yy;   // 4
-    cov(2, 2) = zz;   // 8
+    cov(0, 0) = xx;  // 0
+    cov(1, 1) = yy;  // 4
+    cov(2, 2) = zz;  // 8
 
     // Rest of values
-    cov(1, 0) = cov(0, 1) = xy; // 1 = 3
-    cov(2, 1) = cov(1, 2) = yz; // 2 = 6
-    cov(2, 0) = cov(0, 2) = xz; // 5 = 7
+    cov(1, 0) = cov(0, 1) = xy;  // 1 = 3
+    cov(2, 1) = cov(1, 2) = yz;  // 2 = 6
+    cov(2, 0) = cov(0, 2) = xz;  // 5 = 7
 
     return cov;
 }
@@ -264,5 +267,6 @@ constexpr inline T RadToDeg(T radians) {
     return radians * 57.295779513082320876798154814105;
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
-#endif  // __FIXPOSITION_DRIVER_LIB_CONVERTER_BASE_CONVERTER__
+#endif  // __FIXPOSITION_DRIVER_LIB_CONVERTER_BASE_CONVERTER_HPP__
