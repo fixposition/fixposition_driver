@@ -1,29 +1,29 @@
 /**
- *  @file
- *  @brief Parameters for the odometry converter
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
- * 
- * Port to ROS 2 by Husarion
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Parameters for the odometry converter
  */
 
-#ifndef __ODOM_CONVERTER_PARAMS_HPP__
-#define __ODOM_CONVERTER_PARAMS_HPP__
+#ifndef __FIXPOSITION_ODOMETRY_CONVERTER_ROS2_PARAMS_HPP__
+#define __FIXPOSITION_ODOMETRY_CONVERTER_ROS2_PARAMS_HPP__
 
-/* SYSTEM / STL */
+/* LIBC/STL */
 #include <string>
 
+/* EXTERNAL */
+
 /* PACKAGE */
-#include <fixposition_odometry_converter_ros2/ros2_msgs.hpp>
+#include "fixposition_odometry_converter_ros2/ros2_msgs.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 enum class VelTopicType : int8_t { Twist = 0, TwistWithCov = 1, Odometry = 2 };
 
@@ -47,6 +47,6 @@ struct OdomInputParams {
                      const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr& logging_itf);
 };
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
-
-#endif
+#endif  // __FIXPOSITION_ODOMETRY_CONVERTER_ROS2_PARAMS_HPP__

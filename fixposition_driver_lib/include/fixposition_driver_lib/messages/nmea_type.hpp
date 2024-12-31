@@ -1,25 +1,29 @@
 /**
- *  @file
- *  @brief Declaration of NMEA type messages
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Declaration of NMEA type messages
  */
 
-#ifndef __FIXPOSITION_DRIVER_LIB_CONVERTER_NMEA_TYPE__
-#define __FIXPOSITION_DRIVER_LIB_CONVERTER_NMEA_TYPE__
+#ifndef __FIXPOSITION_DRIVER_LIB_CONVERTER_NMEA_TYPE_HPP__
+#define __FIXPOSITION_DRIVER_LIB_CONVERTER_NMEA_TYPE_HPP__
+
+/* LIBC/STL */
+
+/* EXTERNAL */
 
 /* PACKAGE */
-#include <fixposition_driver_lib/messages/msg_data.hpp>
-#include <fixposition_driver_lib/time_conversions.hpp>
+#include "fixposition_driver_lib/messages/msg_data.hpp"
+#include "fixposition_driver_lib/time_conversions.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 // ------------ NMEA-GP-GGA ------------
 
@@ -228,10 +232,10 @@ struct GX_GSV {
     unsigned int kSize_ = 4;  // Maximum size: 4 + num_sats * 4
 
     SignalType string2enum(const std::string& name) {
-        if (name == "GP") return SignalType::GPS;     // GPS
-        if (name == "GA") return SignalType::Galileo; // Galileo
-        if (name == "GB") return SignalType::BeiDou;  // BeiDou
-        if (name == "GL") return SignalType::GLONASS; // GLONASS
+        if (name == "GP") return SignalType::GPS;      // GPS
+        if (name == "GA") return SignalType::Galileo;  // Galileo
+        if (name == "GB") return SignalType::BeiDou;   // BeiDou
+        if (name == "GL") return SignalType::GLONASS;  // GLONASS
         return SignalType::Invalid;
     }
 
@@ -452,34 +456,34 @@ struct NmeaMessage {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // Message fields
-    std::string gpgga_time_str;      // GP_GGA
-    std::string gpzda_time_str;      // GP_ZDA
-    std::string time_str;            // GP_ZDA (alt. GP_GGA, GP_GST, GP_RMC)
-    std::string date_str;            // GP_ZDA (alt. GP_RMC)
-    times::GpsTime stamp;            // GP_ZDA
-    Eigen::Vector3d llh;             // GP_GGA (alt. LL only for GP_GLL, GP_RMC)
-    uint8_t quality;                 // GP_GGA (alt. GP_RMC, GP_VTG, or limited GP_GLL, GP_GSA)
-    uint8_t num_sv;                  // GP_GGA
-    std::vector<int> ids;            // GN_GSA
-    float hdop_receiver;             // GP_GGA
-    float pdop;                      // GN_GSA
-    float hdop;                      // GN_GSA (alt. GP_GGA)
-    float vdop;                      // GN_GSA
-    float rms_range;                 // GP_GST
-    float std_major;                 // GP_GST
-    float std_minor;                 // GP_GST
-    float angle_major;               // GP_GST
-    float std_lat;                   // GP_GST (alt. GP_GGA)
-    float std_lon;                   // GP_GST (alt. GP_GGA)
-    float std_alt;                   // GP_GST (alt. GP_GGA)
-    Eigen::Matrix<double, 3, 3> cov; // GP_GST (alt. GP_GGA)
-    uint8_t cov_type;                // GP_GST (alt. GP_GGA)
-    float heading;                   // GP_HDT
-    float speed;                     // GP_RMC (alt. GP_VTG)
-    float course;                    // GP_RMC (alt. GP_VTG)
-    float diff_age;                  // GP_GGA
-    std::string diff_sta;            // GP_GGA
-    std::unordered_map<SignalType, std::map<unsigned int, GnssSignalStats>> gnss_signals; // GX_GSV
+    std::string gpgga_time_str;       // GP_GGA
+    std::string gpzda_time_str;       // GP_ZDA
+    std::string time_str;             // GP_ZDA (alt. GP_GGA, GP_GST, GP_RMC)
+    std::string date_str;             // GP_ZDA (alt. GP_RMC)
+    times::GpsTime stamp;             // GP_ZDA
+    Eigen::Vector3d llh;              // GP_GGA (alt. LL only for GP_GLL, GP_RMC)
+    uint8_t quality;                  // GP_GGA (alt. GP_RMC, GP_VTG, or limited GP_GLL, GP_GSA)
+    uint8_t num_sv;                   // GP_GGA
+    std::vector<int> ids;             // GN_GSA
+    float hdop_receiver;              // GP_GGA
+    float pdop;                       // GN_GSA
+    float hdop;                       // GN_GSA (alt. GP_GGA)
+    float vdop;                       // GN_GSA
+    float rms_range;                  // GP_GST
+    float std_major;                  // GP_GST
+    float std_minor;                  // GP_GST
+    float angle_major;                // GP_GST
+    float std_lat;                    // GP_GST (alt. GP_GGA)
+    float std_lon;                    // GP_GST (alt. GP_GGA)
+    float std_alt;                    // GP_GST (alt. GP_GGA)
+    Eigen::Matrix<double, 3, 3> cov;  // GP_GST (alt. GP_GGA)
+    uint8_t cov_type;                 // GP_GST (alt. GP_GGA)
+    float heading;                    // GP_HDT
+    float speed;                      // GP_RMC (alt. GP_VTG)
+    float course;                     // GP_RMC (alt. GP_VTG)
+    float diff_age;                   // GP_GGA
+    std::string diff_sta;             // GP_GGA
+    std::unordered_map<SignalType, std::map<unsigned int, GnssSignalStats>> gnss_signals;  // GX_GSV
 
     /**
      * @brief Check if GNSS epoch is complete
@@ -563,5 +567,6 @@ struct NmeaMessage {
     void AddNmeaEpoch(const GP_ZDA& msg);
 };
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
-#endif  // __FIXPOSITION_DRIVER_LIB_CONVERTER_NMEA_TYPE__
+#endif  // __FIXPOSITION_DRIVER_LIB_CONVERTER_NMEA_TYPE_HPP__

@@ -15,8 +15,8 @@
 int16      sentences # [-]     | Total number of sentences (1 to 9).
 int16      sent_num  # [-]     | Sentence number (1 to 9).
 int32      num_sats  # [-]     | Total number of satellites in view.
-int16[]    sat_id    # [-]     | Satellite ID number.               
-int16[]    elev      # [deg]   | Satellite elevation. 
+int16[]    sat_id    # [-]     | Satellite ID number.
+int16[]    elev      # [deg]   | Satellite elevation.
 int16[]    azim      # [deg]   | Satellite azimuth from true North.
 int16[]    cno       # [db-Hz] | Satellite SNR (C/No).
 string     signal_id # [Hex]   | Signal ID (see below).

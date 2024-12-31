@@ -1,22 +1,27 @@
 /**
- *  @file
- *  @brief Implementation of FP_A-GNSSCORR parser
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of FP_A-GNSSCORR parser
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+#include <fpsdk_common/logging.hpp>
+
 /* PACKAGE */
-#include <fixposition_driver_lib/messages/fpa_type.hpp>
-#include <fixposition_driver_lib/messages/base_converter.hpp>
+#include "fixposition_driver_lib/messages/base_converter.hpp"
+#include "fixposition_driver_lib/messages/fpa_type.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 /// msg field indices
 static constexpr int msg_type_idx = 1;
@@ -43,7 +48,7 @@ void FP_GNSSCORR::ConvertFromTokens(const std::vector<std::string>& tokens) {
     bool ok = tokens.size() == kSize_;
     if (!ok) {
         // Size is wrong
-        std::cout << "Error in parsing FP_A-GNSSCORR string with " << tokens.size() << " fields!\n";
+        WARNING_S("Error in parsing FP_A-GNSSCORR string with " << tokens.size() << " fields");
     } else {
         // If size is ok, check version
         const int _version = std::stoi(tokens.at(msg_version_idx));
@@ -51,7 +56,7 @@ void FP_GNSSCORR::ConvertFromTokens(const std::vector<std::string>& tokens) {
         ok = _version == kVersion_;
         if (!ok) {
             // Version is wrong
-            std::cout << "Error in parsing FP_A-GNSSCORR string with version " << _version << "!\n";
+            WARNING_S("Error in parsing FP_A-GNSSCORR string with version " << _version << "");
         }
     }
 
@@ -65,21 +70,22 @@ void FP_GNSSCORR::ConvertFromTokens(const std::vector<std::string>& tokens) {
     stamp = ConvertGpsTime(tokens.at(gps_week_idx), tokens.at(gps_tow_idx));
 
     // GNSS status data
-    gnss1_fix     = ParseStatusFlag(tokens, gnss1_fix_idx);
+    gnss1_fix = ParseStatusFlag(tokens, gnss1_fix_idx);
     gnss1_nsig_l1 = StringToInt(tokens.at(gnss1_nsig_l1_idx));
     gnss1_nsig_l2 = StringToInt(tokens.at(gnss1_nsig_l2_idx));
-    gnss2_fix     = ParseStatusFlag(tokens, gnss2_fix_idx);
+    gnss2_fix = ParseStatusFlag(tokens, gnss2_fix_idx);
     gnss2_nsig_l1 = StringToInt(tokens.at(gnss2_nsig_l1_idx));
     gnss2_nsig_l2 = StringToInt(tokens.at(gnss2_nsig_l2_idx));
 
     // Correction data status
-    corr_latency     = StringToDouble(tokens.at(corr_latency_idx));
+    corr_latency = StringToDouble(tokens.at(corr_latency_idx));
     corr_update_rate = StringToDouble(tokens.at(corr_update_rate_idx));
-    corr_data_rate   = StringToDouble(tokens.at(corr_data_rate_idx));
-    corr_msg_rate    = StringToDouble(tokens.at(corr_msg_rate_idx));
-    sta_id     = StringToInt(tokens.at(sta_id_idx));
-    sta_llh    = Vector3ToEigen(tokens.at(sta_lat_idx), tokens.at(sta_lon_idx), tokens.at(sta_height_idx));
-    sta_dist   = StringToInt(tokens.at(sta_dist_idx));
+    corr_data_rate = StringToDouble(tokens.at(corr_data_rate_idx));
+    corr_msg_rate = StringToDouble(tokens.at(corr_msg_rate_idx));
+    sta_id = StringToInt(tokens.at(sta_id_idx));
+    sta_llh = Vector3ToEigen(tokens.at(sta_lat_idx), tokens.at(sta_lon_idx), tokens.at(sta_height_idx));
+    sta_dist = StringToInt(tokens.at(sta_dist_idx));
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition

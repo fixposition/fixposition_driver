@@ -1,22 +1,27 @@
 /**
- *  @file
- *  @brief Implementation of NMEA-GP-GST parser
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of NMEA-GP-GST parser
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+#include <fpsdk_common/logging.hpp>
+
 /* PACKAGE */
-#include <fixposition_driver_lib/messages/nmea_type.hpp>
-#include <fixposition_driver_lib/messages/base_converter.hpp>
+#include "fixposition_driver_lib/messages/base_converter.hpp"
+#include "fixposition_driver_lib/messages/nmea_type.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 /// msg field indices
 static constexpr int time_idx = 1;
@@ -32,7 +37,7 @@ void GP_GST::ConvertFromTokens(const std::vector<std::string>& tokens) {
     // Check if message size is wrong
     bool ok = tokens.size() == kSize_;
     if (!ok) {
-        std::cout << "Error in parsing NMEA-GP-GST string with " << tokens.size() << " fields!\n";
+        WARNING_S("Error in parsing NMEA-GP-GST string with " << tokens.size() << " fields");
         ResetData();
         return;
     }
@@ -52,4 +57,5 @@ void GP_GST::ConvertFromTokens(const std::vector<std::string>& tokens) {
     std_alt = StringToDouble(tokens.at(std_alt_idx));
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition

@@ -1,55 +1,87 @@
 /**
- *  @file
- *  @brief Main function for the fixposition driver ros node
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Main function for the fixposition driver ros node
  */
 
+/* LIBC/STL */
+#include <chrono>
+#include <cstdlib>
+#include <future>
+#include <memory>
+
+/* EXTERNAL */
+#include <fpsdk_common/app.hpp>
+#include <fpsdk_common/logging.hpp>
+#include <fpsdk_common/trafo.hpp>
+#include <fpsdk_ros2/utils.hpp>
+
 /* PACKAGE */
-#include <fixposition_driver_ros2/fixposition_driver_node.hpp>
+#include "fixposition_driver_ros2/fixposition_driver_node.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
-FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node, const FixpositionDriverParams& params, rclcpp::QoS qos_settings)
-    : FixpositionDriver(params),
-      node_(node),
+FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node, const FixpositionDriverParams& params,
+                                             rclcpp::QoS qos_settings) /* clang-format off */ :
+    FixpositionDriver(params),
+    node_     { node },
+    logger_   { rclcpp::get_logger("fixposition_driver") },
 
       // FP_A messages
-      fpa_odometry_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMETRY>("/fixposition/fpa/odometry", qos_settings)),
-      fpa_imubias_pub_(node_->create_publisher<fixposition_driver_ros2::msg::IMUBIAS>("/fixposition/fpa/imubias", qos_settings)),
+      fpa_odometry_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::ODOMETRY>("/fixposition/fpa/odometry", qos_settings)),
+      fpa_imubias_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::IMUBIAS>("/fixposition/fpa/imubias", qos_settings)),
       fpa_eoe_pub_(node_->create_publisher<fixposition_driver_ros2::msg::EOE>("/fixposition/fpa/eoe", qos_settings)),
       fpa_llh_pub_(node_->create_publisher<fixposition_driver_ros2::msg::LLH>("/fixposition/fpa/llh", qos_settings)),
-      fpa_odomenu_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMENU>("/fixposition/fpa/odomenu", qos_settings)),
-      fpa_odomsh_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMSH>("/fixposition/fpa/odomsh", qos_settings)),
-      fpa_odomstatus_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMSTATUS>("/fixposition/fpa/odomstatus", qos_settings)),
-      fpa_gnssant_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GNSSANT>("/fixposition/fpa/gnssant", qos_settings)),
-      fpa_gnsscorr_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GNSSCORR>("/fixposition/fpa/gnsscorr", qos_settings)),
+      fpa_odomenu_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::ODOMENU>("/fixposition/fpa/odomenu", qos_settings)),
+      fpa_odomsh_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::ODOMSH>("/fixposition/fpa/odomsh", qos_settings)),
+      fpa_odomstatus_pub_(node_->create_publisher<fixposition_driver_ros2::msg::ODOMSTATUS>(
+          "/fixposition/fpa/odomstatus", qos_settings)),
+      fpa_gnssant_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::GNSSANT>("/fixposition/fpa/gnssant", qos_settings)),
+      fpa_gnsscorr_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::GNSSCORR>("/fixposition/fpa/gnsscorr", qos_settings)),
       fpa_text_pub_(node_->create_publisher<fixposition_driver_ros2::msg::TEXT>("/fixposition/fpa/text", qos_settings)),
       fpa_tp_pub_(node_->create_publisher<fixposition_driver_ros2::msg::TP>("/fixposition/fpa/tp", qos_settings)),
 
       // NMEA messages
-      nmea_gpgga_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPGGA>("/fixposition/nmea/gpgga", qos_settings)),
-      nmea_gpgll_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPGLL>("/fixposition/nmea/gpgll", qos_settings)),
-      nmea_gngsa_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GNGSA>("/fixposition/nmea/gngsa", qos_settings)),
-      nmea_gpgst_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPGST>("/fixposition/nmea/gpgst", qos_settings)),
-      nmea_gxgsv_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GXGSV>("/fixposition/nmea/gxgsv", qos_settings)),
-      nmea_gphdt_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPHDT>("/fixposition/nmea/gphdt", qos_settings)),
-      nmea_gprmc_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPRMC>("/fixposition/nmea/gprmc", qos_settings)),
-      nmea_gpvtg_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPVTG>("/fixposition/nmea/gpvtg", qos_settings)),
-      nmea_gpzda_pub_(node_->create_publisher<fixposition_driver_ros2::msg::GPZDA>("/fixposition/nmea/gpzda", qos_settings)),
+      nmea_gpgga_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::GPGGA>("/fixposition/nmea/gpgga", qos_settings)),
+      nmea_gpgll_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::GPGLL>("/fixposition/nmea/gpgll", qos_settings)),
+      nmea_gngsa_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::GNGSA>("/fixposition/nmea/gngsa", qos_settings)),
+      nmea_gpgst_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::GPGST>("/fixposition/nmea/gpgst", qos_settings)),
+      nmea_gxgsv_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::GXGSV>("/fixposition/nmea/gxgsv", qos_settings)),
+      nmea_gphdt_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::GPHDT>("/fixposition/nmea/gphdt", qos_settings)),
+      nmea_gprmc_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::GPRMC>("/fixposition/nmea/gprmc", qos_settings)),
+      nmea_gpvtg_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::GPVTG>("/fixposition/nmea/gpvtg", qos_settings)),
+      nmea_gpzda_pub_(
+          node_->create_publisher<fixposition_driver_ros2::msg::GPZDA>("/fixposition/nmea/gpzda", qos_settings)),
 
       // ODOMETRY
       odometry_ecef_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry_ecef", qos_settings)),
-      odometry_llh_pub_(node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/odometry_llh", qos_settings)),
+      odometry_llh_pub_(
+          node_->create_publisher<sensor_msgs::msg::NavSatFix>("/fixposition/odometry_llh", qos_settings)),
       odometry_enu_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry_enu", qos_settings)),
-      odometry_smooth_pub_(node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry_smooth", qos_settings)),
+      odometry_smooth_pub_(
+          node_->create_publisher<nav_msgs::msg::Odometry>("/fixposition/odometry_smooth", qos_settings)),
 
       // Orientation
       eul_pub_(node_->create_publisher<geometry_msgs::msg::Vector3Stamped>("/fixposition/ypr", qos_settings)),
@@ -79,33 +111,52 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> node,
 
     // Configure jump warning message
     if (params_.fp_output.cov_warning) {
-        extras_jump_pub_ = node_->create_publisher<fixposition_driver_ros2::msg::COVWARN>("/fixposition/extras/jump", qos_settings);
-        prev_pos.setZero();
-        prev_cov.setZero();
+        extras_jump_pub_ =
+            node_->create_publisher<fixposition_driver_ros2::msg::COVWARN>("/fixposition/extras/jump", qos_settings);
+        prev_pos_.setZero();
+        prev_cov_.setZero();
     }
     RegisterObservers();
 }
 
-void FixpositionDriverNode::Run() {
-    rclcpp::Rate rate(params_.fp_output.rate);
-    const auto reconnect_delay =
-        std::chrono::nanoseconds((uint64_t)params_.fp_output.reconnect_delay * 1000 * 1000 * 1000);
+FixpositionDriverNode::~FixpositionDriverNode() {}
 
-    while (rclcpp::ok()) {
-        // Read data and publish to ros
-        const bool connection_ok = RunOnce();
-        // process Incoming ROS msgs
-        rclcpp::spin_some(node_);
-        // Handle connection loss
-        if (!connection_ok) {
-            printf("Reconnecting in %.1f seconds ...\n", params_.fp_output.reconnect_delay);
-            rclcpp::sleep_for(reconnect_delay);
-            Connect();
-        } else {
-            rate.sleep();  // ensure the loop runs at the desired rate
-        }
-    }
+// ---------------------------------------------------------------------------------------------------------------------
+
+bool FixpositionDriverNode::StartNode() {
+    RCLCPP_INFO(logger_, "Starting node...");
+
+    return true;
 }
+
+
+void FixpositionDriverNode::StopNode() {
+    RCLCPP_INFO(logger_, "Stopping...");
+}
+
+
+// ---------------------------------------------------------------------------------------------------------------------
+
+// void FixpositionDriverNode::Run() {
+//     rclcpp::Rate rate(params_.fp_output.rate);
+//     const auto reconnect_delay =
+//         std::chrono::nanoseconds((uint64_t)params_.fp_output.reconnect_delay * 1000 * 1000 * 1000);
+
+//     while (rclcpp::ok()) {
+//         // Read data and publish to ros
+//         const bool connection_ok = RunOnce();
+//         // process Incoming ROS msgs
+//         rclcpp::spin_some(node_);
+//         // Handle connection loss
+//         if (!connection_ok) {
+//             printf("Reconnecting in %.1f seconds ...\n", params_.fp_output.reconnect_delay);
+//             rclcpp::sleep_for(reconnect_delay);
+//             Connect();
+//         } else {
+//             rate.sleep();  // ensure the loop runs at the desired rate
+//         }
+//     }
+// }
 
 void FixpositionDriverNode::RegisterObservers() {
     // NOV_B
@@ -124,15 +175,16 @@ void FixpositionDriverNode::RegisterObservers() {
 
                     // Output jump warning
                     if (params_.fp_output.cov_warning) {
-                        if (!prev_pos.isZero() && !prev_cov.isZero()) {
-                            Eigen::Vector3d pos_diff = (prev_pos - data.odom.pose.position).cwiseAbs();
+                        if (!prev_pos_.isZero() && !prev_cov_.isZero()) {
+                            Eigen::Vector3d pos_diff = (prev_pos_ - data.odom.pose.position).cwiseAbs();
 
-                            if ((pos_diff[0] > prev_cov(0,0)) || (pos_diff[1] > prev_cov(1,1)) || (pos_diff[2] > prev_cov(2,2))) {
-                                JumpWarningMsg(node_, data.odom.stamp, pos_diff, prev_cov, extras_jump_pub_);
+                            if ((pos_diff[0] > prev_cov_(0, 0)) || (pos_diff[1] > prev_cov_(1, 1)) ||
+                                (pos_diff[2] > prev_cov_(2, 2))) {
+                                JumpWarningMsg(node_, data.odom.stamp, pos_diff, prev_cov_, extras_jump_pub_);
                             }
                         }
-                        prev_pos = data.odom.pose.position;
-                        prev_cov = data.odom.pose.cov;
+                        prev_pos_ = data.odom.pose.position;
+                        prev_cov_ = data.odom.pose.cov;
                     }
                 });
         } else if (format == "ODOMENU") {
@@ -171,18 +223,18 @@ void FixpositionDriverNode::RegisterObservers() {
             dynamic_cast<NmeaConverter<FP_IMUBIAS>*>(a_converters_["IMUBIAS"].get())
                 ->AddObserver([this](const FP_IMUBIAS& data) { FpToRosMsg(data, fpa_imubias_pub_); });
         } else if (format == "EOE") {
-            dynamic_cast<NmeaConverter<FP_EOE>*>(a_converters_["EOE"].get())
-                ->AddObserver([this](const FP_EOE& data) {
-                    FpToRosMsg(data, fpa_eoe_pub_);
+            dynamic_cast<NmeaConverter<FP_EOE>*>(a_converters_["EOE"].get())->AddObserver([this](const FP_EOE& data) {
+                FpToRosMsg(data, fpa_eoe_pub_);
 
-                    // Generate Nav2 TF tree
-                    if (data.epoch == "FUSION" && params_.fp_output.nav2_mode) {
-                        PublishNav2Tf(tf_map, static_br_, br_);
-                    }
-                });
+                // Generate Nav2 TF tree
+                if (data.epoch == "FUSION" && params_.fp_output.nav2_mode) {
+                    PublishNav2Tf(tf_map, static_br_, br_);
+                }
+            });
         } else if (format == "LLH") {
-            dynamic_cast<NmeaConverter<FP_LLH>*>(a_converters_["LLH"].get())
-                ->AddObserver([this](const FP_LLH& data) { FpToRosMsg(data, fpa_llh_pub_); });
+            dynamic_cast<NmeaConverter<FP_LLH>*>(a_converters_["LLH"].get())->AddObserver([this](const FP_LLH& data) {
+                FpToRosMsg(data, fpa_llh_pub_);
+            });
         } else if (format == "GNSSANT") {
             dynamic_cast<NmeaConverter<FP_GNSSANT>*>(a_converters_["GNSSANT"].get())
                 ->AddObserver([this](const FP_GNSSANT& data) { FpToRosMsg(data, fpa_gnssant_pub_); });
@@ -204,11 +256,11 @@ void FixpositionDriverNode::RegisterObservers() {
                     // TF Observer Lambda
                     geometry_msgs::msg::TransformStamped tf;
                     TfDataToMsg(data.tf, tf);
-                    if (tf.child_frame_id == "FP_IMUH" && tf.header.frame_id == "FP_POI") {
+                    if ((tf.child_frame_id == "FP_IMUH") && (tf.header.frame_id == "FP_POI")) {
                         br_->sendTransform(tf);
 
                         // Publish Pitch Roll based on IMU only
-                        Eigen::Vector3d imu_ypr_eigen = QuatToEul(data.tf.rotation);
+                        Eigen::Vector3d imu_ypr_eigen = trafo::QuatToEul(data.tf.rotation);
                         imu_ypr_eigen.x() = 0.0;  // the yaw value is not observable using IMU alone
                         geometry_msgs::msg::Vector3Stamped imu_ypr;
                         imu_ypr.header.stamp = tf.header.stamp;
@@ -218,7 +270,7 @@ void FixpositionDriverNode::RegisterObservers() {
                         imu_ypr.vector.set__z(imu_ypr_eigen.z());
                         eul_imu_pub_->publish(imu_ypr);
 
-                    } else if (tf.child_frame_id == "FP_POISH" && tf.header.frame_id == "FP_POI") {
+                    } else if ((tf.child_frame_id == "FP_POISH") && (tf.header.frame_id == "FP_POI")) {
                         br_->sendTransform(tf);
 
                         // Append TF if Nav2 mode is selected
@@ -226,7 +278,7 @@ void FixpositionDriverNode::RegisterObservers() {
                             // Get FP_POI -> FP_POISH
                             tf_map["POIPOISH"] = std::make_shared<geometry_msgs::msg::TransformStamped>(tf);
                         }
-                    } else if (tf.child_frame_id == "FP_ENU0" && tf.header.frame_id == "FP_ECEF") {
+                    } else if ((tf.child_frame_id == "FP_ENU0") && (tf.header.frame_id == "FP_ECEF")) {
                         static_br_->sendTransform(tf);
 
                         // Append TF if Nav2 mode is selected
@@ -240,8 +292,9 @@ void FixpositionDriverNode::RegisterObservers() {
                 }
             });
         } else if (format == "TP") {
-            dynamic_cast<NmeaConverter<FP_TP>*>(a_converters_["TP"].get())
-                ->AddObserver([this](const FP_TP& data) { FpToRosMsg(data, fpa_tp_pub_); });
+            dynamic_cast<NmeaConverter<FP_TP>*>(a_converters_["TP"].get())->AddObserver([this](const FP_TP& data) {
+                FpToRosMsg(data, fpa_tp_pub_);
+            });
         } else if (format == "GPGGA") {
             dynamic_cast<NmeaConverter<GP_GGA>*>(a_converters_["GPGGA"].get())->AddObserver([this](const GP_GGA& data) {
                 FpToRosMsg(data, nmea_gpgga_pub_);
@@ -429,8 +482,8 @@ void FixpositionDriverNode::RtcmCallbackRos(const rtcm_msgs::msg::Message::Const
     RtcmCallback(rtcm_msg, msg_size);
 }
 
-void FixpositionDriverNode::BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header,
-                                                          const BESTGNSSPOSMem* payload) {
+void FixpositionDriverNode::BestGnssPosToPublishNavSatFix(const parser::novb::NovbLongHeader* header,
+                                                          const parser::novb::NovbBestgnsspos* payload) {
     // Buffer to data struct
     NavSatFixData nav_sat_fix;
     NovToData(header, payload, nav_sat_fix);
@@ -451,39 +504,112 @@ void FixpositionDriverNode::BestGnssPosToPublishNavSatFix(const Oem7MessageHeade
     }
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
 
 int main(int argc, char** argv) {
+#ifndef NDEBUG
+    fpsdk::common::app::StacktraceHelper stacktrace;
+    WARNING("***** Running debug build *****");
+#endif
+
+    auto logger = rclcpp::get_logger("node_main");
+
+    bool ok = true;
+
+    // Initialise, create node
     rclcpp::init(argc, argv);
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("fixposition_driver");
+
+    // Redirect Fixposition SDK logging to ROS console
+    fpsdk::ros2::utils::RedirectLoggingToRosConsole();
+
+    // Load parameters
+    RCLCPP_INFO(logger, "Loading parameters...");
     fixposition::FixpositionDriverParams params;
+    if (!fixposition::LoadParamsFromRos2(node, params)) {
+        RCLCPP_ERROR(logger, "Failed loading params");
+        ok = false;
+    }
 
-    RCLCPP_INFO(node->get_logger(), "Starting node...");
-
-    if (fixposition::LoadParamsFromRos2(node, params)) {
-        RCLCPP_INFO(node->get_logger(), "Params Loaded!");
-        
-        // Define ROS QoS
-        rclcpp::QoS qos_settings = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default);
-
-        if (params.fp_output.qos_type == "sensor_short") { // Short-queue sensor-type QoS
+    // Define ROS QoS
+    rclcpp::QoS qos_settings = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default);
+    if (ok) {
+        // Short-queue sensor-type QoS
+        if (params.fp_output.qos_type == "sensor_short") {
             qos_settings = rclcpp::QoS(rclcpp::KeepLast(5), rmw_qos_profile_sensor_data);
-        } else if (params.fp_output.qos_type == "sensor_long") { // Long-queue sensor-type QoS
+        }
+        // Long-queue sensor-type QoS
+        else if (params.fp_output.qos_type == "sensor_long") {
             qos_settings = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_sensor_data);
-        } else if (params.fp_output.qos_type == "default_short") { // Short-queue default-type QoS
+        }
+        // Short-queue default-type QoS
+        else if (params.fp_output.qos_type == "default_short") {
             qos_settings = rclcpp::QoS(rclcpp::KeepLast(5), rmw_qos_profile_default);
-        } else if (params.fp_output.qos_type == "default_long") { // Long-queue default-type QoS
-            qos_settings = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default);
-        } else { // Default QoS profile
+        }
+        // Long-queue default-type QoS
+        else if (params.fp_output.qos_type == "default_long") {
             qos_settings = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default);
         }
-
-        fixposition::FixpositionDriverNode driver_node(node, params, qos_settings);
-        driver_node.Run();
-        RCLCPP_INFO(node->get_logger(), "Exiting.");
-    } else {
-        RCLCPP_ERROR(node->get_logger(), "Params Loading Failed!");
-        rclcpp::shutdown();
-        return 1;
+        // Default QoS profile
+        else {
+            qos_settings = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default);
+        }
     }
+
+    // Handle CTRL-C / SIGINT ourselves
+    fpsdk::common::app::SigIntHelper sigint;
+
+    // Start node
+    std::unique_ptr<fixposition::FixpositionDriverNode> driver_node;
+    if (ok) {
+        try {
+            driver_node = std::make_unique<fixposition::FixpositionDriverNode>(node, params, qos_settings);
+        } catch (const std::exception& ex) {
+            RCLCPP_ERROR(logger, "Failed creating node: %s", ex.what());
+            ok = false;
+        }
+    }
+
+    if (ok) {
+        RCLCPP_INFO(logger, "Starting node...");
+        if (driver_node->StartNode()) {
+            RCLCPP_INFO(logger, "main() spinning...");
+
+            // Do the same as rclpp::spin(), but also handle CTRL-C / SIGINT nicely
+            // Callbacks execute in main thread
+            while (rclcpp::ok() && !sigint.ShouldAbort()) {
+                rclcpp::spin_until_future_complete(
+                    node, std::promise<bool>().get_future(), std::chrono::milliseconds(337));
+            }
+
+            // TODO: we'd rather do this, but it doesn't seem to work
+            // Use multiple spinner threads. Callback execute in one of them.
+            // rclcpp::executors::MultiThreadedExecutor executor{ rclcpp::ExecutorOptions(), 2 };
+            // executor.add_node(node);
+            // while (rclcpp::ok() && !sigint.ShouldAbort()) {
+            //     executor.spin_once(std::chrono::milliseconds(345));
+            // }
+
+            RCLCPP_INFO(logger, "main() stopping");
+        } else {
+            RCLCPP_ERROR(logger, "Failed starting node");
+            ok = false;
+        }
+        driver_node.reset();
+    }
+
+    // Are we happy?
+    if (ok) {
+        RCLCPP_INFO(logger, "Done");
+    } else {
+        RCLCPP_FATAL(logger, "Ouch!");
+    }
+
+    // Shutdown ROS
+    rclcpp::shutdown();
+
+    exit(ok ? EXIT_SUCCESS : EXIT_FAILURE);
 }
+
+/* ****************************************************************************************************************** */

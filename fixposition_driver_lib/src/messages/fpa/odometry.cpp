@@ -1,22 +1,27 @@
 /**
- *  @file
- *  @brief Implementation of FP_A-ODOMETRY parser
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of FP_A-ODOMETRY parser
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+#include <fpsdk_common/logging.hpp>
+
 /* PACKAGE */
-#include <fixposition_driver_lib/messages/fpa_type.hpp>
-#include <fixposition_driver_lib/messages/base_converter.hpp>
+#include "fixposition_driver_lib/messages/base_converter.hpp"
+#include "fixposition_driver_lib/messages/fpa_type.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 /// msg field indices
 static constexpr int msg_type_idx = 1;
@@ -68,7 +73,7 @@ void FP_ODOMETRY::ConvertFromTokens(const std::vector<std::string>& tokens) {
     bool ok = tokens.size() == kSize_;
     if (!ok) {
         // Size is wrong
-        std::cout << "Error in parsing FP_A-ODOMETRY string with " << tokens.size() << " fields!\n";
+        WARNING_S("Error in parsing FP_A-ODOMETRY string with " << tokens.size() << " fields");
     } else {
         // If size is ok, check version
         const int _version = std::stoi(tokens.at(msg_version_idx));
@@ -76,7 +81,7 @@ void FP_ODOMETRY::ConvertFromTokens(const std::vector<std::string>& tokens) {
         ok = _version == kVersion_;
         if (!ok) {
             // Version is wrong
-            std::cout << "Error in parsing FP_A-ODOMETRY string with version " << _version << "!\n";
+            WARNING_S("Error in parsing FP_A-ODOMETRY string with version " << _version << "");
         }
     }
 
@@ -138,4 +143,5 @@ void FP_ODOMETRY::ConvertFromTokens(const std::vector<std::string>& tokens) {
     }
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition

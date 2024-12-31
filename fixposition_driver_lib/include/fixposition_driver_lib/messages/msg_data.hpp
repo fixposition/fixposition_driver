@@ -1,27 +1,29 @@
 /**
- *  @file
- *  @brief Declaration of Data types
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Declaration of Data types
  */
 
-#ifndef __FIXPOSITION_DRIVER_LIB_MSG_DATA__
-#define __FIXPOSITION_DRIVER_LIB_MSG_DATA__
+#ifndef __FIXPOSITION_DRIVER_LIB_MSG_DATA_HPP__
+#define __FIXPOSITION_DRIVER_LIB_MSG_DATA_HPP__
 
-/* SYSTEM / STL */
+/* LIBC/STL */
 #include <unordered_map>
 
+/* EXTERNAL */
+
 /* PACKAGE */
-#include <fixposition_driver_lib/time_conversions.hpp>
+#include "fixposition_driver_lib/time_conversions.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 enum class FusionStatus : int {
     NOT_STARTED = 0,
@@ -186,5 +188,6 @@ struct GprmcData {
     GprmcData() : latitude(0.0), longitude(0.0), speed(0.0), course(0.0), valid(false) {}
 };
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
-#endif  //__FIXPOSITION_DRIVER_LIB_MSG_DATA__
+#endif  //__FIXPOSITION_DRIVER_LIB_MSG_DATA_HPP__

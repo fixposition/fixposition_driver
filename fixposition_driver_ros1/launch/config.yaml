@@ -1,0 +1,65 @@
+# Configuration for the Vision-RTK 2 sensor
+sensor:
+    # Connection to the sensor one of:
+    # - Serial (<device>:<baudrate>)
+    # stream: /dev/ttyUSB0:115200
+    # - TCP client (<ip_address>:<port>)
+    stream: 172.22.1.44:21000
+    # Wait time in [s] to attempt reconnecting after connection lost
+    reconnect_delay: 5.0
+
+    # Messages that should be used by the driver. Note that the sensor must be configured accordingly for the correct
+    # port used in the "connection" above. Where multiple messages of the same type are configurable, such as the NMEA
+    # messages, the list below always and only refers to the "_FUSION" variant, unless stated otherwise.
+    messages:
+        # Fusion odometry and status
+        - "FP_A-ODOMETRY"
+        - "FP_A-ODOMENU"
+        - "FP_A-ODOMSH"
+        - "FP_A-ODOMSTATUS"
+        - "FP_A-IMUBIAS"
+        - "FP_A-EOE"
+        # Transforms
+        - "FP_A-TF"
+        # IMU data
+        - "FP_A-RAWIMU"
+        - "FP_A-CORRIMU"
+        - "NOV_B-RAWIMU"
+        # GNSS related data
+        - "FP_A-GNSSANT"
+        - "FP_A-GNSSCORR"
+        - "FP_A-TP"
+        # Fusion LLH output. Not recommended to use!
+        - "FP_A-LLH"
+        # Exotic formats. Not recommended to use!
+        - "NOV_B-INSPVAX"
+        - "NOV_B-BESTVEL"
+        #  NMEA. Not recommended to use!
+        - "NMEA-GP-GGA"
+        - "NMEA-GN-GSA"
+        - "NMEA-GP-GLL"
+        - "NMEA-GP-GST"
+        - "NMEA-GX-GSV"
+        - "NMEA-GP-HDT"
+        - "NMEA-GP-RMC"
+        - "NMEA-GP-VTG"
+        - "NMEA-GP-ZDA"
+        # GNSS only position
+        - "NOV_B-BESTGNSSPOS"   # This can one or both of the _GNSS1 and _GNSS2 variants
+
+    # TODO remove
+    formats: [
+              "ODOMETRY", "LLH", "ODOMENU", "ODOMSH", "ODOMSTATUS", "RAWIMU", "CORRIMU",
+              "IMUBIAS", "GNSSANT", "GNSSCORR", "EOE", "TEXT", "TF", "TP", # FP_A
+              "GPGGA", "GPGLL", "GNGSA", "GPGST", "GPHDT", "GPRMC", "GPVTG", "GPZDA", "GXGSV" # NMEA
+             ]
+
+    # Driver behaviour
+    cov_warning: false    # Enable covariance warnings
+    nav2_mode:   false    # Enable nav2 mode
+
+# Node parameters
+node:
+    # Input topics
+    speed_topic: "/fixposition/speed"        # Wheelspeed input, empty to disable
+    corr_topic:  "/rtcm"                     # Correction data input, empty to disable

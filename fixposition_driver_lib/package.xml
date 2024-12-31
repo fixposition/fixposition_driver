@@ -20,6 +20,10 @@
     <depend>geometry_msgs</depend>
     <depend condition="$ROS_VERSION == 1">message_generation</depend>
     <depend condition="$ROS_VERSION == 1">message_runtime</depend>
+    <depend>fpsdk_common</depend>
+    <depend condition="$ROS_VERSION == 1">fpsdk_ros1</depend>
+    <depend condition="$ROS_VERSION == 2">fpsdk_ros2</depend>
+
     <export>
         <build_type>cmake</build_type>
     </export>

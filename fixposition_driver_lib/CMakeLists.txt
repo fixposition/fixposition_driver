@@ -1,23 +1,37 @@
 # GENERAL ==============================================================================================================
-cmake_minimum_required(VERSION 3.5)
+
+cmake_minimum_required(VERSION 3.16)
+
 project(fixposition_driver_lib VERSION 5.0.0 LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic\
-    -Wshadow -Wunused-parameter -Wformat -Wpointer-arith")
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror\
+    -Wshadow -Wunused-parameter -Wformat -Wpointer-arith -Woverloaded-virtual")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(NDEBUG)
+endif()
+
 
 # DEPENDENCIES =========================================================================================================
+
 find_package(Boost 1.65.0 REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(fpsdk_common REQUIRED)
 
 include_directories(include
   ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
+  ${fpsdk_common_INCLUDE_DIR}
 )
 
+
 # BUILD EXECUTABLE =====================================================================================================
+
 add_library(
   ${PROJECT_NAME} SHARED
   src/messages/fpa/corrimu.cpp
@@ -46,13 +60,14 @@ add_library(
   src/messages/nmea/nmea.cpp
   src/fixposition_driver.cpp
   src/helper.cpp
-  src/parser.cpp
-  src/gnss_tf.cpp
+  src/params.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} pthread)
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${fpsdk_common_LIBRARIES} pthread)
+
 
 # INSTALL ==============================================================================================================
+
 list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 
 install(

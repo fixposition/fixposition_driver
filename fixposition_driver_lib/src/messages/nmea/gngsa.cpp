@@ -1,22 +1,27 @@
 /**
- *  @file
- *  @brief Implementation of NMEA-GN-GSA parser
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of NMEA-GN-GSA parser
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+#include <fpsdk_common/logging.hpp>
+
 /* PACKAGE */
-#include <fixposition_driver_lib/messages/nmea_type.hpp>
-#include <fixposition_driver_lib/messages/base_converter.hpp>
+#include "fixposition_driver_lib/messages/base_converter.hpp"
+#include "fixposition_driver_lib/messages/nmea_type.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 /// msg field indices
 static constexpr int mode_op_idx = 1;
@@ -31,11 +36,11 @@ void GN_GSA::ConvertFromTokens(const std::vector<std::string>& tokens) {
     // Check if message size is wrong
     bool ok = tokens.size() == kSize_;
     if (!ok) {
-        std::cout << "Error in parsing NMEA-GN-GSA string with " << tokens.size() << " fields!\n";
+        WARNING_S("Error in parsing NMEA-GN-GSA string with " << tokens.size() << " fields");
         ResetData();
         return;
     }
-    
+
     // Populate mode
     mode_op = StringToChar(tokens.at(mode_op_idx));
     mode_nav = StringToInt(tokens.at(mode_nav_idx));
@@ -44,7 +49,7 @@ void GN_GSA::ConvertFromTokens(const std::vector<std::string>& tokens) {
     ids.clear();
     for (unsigned int offset = 0; offset < 11; offset++) {
         int value = StringToInt(tokens.at(ids_idx + offset));
-        
+
         if (value != 0) {
             ids.push_back(value);
         } else {
@@ -61,4 +66,5 @@ void GN_GSA::ConvertFromTokens(const std::vector<std::string>& tokens) {
     gnss_id = StringToInt(tokens.at(gnss_id_idx));
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition

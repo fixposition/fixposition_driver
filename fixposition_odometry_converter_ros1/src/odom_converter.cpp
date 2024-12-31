@@ -1,21 +1,26 @@
 /**
- *  @file
- *  @brief Implementation of OdomConverter class
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of OdomConverter class
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+
 /* PACKAGE */
-#include <fixposition_odometry_converter_ros1/odom_converter.hpp>
+#include "fixposition_odometry_converter_ros1/odom_converter.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
+
 OdomConverter::OdomConverter(ros::NodeHandle* nh) : nh_(*nh) {
     // read parameters
     if (!params_.LoadFromRos("/fixposition_odometry_converter_ros1")) {
@@ -89,4 +94,5 @@ void OdomConverter::TwistCallback(const geometry_msgs::TwistConstPtr& msg) {
     ConvertAndPublish(velocities);
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition

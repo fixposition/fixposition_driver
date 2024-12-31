@@ -1,23 +1,25 @@
 /**
- *  @file
- *  @brief Implementation of OdomConverterNode class
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
- *
- * Port to ROS 2 by Husarion
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of OdomConverterNode class
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+
 /* PACKAGE */
-#include <fixposition_odometry_converter_ros2/odom_converter_node.hpp>
+#include "fixposition_odometry_converter_ros2/odom_converter_node.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 OdomConverterNode::OdomConverterNode(const rclcpp::NodeOptions& options) : Node("odom_converter", options) {
     // read parameters
@@ -95,6 +97,7 @@ void OdomConverterNode::TwistCallback(const geometry_msgs::msg::Twist::SharedPtr
     ConvertAndPublish(velocities);
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
 
 // Register the component with class_loader
