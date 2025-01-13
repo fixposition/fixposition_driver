@@ -1,21 +1,17 @@
 # Fixposition ROS Driver
 
--   [ROS1 Noetic ![](./../../actions/workflows/build_test_ros.yml/badge.svg)](./../../actions/workflows/build_test_ros.yml)
--   [ROS2 Humble / Jazzy ![](./../../actions/workflows/build_test_ros2.yml/badge.svg)](./../../actions/workflows/build_test_ros2.yml)
-
-[ROS](https://www.ros.org/) (both ROS1 and ROS2) Driver for [Fixposition Vision-RTK 2](https://www.fixposition.com/product).
+[ROS](https://www.ros.org/) (both ROS1 and ROS2) driver for [Fixposition Vision-RTK 2](https://www.fixposition.com/product).
+![](./../../actions/workflows/ci.yml/badge.svg)
 
 ## Driver documentation
 
-For installation, usage, and more information, please refer to [Fixposition Docs: ROS Driver](https://docs.fixposition.com/fd/fixposition-ros-driver).
+For installation, usage, and more information, please refer to
+[Fixposition Docs: ROS Driver](https://docs.fixposition.com/fd/fixposition-ros-driver).
 
-## Fixposition ASCII messages
+## Fixposition messages
 
-For more information about the ASCII messages parsed from the Vision-RTK 2, please refer to [Fixposition Docs: I/O messages](https://docs.fixposition.com/fd/i-o-messages).
-
-## Code Documentation
-
-Run `doxygen Doxyfile` to generate Doxygen code documentation.
+For more information about the messages available from the Vision-RTK 2 sensor, please refer to [Fixposition Docs: I/O
+messages](https://docs.fixposition.com/fd/i-o-messages).
 
 ## License
 

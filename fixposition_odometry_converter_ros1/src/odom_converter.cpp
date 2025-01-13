@@ -1,21 +1,26 @@
 /**
- *  @file
- *  @brief Implementation of OdomConverter class
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of OdomConverter class
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+
 /* PACKAGE */
-#include <fixposition_odometry_converter_ros1/odom_converter.hpp>
+#include "fixposition_odometry_converter_ros1/odom_converter.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
+
 OdomConverter::OdomConverter(ros::NodeHandle* nh) : nh_(*nh) {
     // read parameters
     if (!params_.LoadFromRos("/fixposition_odometry_converter_ros1")) {
@@ -27,7 +32,7 @@ OdomConverter::OdomConverter(ros::NodeHandle* nh) : nh_(*nh) {
     Subscribe();
 
     // initialize the publisher
-    ws_pub_ = nh_.advertise<fixposition_driver_ros1::Speed>(params_.fixposition_speed_topic, 1);
+    ws_pub_ = nh_.advertise<fixposition_driver_msgs::Speed>(params_.fixposition_speed_topic, 1);
 }
 
 void OdomConverter::Subscribe() {
@@ -51,8 +56,8 @@ void OdomConverter::ConvertAndPublish(const std::vector<std::pair<bool, double>>
             ROS_ERROR("Speed vector has an invalid size!");
             return;
         }
-        fixposition_driver_ros1::Speed msg;
-        fixposition_driver_ros1::WheelSensor sensor;
+        fixposition_driver_msgs::Speed msg;
+        fixposition_driver_msgs::WheelSensor sensor;
         sensor.location = "RC";
         sensor.vx_valid = speeds[0].first;
         sensor.vx = round(speeds[0].second * params_.multiplicative_factor);
@@ -89,4 +94,5 @@ void OdomConverter::TwistCallback(const geometry_msgs::TwistConstPtr& msg) {
     ConvertAndPublish(velocities);
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition

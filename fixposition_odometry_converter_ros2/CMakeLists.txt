@@ -14,7 +14,9 @@ set(PACKAGE_INCLUDE_DEPENDS
   rclcpp_components
   nav_msgs
   geometry_msgs
-  fixposition_driver_ros2
+  fpsdk_common
+  fixposition_driver_lib
+  fixposition_driver_msgs
 )
 
 find_package(ament_cmake REQUIRED)

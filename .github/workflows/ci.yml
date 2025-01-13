@@ -1,0 +1,64 @@
+name: ci
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+    workflow_dispatch:
+
+jobs:
+    # Note: job names should be unique across all workflows (e.g. to reference them as pull request checks)!
+
+    ci-noetic:
+        runs-on: ubuntu-latest
+        container:
+            image: ghcr.io/fixposition/fixposition-sdk:noetic-ci
+        defaults:
+            run:
+                shell: bash
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                    submodules: 'recursive'
+            - name: Build
+              run: |
+                  git config --global --add safe.directory ${GITHUB_WORKSPACE}
+                  ./.github/ci.sh
+
+    ci-humble:
+        runs-on: ubuntu-latest
+        container:
+            image: ghcr.io/fixposition/fixposition-sdk:humble-ci
+        defaults:
+            run:
+                shell: bash
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                    submodules: 'recursive'
+            - name: Build
+              run: |
+                  git config --global --add safe.directory ${GITHUB_WORKSPACE}
+                  ./.github/ci.sh
+
+    ci-jazzy:
+        runs-on: ubuntu-latest
+        container:
+            image: ghcr.io/fixposition/fixposition-sdk:jazzy-ci
+        defaults:
+            run:
+                shell: bash
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                    submodules: 'recursive'
+            - name: Build
+              run: |
+                  git config --global --add safe.directory ${GITHUB_WORKSPACE}
+                  ./.github/ci.sh
+
+# eof

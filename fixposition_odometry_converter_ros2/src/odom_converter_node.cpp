@@ -1,23 +1,25 @@
 /**
- *  @file
- *  @brief Implementation of OdomConverterNode class
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
- *
- * Port to ROS 2 by Husarion
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of OdomConverterNode class
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+
 /* PACKAGE */
-#include <fixposition_odometry_converter_ros2/odom_converter_node.hpp>
+#include "fixposition_odometry_converter_ros2/odom_converter_node.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 OdomConverterNode::OdomConverterNode(const rclcpp::NodeOptions& options) : Node("odom_converter", options) {
     // read parameters
@@ -30,7 +32,7 @@ OdomConverterNode::OdomConverterNode(const rclcpp::NodeOptions& options) : Node(
     Subscribe();
 
     // initialize the publisher
-    ws_pub_ = this->create_publisher<fixposition_driver_ros2::msg::Speed>(params_.fixposition_speed_topic, 10);
+    ws_pub_ = this->create_publisher<fixposition_driver_msgs::msg::Speed>(params_.fixposition_speed_topic, 10);
 }
 
 void OdomConverterNode::Subscribe() {
@@ -57,8 +59,8 @@ void OdomConverterNode::ConvertAndPublish(const std::vector<std::pair<bool, doub
             RCLCPP_ERROR(this->get_logger(), "Speed vector has an invalid size");
             return;
         }
-        fixposition_driver_ros2::msg::Speed msg;
-        fixposition_driver_ros2::msg::WheelSensor sensor;
+        fixposition_driver_msgs::msg::Speed msg;
+        fixposition_driver_msgs::msg::WheelSensor sensor;
         sensor.location = "RC";
         sensor.vx_valid = speeds[0].first;
         sensor.vx = round(speeds[0].second * params_.multiplicative_factor);
@@ -95,6 +97,7 @@ void OdomConverterNode::TwistCallback(const geometry_msgs::msg::Twist::SharedPtr
     ConvertAndPublish(velocities);
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
 
 // Register the component with class_loader

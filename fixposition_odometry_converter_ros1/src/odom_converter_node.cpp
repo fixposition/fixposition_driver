@@ -1,19 +1,22 @@
 /**
- *  @file
- *  @brief Main function for the odometry converter ros node
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Main function for the odometry converter ros node
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+
 /* PACKAGE */
-#include <fixposition_odometry_converter_ros1/odom_converter.hpp>
+#include "fixposition_odometry_converter_ros1/odom_converter.hpp"
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "fixposition_odometry_converter_ros1");

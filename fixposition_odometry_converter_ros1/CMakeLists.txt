@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   nav_msgs
   geometry_msgs
-  fixposition_driver_ros1
+  fixposition_driver_msgs
 )
 
 catkin_package(

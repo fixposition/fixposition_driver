@@ -1,26 +1,28 @@
 /**
- *  @file
- *  @brief Declaration of OdomConverterNode class
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
- *
- * Port to ROS 2 by Husarion
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Declaration of OdomConverterNode class
  */
 
-#ifndef __ODOM_CONVERTER_NODE_HPP__
-#define __ODOM_CONVERTER_NODE_HPP__
+#ifndef __FIXPOSITION_ODOMETRY_CONVERTER_ROS2_ODOM_CONVERTER_HPP__
+#define __FIXPOSITION_ODOMETRY_CONVERTER_ROS2_ODOM_CONVERTER_HPP__
+
+/* LIBC/STL */
+
+/* EXTERNAL */
 
 /* PACKAGE */
-#include <fixposition_odometry_converter_ros2/params.hpp>
+#include "fixposition_odometry_converter_ros2/params.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 class OdomConverterNode : public rclcpp::Node {
    public:
@@ -74,7 +76,9 @@ class OdomConverterNode : public rclcpp::Node {
 
     OdomInputParams params_;
     rclcpp::SubscriptionBase::SharedPtr ws_sub_;
-    rclcpp::Publisher<fixposition_driver_ros2::msg::Speed>::SharedPtr ws_pub_;
+    rclcpp::Publisher<fixposition_driver_msgs::msg::Speed>::SharedPtr ws_pub_;
 };
+
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
-#endif  //__ODOM_CONVERTER_NODE_HPP__
+#endif  //__FIXPOSITION_ODOMETRY_CONVERTER_ROS2_ODOM_CONVERTER_HPP__

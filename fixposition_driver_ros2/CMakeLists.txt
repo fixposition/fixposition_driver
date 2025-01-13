@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 project(fixposition_driver_ros2)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic\
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror\
     -Wshadow -Wunused-parameter -Wformat -Wpointer-arith")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -23,49 +23,20 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(fixposition_driver_lib REQUIRED)
+find_package(fixposition_driver_msgs REQUIRED)
 find_package(rtcm_msgs REQUIRED)
-
-rosidl_generate_interfaces(${PROJECT_NAME}
-  msg/Speed.msg
-  msg/Gnsssats.msg
-  msg/NMEA.msg
-  msg/WheelSensor.msg
-  msg/fpa/GNSSANT.msg
-  msg/fpa/GNSSCORR.msg
-  msg/fpa/IMUBIAS.msg
-  msg/fpa/EOE.msg
-  msg/fpa/LLH.msg
-  msg/fpa/ODOMENU.msg
-  msg/fpa/ODOMETRY.msg
-  msg/fpa/ODOMSH.msg
-  msg/fpa/ODOMSTATUS.msg
-  msg/fpa/TEXT.msg
-  msg/fpa/TP.msg
-  msg/nmea/GPGGA.msg
-  msg/nmea/GPGLL.msg
-  msg/nmea/GNGSA.msg
-  msg/nmea/GPGST.msg
-  msg/nmea/GXGSV.msg
-  msg/nmea/GPHDT.msg
-  msg/nmea/GPRMC.msg
-  msg/nmea/GPVTG.msg
-  msg/nmea/GPZDA.msg
-  msg/extras/COVWARN.msg
-  DEPENDENCIES
-  std_msgs
-  nav_msgs
-  geometry_msgs
-  builtin_interfaces
-)
-ament_export_dependencies(rosidl_default_runtime)
+find_package(fpsdk_common REQUIRED)
+find_package(fpsdk_ros2 REQUIRED)
 
 include_directories(
   include
   ${sensor_msgs_INCLUDE_DIR}
-  ${fixposition_driver_lib_INCLUDE_DIR}
+  ${fixposition_driver_lib_INCLUDE_DIRS}
+  ${fixposition_driver_msgs_INCLUDE_DIRS}
   ${rtcm_msgs_INCLUDE_DIR}
   ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
+  ${fpsdk_common_INLCUDE_DIRS} ${fpsdk_ros2_INLCUDE_DIRS}
 )
 
 add_executable(
@@ -75,22 +46,13 @@ add_executable(
   src/data_to_ros2.cpp
 )
 
-if($ENV{ROS_DISTRO} MATCHES "humble|jazzy|rolling")
-  rosidl_get_typesupport_target(
-    cpp_typesupport_target
-    ${PROJECT_NAME} "rosidl_typesupport_cpp"
-  )
-else()
-  message(FATAL_ERROR "Unsupported ROS_DISTRO")
-endif()
-
 target_link_libraries(
   ${PROJECT_NAME}_exec
   ${fixposition_driver_lib_LIBRARIES}
   ${rtcm_msgs_LIBRARIES}
   ${Boost_LIBRARIES}
   ${EIGEN3_LIBRARIES}
-  ${cpp_typesupport_target}
+  ${fpsdk_common_LIBRARIES} ${fpsdk_ros2_LIBRARIES}
   pthread
 )
 
@@ -109,7 +71,9 @@ install(DIRECTORY
   "launch"
   DESTINATION share/${PROJECT_NAME}/
 )
-ament_target_dependencies(${PROJECT_NAME}_exec rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs tf2_ros tf2_eigen fixposition_driver_lib rtcm_msgs tf2_geometry_msgs)
+ament_target_dependencies(${PROJECT_NAME}_exec
+    rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs tf2_ros tf2_eigen
+    fixposition_driver_lib fixposition_driver_msgs rtcm_msgs tf2_geometry_msgs)
 
 # define ament package for this project
 ament_package()

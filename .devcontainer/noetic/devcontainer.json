@@ -1,0 +1,52 @@
+// https://aka.ms/devcontainer.json
+{
+    "name": "Fixposition ROS1 driver (Noetic)",
+    "build": { "dockerfile": "Dockerfile", "context": "../.." },
+    "remoteUser": "fpsdk",
+    "updateRemoteUserUID": true,
+    "capAdd": ["SYS_PTRACE"],
+    "mounts": [
+        // Persistent bash history
+        "source=${localWorkspaceFolder}/.devcontainer/.bashrc,target=/home/fpsdk/.bashrc,type=bind",
+        "source=${localWorkspaceFolder}/.devcontainer/.bash_logout,target=/home/fpsdk/.bash_logout,type=bind",
+        "source=${localWorkspaceFolder}/.devcontainer/.bash_history.d,target=/home/fpsdk/.bash_history.d,type=bind",
+        // Persistent .vscode-server
+        "source=${localWorkspaceFolder}/.devcontainer/.vscode-server,target=/home/fpsdk/.vscode-server,type=bind",
+        // The code we're working on
+        "source=${localWorkspaceFolder},target=/home/fpsdk/fixposition_driver,type=bind",
+    ],
+    "workspaceFolder": "/home/fpsdk/fixposition_driver",
+    "runArgs": [ "--name=fixposition_driver-noetic-${localEnv:USER}", "--hostname=noetic" ],
+    "onCreateCommand": "${containerWorkspaceFolder}/.devcontainer/helper.sh onCreateCommand ${containerWorkspaceFolder}",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "files.exclude": {
+                    "**/.git": true,
+                    ".vscode-cache": true,
+                    "**/*~": true,
+                    "**/build/**": true,
+                    ".vstags": true,
+                    "core": true,
+                    "**/.devcontainer/.vscode-server/**": true,
+                    "**/.vscode-server/**": true
+                },
+                "search.exclude": {
+                    "tmp": true,
+                    "**/ros1_ws/**": true,
+                    "**/ros2_ws/**": true
+                },
+                "files.watcherExclude": {
+                    "**/.git/objects/**": true,
+                    "**/.git/refs/**": true,
+                    "**/.git/logs/**": true,
+                    "**/.git/subtree-cache/**": true,
+                    "**/.git/worktrees/**": true,
+                    "**/.vscode-*/**": true,
+                    "**/ros1_ws/**": true,
+                    "**/ros2_ws/**": true
+                }
+            }
+        }
+    }
+}

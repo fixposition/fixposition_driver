@@ -1,23 +1,25 @@
 /**
- *  @file
- *  @brief Implementation of Parameter Loading for the odometry parameters
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
- * 
- * Port to ROS 2 by Husarion
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Implementation of Parameter Loading for the odometry parameters
  */
 
+/* LIBC/STL */
+
+/* EXTERNAL */
+
 /* PACKAGE */
-#include <fixposition_odometry_converter_ros2/params.hpp>
+#include "fixposition_odometry_converter_ros2/params.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 bool OdomInputParams::LoadFromRos(const rclcpp::node_interfaces::NodeParametersInterface::SharedPtr& param_itf,
                                   const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr& logging_itf) {
@@ -67,4 +69,5 @@ bool OdomInputParams::LoadFromRos(const rclcpp::node_interfaces::NodeParametersI
     return true;
 }
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition

@@ -1,25 +1,29 @@
 /**
- *  @file
- *  @brief Declaration of OdomConverter class
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Declaration of OdomConverter class
  */
 
-#ifndef __ODOM_CONVERTER_HPP__
-#define __ODOM_CONVERTER_HPP__
+#ifndef __FIXPOSITION_ODOMETRY_CONVERTER_ROS1_ODOM_CONVERTER_HPP__
+#define __FIXPOSITION_ODOMETRY_CONVERTER_ROS1_ODOM_CONVERTER_HPP__
+
+/* LIBC/STL */
 
 /* EXTERNAL */
-#include <fixposition_odometry_converter_ros1/params.hpp>
-#include <fixposition_odometry_converter_ros1/ros_msgs.hpp>
+
+/* PACKAGE */
+#include "fixposition_odometry_converter_ros1/params.hpp"
+#include "fixposition_odometry_converter_ros1/ros_msgs.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 class OdomConverter {
    public:
@@ -77,5 +81,7 @@ class OdomConverter {
 
     OdomInputParams params_;
 };
+
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
-#endif  //__FIXPOSITION_DRIVER_FIXPOSITION_DRIVER__
+#endif  //__FIXPOSITION_ODOMETRY_CONVERTER_ROS1_ODOM_CONVERTER_HPP__

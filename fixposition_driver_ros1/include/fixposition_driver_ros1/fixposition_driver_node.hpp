@@ -1,141 +1,139 @@
 /**
- *  @file
- *  @brief Declaration of FixpositionDriver ROS1 Node
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Fixposition driver node for ROS1
  */
 
-#ifndef __FIXPOSITION_DRIVER_ROS1_FIXPOSITION_DRIVER_NODE_
-#define __FIXPOSITION_DRIVER_ROS1_FIXPOSITION_DRIVER_NODE_
+#ifndef __FIXPOSITION_DRIVER_ROS1_FIXPOSITION_DRIVER_NODE_HPP__
+#define __FIXPOSITION_DRIVER_ROS1_FIXPOSITION_DRIVER_NODE_HPP__
 
-/* SYSTEM / STL */
-#include <termios.h>
+/* LIBC/STL */
+#include <memory>
+#include <mutex>
 
-/* ROS */
-#include <fixposition_driver_ros1/ros_msgs.hpp>
-#include <fixposition_driver_ros1/params.hpp>
-
-/* FIXPOSITION */
+/* EXTERNAL */
 #include <fixposition_driver_lib/helper.hpp>
-#include <fixposition_driver_lib/gnss_tf.hpp>
+#include <fpsdk_ros1/ext/ros.hpp>
 
 /* PACKAGE */
-#include <fixposition_driver_ros1/data_to_ros1.hpp>
+#include "data_to_ros1.hpp"
+#include "params.hpp"
+#include "ros1_msgs.hpp"
 
 namespace fixposition {
-class FixpositionDriverNode : public FixpositionDriver {
+/* ****************************************************************************************************************** */
+
+class FixpositionDriverNode {
    public:
     /**
-     * @brief Construct a new Fixposition Driver Node object
+     * @brief Constructor
      *
-     * @param[in] params
+     * @param[in]  driver_params  Parameters
+     * @param[in]  node_params    Parameters
+     * @param[in]  nh             Node handle
      */
-    FixpositionDriverNode(const FixpositionDriverParams& params);
+    FixpositionDriverNode(const DriverParams& driver_params, const NodeParams& node_params, ros::NodeHandle& nh);
 
-    void Run();
+    /**
+     * @brief Destructor
+     */
+    ~FixpositionDriverNode();
 
-    void RegisterObservers();
+    /**
+     * @brief Start the node
+     *
+     * @returns true on success, false otherwise
+     */
+    bool StartNode();
 
-    void WsCallbackRos(const fixposition_driver_ros1::SpeedConstPtr& msg);
-
-    void RtcmCallbackRos(const rtcm_msgs::MessageConstPtr& msg);
+    /**
+     * @brief Stop the node
+     */
+    void StopNode();
 
    private:
-    /**
-     * @brief Observer Functions to publish NavSatFix from BestGnssPos
-     *
-     * @param[in] header
-     * @param[in] payload
-     */
-    void BestGnssPosToPublishNavSatFix(const Oem7MessageHeaderMem* header, const BESTGNSSPOSMem* payload);
-
-    /**
-     * @brief Observer Function to publish NMEA message once the GNSS epoch transmission is complete
-     *
-     * @param[in] data
-     */
-    void PublishNmea();
-
-    // ROS node handler
-    ros::NodeHandle nh_;
-    
-    // ROS subscribers
-    ros::Subscriber ws_sub_;  //!< wheelspeed message subscriber
-    ros::Subscriber rtcm_sub_;  //!< RTCM3 message subscriber
+    ros::NodeHandle nh_;          //!< ROS node handle
+    DriverParams driver_params_;  //!< Sensor/driver parameters
+    NodeParams node_params_;      //!< Node parameters
+    FixpositionDriver driver_;    //!< Sensor driver
 
     // ROS publishers
-    // FP_A messages
-    ros::Publisher fpa_odometry_pub_;    //!< FP_A-ODOMETRY message
-    ros::Publisher fpa_imubias_pub_;     //!< FP_A-IMUBIAS message
+    // - FP_A messages
     ros::Publisher fpa_eoe_pub_;         //!< FP_A-EOE message
-    ros::Publisher fpa_llh_pub_;         //!< FP_A-LLH message
-    ros::Publisher fpa_odomenu_pub_;     //!< FP_A-ODOMENU message
-    ros::Publisher fpa_odomsh_pub_;      //!< FP_A-ODOMSH message
-    ros::Publisher fpa_odomstatus_pub_;  //!< FP_A-ODOMSTATUS message
     ros::Publisher fpa_gnssant_pub_;     //!< FP_A-GNSSANT message
     ros::Publisher fpa_gnsscorr_pub_;    //!< FP_A-GNSSCORR message
+    ros::Publisher fpa_imubias_pub_;     //!< FP_A-IMUBIAS message
+    ros::Publisher fpa_llh_pub_;         //!< FP_A-LLH message
+    ros::Publisher fpa_odomenu_pub_;     //!< FP_A-ODOMENU message
+    ros::Publisher fpa_odometry_pub_;    //!< FP_A-ODOMETRY message
+    ros::Publisher fpa_odomsh_pub_;      //!< FP_A-ODOMSH message
+    ros::Publisher fpa_odomstatus_pub_;  //!< FP_A-ODOMSTATUS message
     ros::Publisher fpa_text_pub_;        //!< FP_A-TEXT message
     ros::Publisher fpa_tp_pub_;          //!< FP_A-TP message
+    // - NMEA messages
+    ros::Publisher nmea_gga_pub_;  //!< NMEA-GP-GGA message
+    ros::Publisher nmea_gll_pub_;  //!< NMEA-GP-GLL message
+    ros::Publisher nmea_gsa_pub_;  //!< NMEA-GN-GSA message
+    ros::Publisher nmea_gst_pub_;  //!< NMEA-GP-GST message
+    ros::Publisher nmea_gsv_pub_;  //!< NMEA-GX-GSV message
+    ros::Publisher nmea_hdt_pub_;  //!< NMEA-GP-HDT message
+    ros::Publisher nmea_rmc_pub_;  //!< NMEA-GP-RMC message
+    ros::Publisher nmea_vtg_pub_;  //!< NMEA-GP-VTG message
+    ros::Publisher nmea_zda_pub_;  //!< NMEA-GP-ZDA message
+    // - Odometry
+    ros::Publisher odometry_ecef_pub_;    //!< ECEF odometry
+    ros::Publisher odometry_enu_pub_;     //!< ENU odometry
+    ros::Publisher odometry_llh_pub_;     //!< LLH odometry
+    ros::Publisher odometry_smooth_pub_;  //!< Smooth Odometry (ECEF)
+    // - Orientation
+    ros::Publisher eul_pub_;      //!< Euler angles yaw-pitch-roll in local ENU
+    ros::Publisher eul_imu_pub_;  //!< Euler angles pitch-roll as estimated from the IMU in local horizontal
+    // - IMU
+    ros::Publisher corrimu_pub_;  //!< Bias corrected IMU data in IMU frame
+    ros::Publisher poiimu_pub_;   //!< Bias corrected IMU data in POI frame
+    ros::Publisher rawimu_pub_;   //!< Raw IMU data in IMU frame
+    // - GNSS
+    ros::Publisher navsatfix_gnss1_pub_;  //!< GNSS1 position and status
+    ros::Publisher navsatfix_gnss2_pub_;  //!< GNSS2 position and status
+    ros::Publisher nmea_epoch_pub_;       //!< NMEA epoch data
+    // - Other
+    ros::Publisher jump_pub_;  //!< Jump warning topic
+    ros::Publisher raw_pub_;   //!< Raw messages topic
 
-    // NMEA messages
-    ros::Publisher nmea_gpgga_pub_;      //!< NMEA-GP-GGA message
-    ros::Publisher nmea_gpgll_pub_;      //!< NMEA-GP-GLL message
-    ros::Publisher nmea_gngsa_pub_;      //!< NMEA-GP-GSA message
-    ros::Publisher nmea_gpgst_pub_;      //!< NMEA-GP-GST message
-    ros::Publisher nmea_gxgsv_pub_;      //!< NMEA-GP-GSV message
-    ros::Publisher nmea_gphdt_pub_;      //!< NMEA-GP-HDT message
-    ros::Publisher nmea_gprmc_pub_;      //!< NMEA-GP-RMC message
-    ros::Publisher nmea_gpvtg_pub_;      //!< NMEA-GP-VTG message
-    ros::Publisher nmea_gpzda_pub_;      //!< NMEA-GP-ZDA message
+    // ROS subscribers
+    ros::Subscriber ws_sub_;    //!< Wheelspeed input subscriber
+    ros::Subscriber corr_sub_;  //!< GNSS correction data input subscriber
 
-    // ODOMETRY
-    ros::Publisher odometry_ecef_pub_;   //!< ECEF Odometry
-    ros::Publisher odometry_llh_pub_;    //!< LLH Odometry
-    ros::Publisher odometry_enu_pub_;    //!< ENU Odometry
-    ros::Publisher odometry_smooth_pub_; //!< Smooth Odometry (ECEF)
-    
-    // Orientation
-    ros::Publisher eul_pub_;             //!< Euler angles Yaw-Pitch-Roll in local ENU
-    ros::Publisher eul_imu_pub_;         //!< Euler angles Pitch-Roll as estimated from the IMU in local horizontal
-
-    // IMU
-    ros::Publisher rawimu_pub_;          //!< Raw IMU data in IMU frame
-    ros::Publisher corrimu_pub_;         //!< Bias corrected IMU data in IMU frame
-    ros::Publisher poiimu_pub_;          //!< Bias corrected IMU data in POI frame
-
-    // GNSS
-    ros::Publisher nmea_pub_;            //!< Pose estimation based only on GNSS
-    ros::Publisher navsatfix_gnss1_pub_; //!< GNSS1 position and status
-    ros::Publisher navsatfix_gnss2_pub_; //!< GNSS2 position and status
-    NmeaMessage nmea_message_;           //!< Collector class for NMEA messages
-    
-    // TF
-    tf2_ros::TransformBroadcaster br_;
+    // TF2 broadcasters
+    tf2_ros::TransformBroadcaster tf_br_;
     tf2_ros::StaticTransformBroadcaster static_br_;
 
-    // Jump warning topic
-    ros::Publisher extras_jump_pub_;     //!< Jump warning topic
+    // State
+    JumpDetector jump_detector_;
+    NmeaEpochData nmea_epoch_data_;  //!< NMEA collector
 
-    // Previous state
-    Eigen::Vector3d prev_pos;
-    Eigen::MatrixXd prev_cov;
-
-    // Nav2 TF map
-    std::map<std::string, std::shared_ptr<geometry_msgs::TransformStamped>> tf_map = {
-        {"ECEFENU0", nullptr},
-        {"POIPOISH", nullptr},
-        {"ECEFPOISH", nullptr},
-        {"ENU0POI", nullptr}
+    // TFs
+    struct Tfs {
+        std::mutex mutex_;
+        std::unique_ptr<geometry_msgs::TransformStamped> ecef_enu0_;
+        std::unique_ptr<geometry_msgs::TransformStamped> poi_poish_;
+        std::unique_ptr<geometry_msgs::TransformStamped> ecef_poish_;
+        std::unique_ptr<geometry_msgs::TransformStamped> enu0_poi_;
     };
+    Tfs tfs_;
+
+    void ProcessTfData(const TfData& tf_data);
+    void ProcessOdometryData(const OdometryData& odometry_data);
+    void PublishNav2Tf();
 };
 
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
-
-#endif
+#endif  // __FIXPOSITION_DRIVER_ROS1_FIXPOSITION_DRIVER_NODE_HPP__
