@@ -4,8 +4,8 @@
 # FP_A-ODOMSH data
 
 std_msgs/Header header
-string pose_frame                            # frame of the pose values [pose, quaternion]
-string kin_frame                             # frame of the kinematic values [linear/angular velocity, acceleration]
+string pose_frame                            # frame of the pose values (pose, quaternion)
+string kin_frame                             # frame of the kinematic values (linear and angular velocity, acceleration)
 geometry_msgs/PoseWithCovariance pose        # position, orientation
 geometry_msgs/TwistWithCovariance velocity   # linear, angular
 geometry_msgs/Vector3 acceleration           # linear acceleration
