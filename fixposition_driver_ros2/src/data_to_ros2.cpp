@@ -354,7 +354,7 @@ void PublishFpaText(const fpa::FpaTextPayload& payload, rclcpp::Publisher<fpmsgs
 // ---------------------------------------------------------------------------------------------------------------------
 
 template <typename SomeFpaImuPayload>
-static void FpaImuPayloadToRos(const SomeFpaImuPayload& payload, sensor_msgs::msg::Imu msg) {
+static void FpaImuPayloadToRos(const SomeFpaImuPayload& payload, sensor_msgs::msg::Imu& msg) {
     msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
     msg.header.frame_id = IMU_FRAME_ID;
     if (payload.acc.valid) {
@@ -586,7 +586,6 @@ void PublishNmeaRmc(const fpsdk::common::parser::nmea::NmeaRmcPayload& payload,
         msg.navstatus = NmeaNavStatusRmcToMsg(msg, payload.navstatus);
         msg.latitude = (payload.llh.latlon_valid ? payload.llh.lat : NAN);
         msg.longitude = (payload.llh.latlon_valid ? payload.llh.lon : NAN);
-        msg.height = (payload.llh.height_valid ? payload.llh.height : NAN);
         msg.speed = (payload.speed.valid ? payload.speed.value : NAN);
         msg.course = (payload.course.valid ? payload.course.value : NAN);
         pub->publish(msg);

@@ -21,7 +21,6 @@ int8     navstatus                # Navigational status (optional), see consts.N
 
 float64  latitude                 # Latitude [deg], NaN if not available
 float64  longitude                # Longitude [deg], NaN if not available
-float64  height                   # Height [m], NaN if not available
 
 float32  speed                    # Speed over ground [knots], NaN if not available
 float32  course                   # Course over ground w.r.t. True North [deg], NaN if not available

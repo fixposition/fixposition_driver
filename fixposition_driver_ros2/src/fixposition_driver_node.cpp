@@ -111,7 +111,7 @@ bool FixpositionDriverNode::StartNode() {
             OdometryData odometry_data;
             odometry_data.SetFromFpaOdomPayload(odometry_payload);
             PublishOdometryData(odometry_data, odometry_ecef_pub_);
-            // ProcessOdometryData(odometry_data);
+            ProcessOdometryData(odometry_data);
         });
     }
 
@@ -125,7 +125,7 @@ bool FixpositionDriverNode::StartNode() {
             OdometryData odometry_data;
             odometry_data.SetFromFpaOdomPayload(odomsh_payload);
             PublishOdometryData(odometry_data, odometry_smooth_pub_);
-            // ProcessOdometryData(odometry_data);
+            ProcessOdometryData(odometry_data);
         });
     }
 
@@ -141,7 +141,7 @@ bool FixpositionDriverNode::StartNode() {
             OdometryData odometry_data;
             odometry_data.SetFromFpaOdomPayload(odomenu_payload);
             PublishOdometryData(odometry_data, odometry_enu_pub_);
-            // ProcessOdometryData(odometry_data);
+            ProcessOdometryData(odometry_data);
         });
     }
 

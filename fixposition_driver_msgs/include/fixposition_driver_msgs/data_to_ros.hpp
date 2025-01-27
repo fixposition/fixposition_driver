@@ -348,8 +348,8 @@ inline int FpaAntStateToMsg(const RosMsgT& msg, const fpsdk::common::parser::fpa
     // clang-format off
     switch (ant_state) {
         case fpsdk::common::parser::fpa::FpaAntState::UNSPECIFIED: return msg.consts.ANT_STATE_UNSPECIFIED;
-        case fpsdk::common::parser::fpa::FpaAntState::OK:          return msg.consts.ANT_STATE_OPEN;
-        case fpsdk::common::parser::fpa::FpaAntState::OPEN:        return msg.consts.ANT_STATE_OK;
+        case fpsdk::common::parser::fpa::FpaAntState::OK:          return msg.consts.ANT_STATE_OK;
+        case fpsdk::common::parser::fpa::FpaAntState::OPEN:        return msg.consts.ANT_STATE_OPEN;
         case fpsdk::common::parser::fpa::FpaAntState::SHORT:       return msg.consts.ANT_STATE_SHORT;
     }
     // clang-format on
@@ -361,8 +361,8 @@ inline int FpaAntPowerToMsg(const RosMsgT& msg, const fpsdk::common::parser::fpa
     // clang-format off
     switch (ant_power) {
         case fpsdk::common::parser::fpa::FpaAntPower::UNSPECIFIED: return msg.consts.ANT_POWER_UNSPECIFIED;
-        case fpsdk::common::parser::fpa::FpaAntPower::ON:          return msg.consts.ANT_POWER_OFF;
-        case fpsdk::common::parser::fpa::FpaAntPower::OFF:         return msg.consts.ANT_POWER_ON;
+        case fpsdk::common::parser::fpa::FpaAntPower::ON:          return msg.consts.ANT_POWER_ON;
+        case fpsdk::common::parser::fpa::FpaAntPower::OFF:         return msg.consts.ANT_POWER_OFF;
     }
     // clang-format on
     return msg.consts.ANT_POWER_UNSPECIFIED;
