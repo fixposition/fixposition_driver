@@ -93,7 +93,9 @@ function build_catkin_release
     ${FP_SRC_DIR}/create_ros_ws.sh ${buildname}
     cd ${FP_SRC_DIR}/${buildname}
     catkin build || return 1
+    set +u
     source devel/setup.bash
+    set -u
     rospack find fixposition_driver_ros1
 }
 
@@ -104,7 +106,9 @@ function build_catkin_debug
     ${FP_SRC_DIR}/create_ros_ws.sh -d ${buildname}
     cd ${FP_SRC_DIR}/${buildname}
     catkin build || return 1
+    set +u
     source devel/setup.bash
+    set -u
     rospack find fixposition_driver_ros1
 }
 
@@ -117,7 +121,9 @@ function build_colcon_release
     ${FP_SRC_DIR}/create_ros_ws.sh ${buildname} || return 1
     cd ${FP_SRC_DIR}/${buildname}
     colcon build || return 1
+    set +u
     source install/setup.bash
+    set -u
     ros2 pkg executables fixposition_driver_ros2
 }
 
@@ -128,7 +134,9 @@ function build_colcon_debug
     ${FP_SRC_DIR}/create_ros_ws.sh -d ${buildname} || return 1
     cd ${FP_SRC_DIR}/${buildname}
     colcon build || return 1
+    set +u
     source install/setup.bash
+    set -u
     ros2 pkg executables fixposition_driver_ros2
 }
 
