@@ -345,6 +345,8 @@ void PublishFpaTp(const fpa::FpaTpPayload& payload, rclcpp::Publisher<fpmsgs::Fp
 void PublishFpaText(const fpa::FpaTextPayload& payload, rclcpp::Publisher<fpmsgs::FpaText>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::FpaText msg;
+        msg.header.stamp = rclcpp::Clock().now();
+        msg.header.frame_id = IMU_FRAME_ID;
         msg.level = FpaTextLevelToMsg(msg, payload.level);
         msg.text = payload.text;
         pub->publish(msg);

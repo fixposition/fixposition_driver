@@ -338,6 +338,8 @@ void PublishFpaTp(const fpa::FpaTpPayload& payload, ros::Publisher& pub) {
 void PublishFpaText(const fpa::FpaTextPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::FpaText msg;
+        msg.header.stamp = ros::Time::now();
+        msg.header.frame_id = IMU_FRAME_ID;
         msg.level = FpaTextLevelToMsg(msg, payload.level);
         msg.text = payload.text;
         pub.publish(msg);
