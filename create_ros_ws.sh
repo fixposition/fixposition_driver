@@ -31,7 +31,10 @@ function main
                 ;;
             h)
                 echo
-                echo "Create a ROS workspace for building the Fixposition ROS driver"
+                echo "Create a ROS workspace for the Fixposition ROS driver"
+                echo
+                echo "Note that this is meant to be used in Fixposition driver development."
+                echo "To use the driver in your existing ROS workspace, use the setup_ros_ws.sh script."
                 echo
                 echo "[ROS_DISTRO=...] $0 [-d] [-r 1|2] <path>"
                 echo
@@ -68,9 +71,9 @@ function main
     fi
 
     # Check that the Fixposition SDK is present
-    if [ ${checksdk} -gt 0 -a ! -d fixposition-sdk/fpsdk_common ]; then
+    if [ ${checksdk} -gt 0 -a ! -d ${SCRIPTDIR}/fixposition-sdk/fpsdk_common ]; then
         notice "Cloning Fixposition SDK"
-        if ! git submodule update --init; then
+        if ! git -C ${SCRIPTDIR} submodule update --init; then
             error "Failed cloning Fixposition SDK. Please fix that manually."
             exit 1
         fi
