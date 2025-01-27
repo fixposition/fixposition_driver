@@ -676,7 +676,7 @@ void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::ms
     }
 }
 
-void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr pub) {
+void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr pub, bool nav2_mode) {
     if (pub->get_subscription_count() > 0) {
         // Create message
         sensor_msgs::msg::NavSatFix msg;
@@ -687,7 +687,14 @@ void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sen
         } else {
             msg.header.stamp = GpsTimeToMsgTime(data.odom.stamp);
         }
-        msg.header.frame_id = data.odom.child_frame_id;
+        
+        if (nav2_mode) {
+            msg.header.frame_id = "gps_link";
+        } else {
+            msg.header.frame_id = data.odom.child_frame_id;
+        }
+        // TODO: REMOVE
+        msg.header.frame_id = "gps_link";
         
         // Populate LLH position
         Eigen::Map<Eigen::Matrix<double, 3, 3>> cov_map =
@@ -738,7 +745,7 @@ void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sen
     }
 }
 
-void OdomToImuMsg(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub) {
+void OdomToImuMsg(const fixposition::FP_ODOMENU& data, rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub) {
     if (pub->get_subscription_count() > 0) {
         // Create message
         sensor_msgs::msg::Imu msg;
@@ -749,10 +756,17 @@ void OdomToImuMsg(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sensor
         } else {
             msg.header.stamp = GpsTimeToMsgTime(data.odom.stamp);
         }
+        //msg.header.frame_id = data.odom.frame_id;
+        msg.header.frame_id = "imu_link";
         
-        msg.header.frame_id = data.odom.frame_id;
+        // Populate linear acceleration
         tf2::toMsg(data.acceleration, msg.linear_acceleration);
+        
+        // Populate angular velocity
         tf2::toMsg(data.odom.twist.angular, msg.angular_velocity);
+        
+        // Populate orientation
+        msg.orientation = tf2::toMsg(data.odom.pose.orientation);
 
         // Publish message
         pub->publish(msg);

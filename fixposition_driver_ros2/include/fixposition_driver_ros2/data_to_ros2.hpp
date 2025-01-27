@@ -138,7 +138,7 @@ void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::ms
  * @param[in] data
  * @param[out] msg
  */
-void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr pub);
+void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr pub, bool nav2_mode);
 
 /**
  * @brief
@@ -146,7 +146,7 @@ void OdomToNavSatFix(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sen
  * @param[in] data
  * @param[out] msg
  */
-void OdomToImuMsg(const fixposition::FP_ODOMETRY& data, rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr msg);
+void OdomToImuMsg(const fixposition::FP_ODOMENU& data, rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr msg);
 
 /**
  * @brief

@@ -118,8 +118,7 @@ void FixpositionDriverNode::RegisterObservers() {
                 ->AddObserver([this](const FP_ODOMETRY& data) {
                     FpToRosMsg(data, fpa_odometry_pub_);
                     FpToRosMsg(data.odom, odometry_ecef_pub_);
-                    OdomToImuMsg(data, poiimu_pub_);
-                    OdomToNavSatFix(data, odometry_llh_pub_);
+                    OdomToNavSatFix(data, odometry_llh_pub_, params_.fp_output.nav2_mode);
                     OdometryDataToTf(data, br_);
 
                     // Output jump warning
@@ -141,6 +140,7 @@ void FixpositionDriverNode::RegisterObservers() {
                     FpToRosMsg(data, fpa_odomenu_pub_);
                     FpToRosMsg(data.odom, odometry_enu_pub_);
                     OdomToYprMsg(data.odom, eul_pub_);
+                    OdomToImuMsg(data, poiimu_pub_);
 
                     // Append TF if Nav2 mode is selected
                     if (params_.fp_output.nav2_mode) {

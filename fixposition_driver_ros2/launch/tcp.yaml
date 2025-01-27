@@ -8,10 +8,10 @@ fixposition_driver_ros2:
                ]
       type: "tcp"
       port: "21000"
-      ip: "10.0.2.1" # change to VRTK2's IP address in the network
+      ip: "172.22.1.29" # change to VRTK2's IP address in the network
       rate: 200
       reconnect_delay: 5.0 # wait time in [s] until retry connection
-      qos_type: "sensor_short" # Supported types: "sensor_short", "sensor_long", "default_short", "default_long"
+      qos_type: "default_long" # Supported types: "sensor_short", "sensor_long", "default_short", "default_long"
       cov_warning: false
       nav2_mode: false
 
