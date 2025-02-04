@@ -338,8 +338,6 @@ void PublishFpaTp(const fpa::FpaTpPayload& payload, ros::Publisher& pub) {
 void PublishFpaText(const fpa::FpaTextPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::FpaText msg;
-        msg.header.stamp = ros::Time::now();
-        msg.header.frame_id = IMU_FRAME_ID;
         msg.level = FpaTextLevelToMsg(msg, payload.level);
         msg.text = payload.text;
         pub.publish(msg);
@@ -622,7 +620,6 @@ void PublishNmeaZda(const fpsdk::common::parser::nmea::NmeaZdaPayload& payload, 
 void PublishParserMsg(const fpsdk::common::parser::ParserMsg& msg, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::ParserMsg ros_msg;
-        ros_msg.header.stamp = ros::Time::now();
         ros_msg.protocol = ParserProtocolToMsg(ros_msg, msg.proto_);
         ros_msg.data = msg.data_;
         ros_msg.name = msg.name_;

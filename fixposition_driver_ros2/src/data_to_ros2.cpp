@@ -345,8 +345,6 @@ void PublishFpaTp(const fpa::FpaTpPayload& payload, rclcpp::Publisher<fpmsgs::Fp
 void PublishFpaText(const fpa::FpaTextPayload& payload, rclcpp::Publisher<fpmsgs::FpaText>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::FpaText msg;
-        msg.header.stamp = rclcpp::Clock().now();
-        msg.header.frame_id = IMU_FRAME_ID;
         msg.level = FpaTextLevelToMsg(msg, payload.level);
         msg.text = payload.text;
         pub->publish(msg);
@@ -641,7 +639,6 @@ void PublishParserMsg(const fpsdk::common::parser::ParserMsg& msg,
                       rclcpp::Publisher<fpmsgs::ParserMsg>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::ParserMsg ros_msg;
-        ros_msg.header.stamp = rclcpp::Clock().now();
         ros_msg.protocol = ParserProtocolToMsg(ros_msg, msg.proto_);
         ros_msg.data = msg.data_;
         ros_msg.name = msg.name_;

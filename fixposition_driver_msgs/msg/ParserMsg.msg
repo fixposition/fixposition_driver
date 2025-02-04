@@ -5,7 +5,6 @@
 #
 # !!! fpsdk_{ros1,ros2}/msg/ParserMsg.msg should be kept in sync !!!
 
-std_msgs/Header header            # Timestamp of message reception time
 int8    protocol                  # Protocol
 int8    PROTOCOL_UNSPECIFIED = 0
 int8    PROTOCOL_FP_A        = 1

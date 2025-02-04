@@ -3,7 +3,6 @@
 #
 # FP_A-TEXT data
 
-std_msgs/Header header
 int8   level   # Level, see consts.TEXT_LEVEL_...
 string text    # Text
 
