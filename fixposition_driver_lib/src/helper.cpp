@@ -238,9 +238,9 @@ NmeaEpochData NmeaEpochData::CompleteAndReset() {
     // clang-format off
     switch (epoch_) {
         case fpa::FpaEpoch::UNSPECIFIED: break;
-        case fpa::FpaEpoch::GNSS1:       frame_id_ = GNSS_FRAME_ID; break;
-        case fpa::FpaEpoch::GNSS2:       frame_id_ = GNSS1_FRAME_ID; break;
-        case fpa::FpaEpoch::GNSS:        frame_id_ = GNSS2_FRAME_ID; break;
+        case fpa::FpaEpoch::GNSS:        frame_id_ = GNSS_FRAME_ID; break;
+        case fpa::FpaEpoch::GNSS1:       frame_id_ = GNSS1_FRAME_ID; break;
+        case fpa::FpaEpoch::GNSS2:       frame_id_ = GNSS2_FRAME_ID; break;
         case fpa::FpaEpoch::FUSION:      frame_id_ = ODOMETRY_CHILD_FRAME_ID; break;
     }
     // clang-format on
