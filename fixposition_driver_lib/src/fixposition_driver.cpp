@@ -493,12 +493,8 @@ void FixpositionDriver::SendWheelspeedData(const std::vector<WheelSpeedData>& da
     uint8_t payload[fpb::FP_B_MEASUREMENTS_HEAD_SIZE +
                     (fpb::FP_B_MEASUREMENTS_MAX_NUM_MEAS * fpb::FP_B_MEASUREMENTS_MEAS_SIZE)];
 
-    fpb::FpbMeasurementsHead head = {0};
-    head.version = fpb::FP_B_MEASUREMENTS_V1;
-    std::memcpy(&payload[0], &head, sizeof(head));
-    std::size_t payload_size = sizeof(head);
-
     std::size_t n_meas = 0;
+    std::size_t payload_size = 0;
     bool meas_ok = true;
     for (auto& wheel : data) {
         fpb::FpbMeasurementsMeas meas = {0};
@@ -530,6 +526,13 @@ void FixpositionDriver::SendWheelspeedData(const std::vector<WheelSpeedData>& da
             break;
         }
     }
+
+    fpb::FpbMeasurementsHead head = {0};
+    head.version = fpb::FP_B_MEASUREMENTS_V1;
+    head.num_meas = n_meas;
+    std::memcpy(&payload[0], &head, sizeof(head));
+    payload_size += sizeof(head);
+
     if (n_meas == 0) {
         meas_ok = false;
     }
