@@ -11,10 +11,10 @@ int8     num_msgs                 # Number of messages in this GSV sequence (for
 int8     msg_num                  # Message number in sequence (1...num_msgs)
 
 int8[]   azel_sat                 # Satellite for azimuth/elevation
-int16[]  az                       # Azimuth [deg]
 int16[]  el                       # Elevations [deg]
+int16[]  az                       # Azimuth [deg]
 
 int8[]   cno_sat                  # Satellite for signal level
-float32[] cno                     # Signal level [dbHz]
+int16[] cno                       # Signal level [dbHz]
 
 fixposition_driver_msgs/NmeaConsts consts # Constants for enums used in NMEA

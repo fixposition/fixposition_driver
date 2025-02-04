@@ -141,7 +141,7 @@ void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload,
     if (pub->get_subscription_count() > 0) {
         sensor_msgs::msg::NavSatFix msg;
         msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
-        msg.header.frame_id = ODOMSH_CHILD_FRAME_ID;
+        msg.header.frame_id = ODOMETRY_CHILD_FRAME_ID;
 
         // Populate LLH position
         PoseWithCovData pose;
@@ -244,6 +244,7 @@ void PublishFpaLlh(const fpa::FpaLlhPayload& payload, rclcpp::Publisher<fpmsgs::
     if (pub->get_subscription_count() > 0) {
         fpmsgs::FpaLlh msg;
         msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+        msg.header.frame_id = ODOMETRY_CHILD_FRAME_ID;
         FpaFloat3ToVector3(payload.llh, msg.position);
         if (payload.cov_enu.valid) {
             Eigen::Map<Eigen::Matrix3d> cov_map = Eigen::Map<Eigen::Matrix3d>(msg.covariance.data());
@@ -536,8 +537,8 @@ void PublishNmeaGsv(const fpsdk::common::parser::nmea::NmeaGsvPayload& payload,
         for (auto& azel : payload.azels) {
             if (azel.valid) {
                 msg.azel_sat.push_back(azel.svid);
-                msg.az.push_back(azel.az);
                 msg.el.push_back(azel.el);
+                msg.az.push_back(azel.az);
             }
         }
         for (auto& cno : payload.cnos) {
