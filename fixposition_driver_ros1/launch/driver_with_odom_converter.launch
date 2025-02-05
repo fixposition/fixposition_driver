@@ -1,4 +1,0 @@
-<launch>
-    <include file="$(find fixposition_driver_ros1)/launch/node.launch"/>
-    <include file="$(find fixposition_odometry_converter_ros1)/launch/odom_converter.launch"/>
-</launch>

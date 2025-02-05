@@ -123,7 +123,6 @@ function main
     if [ ${rosver} -eq 1 ]; then
         ln -s ${srcpath}/fixposition-sdk/fpsdk_ros1           ${abspath}/src
         ln -s ${srcpath}/fixposition_driver_ros1              ${abspath}/src
-        ln -s ${srcpath}/fixposition_odometry_converter_ros1  ${abspath}/src
     else
         ln -s ${srcpath}/fixposition-sdk/fpsdk_ros2           ${abspath}/src
         ln -s ${srcpath}/fixposition_driver_ros2              ${abspath}/src

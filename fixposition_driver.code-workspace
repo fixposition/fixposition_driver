@@ -63,7 +63,6 @@
             "${workspaceFolder}/fixposition_driver_lib/**",
             "${workspaceFolder}/fixposition_driver_ros1/**",
             "${workspaceFolder}/fixposition_driver_ros2/**",
-            "${workspaceFolder}/fixposition_odometry_converter_ros1/**",
             "${workspaceFolder}/fixposition_odometry_converter_ros2/**",
             "/opt/ros/noetic/include/**", "/opt/ros/humble/include/**", "/opt/ros/jazzy/include/**" ],
         "C_Cpp.default.defines":               [ "FP_USE_ROS1" ],

@@ -91,7 +91,7 @@ function main
             touch ${SCRIPTDIR}/${path}/CATKIN_IGNORE
         done
     else
-        for path in fixposition_driver_ros1 fixposition_odometry_converter_ros1 \
+        for path in fixposition_driver_ros1 \
             fixposition-sdk/fpsdk_ros1 fixposition-sdk/examples; do
             info "- ${path}/COLCON_IGNORE";
             touch ${SCRIPTDIR}/${path}/COLCON_IGNORE
