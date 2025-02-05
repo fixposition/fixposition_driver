@@ -126,7 +126,6 @@ function main
     else
         ln -s ${srcpath}/fixposition-sdk/fpsdk_ros2           ${abspath}/src
         ln -s ${srcpath}/fixposition_driver_ros2              ${abspath}/src
-        ln -s ${srcpath}/fixposition_odometry_converter_ros2  ${abspath}/src
     fi
 
     # Initialise workspace
