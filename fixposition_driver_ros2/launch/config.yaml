@@ -55,6 +55,15 @@
             cov_warning: false    # Enable covariance warnings
             nav2_mode:   false    # Enable nav2 mode
 
+            converter:
+                enabled: false
+                topic_type: "Twist"        # Supported types: nav_msgs/{Twist, TwistWithCov, Odometry}
+                input_topic: "/robot/odom" # Input topic name
+                scale_factor: 1000         # To convert from the original unit of measurement to mm/s
+                use_x: true                # Transmit the x axis of the input velocity
+                use_y: false               # Transmit the y axis of the input velocity
+                use_z: false               # Transmit the z axis of the input velocity
+
         # Node parameters
         node:
             output_ns:   "/fixposition"              # Namespace for output topics, leave empty to use node namespace

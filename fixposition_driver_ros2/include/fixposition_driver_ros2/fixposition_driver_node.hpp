@@ -119,6 +119,12 @@ class FixpositionDriverNode {
     // ROS subscribers
     rclcpp::Subscription<fpmsgs::Speed>::SharedPtr ws_sub_;              //!< Wheelspeed input subscriber
     rclcpp::Subscription<rtcm_msgs::msg::Message>::SharedPtr corr_sub_;  //!< GNSS correction data input subscriber
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr
+        ws_conv_twist_sub_;  //!< Wheelspeed input converter subscriber (Twist)
+    rclcpp::Subscription<geometry_msgs::msg::TwistWithCovariance>::SharedPtr
+        ws_conv_twistcov_sub_;  //!< Wheelspeed input converter subscriber (TwistWithCovariance)
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr
+        ws_conv_odom_sub_;  //!< Wheelspeed input converter subscriber (Odometry)
 
     // TF broadcasters
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_br_;

@@ -392,6 +392,37 @@ bool FixpositionDriverNode::StartNode() {
              [this](const fpmsgs::Speed& msg) { driver_.SendWheelspeedData(SpeedMsgToWheelspeedData(msg)); });
     }
 
+    // Subscribe to wheelspeed input
+    if (driver_params_.converter_enabled_) {
+        if (!driver_params_.converter_input_topic_.empty()) {
+            switch (driver_params_.converter_topic_type_) {
+                case VelTopicType::TWIST:
+                    _SUB(ws_conv_twist_sub_, geometry_msgs::msg::Twist, driver_params_.converter_input_topic_, 10,
+                         [this](const geometry_msgs::msg::Twist& msg) {
+                             driver_.SendWheelspeedData(SpeedConverterCallback(msg, driver_params_));
+                         });
+                    break;
+                case VelTopicType::TWISTWITHCOV:
+                    _SUB(ws_conv_twistcov_sub_, geometry_msgs::msg::TwistWithCovariance,
+                         driver_params_.converter_input_topic_, 10,
+                         [this](const geometry_msgs::msg::TwistWithCovariance& msg) {
+                             driver_.SendWheelspeedData(SpeedConverterCallback(msg, driver_params_));
+                         });
+                    break;
+                case VelTopicType::ODOMETRY:
+                    _SUB(ws_conv_odom_sub_, nav_msgs::msg::Odometry, driver_params_.converter_input_topic_, 10,
+                         [this](const nav_msgs::msg::Odometry& msg) {
+                             driver_.SendWheelspeedData(SpeedConverterCallback(msg, driver_params_));
+                         });
+                    break;
+                default:
+                    RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e3,
+                                         "The selected wheelspeed input type is not supported!");
+                    break;
+            }
+        }
+    }
+
     return driver_.StartDriver();
 }
 
@@ -455,6 +486,9 @@ void FixpositionDriverNode::StopNode() {
     // Stop input message subscribers
     ws_sub_.reset();
     corr_sub_.reset();
+    ws_conv_twist_sub_.reset();
+    ws_conv_twistcov_sub_.reset();
+    ws_conv_odom_sub_.reset();
 
     // TF
     tf_br_.reset();
