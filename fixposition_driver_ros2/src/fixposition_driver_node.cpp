@@ -259,6 +259,17 @@ bool FixpositionDriverNode::StartNode() {
             });
     }
 
+    // NOV_B-INSPVAX
+    if (driver_params_.MessageEnabled(novb::NOV_B_INSPVAX_STRID)) {
+        _PUB(novb_inspvax_pub_, fpmsgs::NovbInspvax, output_ns + "/nobv/inspvax", 5);
+        driver_.AddNovbObserver(  //
+            novb::NOV_B_INSPVAX_STRID, [this](const novb::NovbHeader* header, const uint8_t* payload) {
+                if (!PublishNovbInspvax(header, (novb::NovbInspvax*)payload, novb_inspvax_pub_)) {
+                    RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e3, "Bad NOV_B-INSPVAX");
+                }
+            });
+    }
+
     // NMEA-GP-GGA
     if (driver_params_.MessageEnabled(nmea::NmeaGgaPayload::FORMATTER)) {
         _PUB(nmea_gga_pub_, fpmsgs::NmeaGga, output_ns + "/nmea/gga", 5);
@@ -419,6 +430,8 @@ void FixpositionDriverNode::StopNode() {
     nmea_rmc_pub_.reset();
     nmea_vtg_pub_.reset();
     nmea_zda_pub_.reset();
+    // - NOV_B messages
+    novb_inspvax_pub_.reset();
     // - Odometry
     odometry_ecef_pub_.reset();
     odometry_enu_pub_.reset();

@@ -28,6 +28,8 @@
                 - "FP_A-CORRIMU"           # configuration: FP_A-CORRIMU
                 # - LLH output
                 - "FP_A-LLH"               # configuration: FP_A-LLH
+                # - NOV_B
+                - "NOV_B-INSPVAX"          # configuration: NOV_B-INSPVAX
                 ##### Info messages
                 - "FP_A-TEXT"              # configuration: FP_A-TEXT_{ERROR,WARNING,INFO,DEBUG} (one or more)
                 ##### GNSS related data
@@ -45,7 +47,7 @@
                 - "VTG"                    # configuration: NMEA-GN-VTG_<epoch> (or NMEA-GP-VTG_<epoch>)
                 - "ZDA"                    # configuration: NMEA-GN-ZDA_<epoch> (or NMEA-GP-ZDA_<epoch>)
                 ##### GNSS only position
-                - "NOV_B-BESTGNSSPOS"   # This can be one or both of the _GNSS1 and _GNSS2 variants
+                - "NOV_B-BESTGNSSPOS"      # This can be one or both of the _GNSS1 and _GNSS2 variants
 
             # Driver behaviour
             nmea_epoch:  "GNSS"   # Choice for NMEA collection, must match NMEA message configuration type (<epoch> above)
