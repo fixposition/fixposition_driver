@@ -51,7 +51,7 @@ driver:
     nmea_epoch:  "GNSS"   # Choice for NMEA collection, must match NMEA message configuration type (<epoch> above)
     raw_output:  false    # Enable raw messages output
     cov_warning: false    # Enable covariance warnings
-    nav2_mode:   true     # Enable nav2 mode
+    nav2_mode:   false     # Enable nav2 mode
 
     converter:
         enabled: false

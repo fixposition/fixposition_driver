@@ -59,6 +59,6 @@ int8     local_min                # Local zone minutes, always 00 (= UTC)
 fixposition_driver_msgs/NmeaSatellite[] sats  # Satellites
 fixposition_driver_msgs/NmeaSignal[]    sigs  # Signals
 
-fixposition_driver_msgs/NmeaConsts consts # Constants for enums used in NMEA
-
 float64[9] cov_enu  # ENU position covariance, based on std_{lat,lon,alt} or {pdop,hdop}, all 0 if not available
+
+fixposition_driver_msgs/NmeaConsts consts # Constants for enums used in NMEA
