@@ -64,6 +64,45 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
         ROS_WARN("Failed loading %s/nav2_mode param", ns.c_str());
         ok = false;
     }
+    if (!utils::LoadRosParam(ns + "/converter/enabled", params.converter_enabled_)) {
+        ROS_WARN("Failed loading %s/converter/enabled param", ns.c_str());
+        ok = false;
+    }
+    if (!utils::LoadRosParam(ns + "/converter/input_topic", params.converter_input_topic_)) {
+        ROS_WARN("Failed loading %s/converter/input_topic param", ns.c_str());
+        ok = false;
+    }
+    if (!utils::LoadRosParam(ns + "/converter/scale_factor", params.converter_scale_factor_)) {
+        ROS_WARN("Failed loading %s/converter/scale_factor param", ns.c_str());
+        ok = false;
+    }
+    if (!utils::LoadRosParam(ns + "/converter/use_x", params.converter_use_x_)) {
+        ROS_WARN("Failed loading %s/converter/use_x param", ns.c_str());
+        ok = false;
+    }
+    if (!utils::LoadRosParam(ns + "/converter/use_y", params.converter_use_y_)) {
+        ROS_WARN("Failed loading %s/converter/use_y param", ns.c_str());
+        ok = false;
+    }
+    if (!utils::LoadRosParam(ns + "/converter/use_z", params.converter_use_z_)) {
+        ROS_WARN("Failed loading %s/converter/use_z param", ns.c_str());
+        ok = false;
+    }
+    std::string topic_type_string_;
+    if (!utils::LoadRosParam(ns + "/converter/topic_type", topic_type_string_)) {
+        ROS_WARN("Failed loading %s/converter/topic_type param", ns.c_str());
+        ok = false;
+    } else {
+        if (topic_type_string_ == "Twist") {
+            params.converter_topic_type_ = VelTopicType::TWIST;
+        } else if (topic_type_string_ == "TwistWithCov") {
+            params.converter_topic_type_ = VelTopicType::TWISTWITHCOV;
+        } else if (topic_type_string_ == "Odometry") {
+            params.converter_topic_type_ = VelTopicType::ODOMETRY;
+        } else {
+            params.converter_topic_type_ = VelTopicType::UNSPECIFIED;
+        }
+    }
 
     ROS_INFO("DriverParams: stream=%s", params.stream_.c_str());
     ROS_INFO("DriverParams: reconnect_delay=%.1f", params.reconnect_delay_);
@@ -74,6 +113,13 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
     ROS_INFO("DriverParams: raw_output=%s", params.raw_output_ ? "true" : "false");
     ROS_INFO("DriverParams: cov_warning=%s", params.cov_warning_ ? "true" : "false");
     ROS_INFO("DriverParams: nav2_mode=%s", params.nav2_mode_ ? "true" : "false");
+    ROS_INFO("DriverParams: converter_enabled=%s", params.converter_enabled_ ? "true" : "false");
+    ROS_INFO("DriverParams: converter_topic_type=%s", topic_type_string_.c_str());
+    ROS_INFO("DriverParams: converter_input_topic=%s", params.converter_input_topic_.c_str());
+    ROS_INFO("DriverParams: converter_scale_factor=%f", params.converter_scale_factor_);
+    ROS_INFO("DriverParams: converter_use_x=%s", params.converter_use_x_ ? "true" : "false");
+    ROS_INFO("DriverParams: converter_use_y=%s", params.converter_use_y_ ? "true" : "false");
+    ROS_INFO("DriverParams: converter_use_z=%s", params.converter_use_z_ ? "true" : "false");
 
     return ok;
 }

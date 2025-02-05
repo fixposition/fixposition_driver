@@ -110,8 +110,9 @@ class FixpositionDriverNode {
     ros::Publisher raw_pub_;   //!< Raw messages topic
 
     // ROS subscribers
-    ros::Subscriber ws_sub_;    //!< Wheelspeed input subscriber
-    ros::Subscriber corr_sub_;  //!< GNSS correction data input subscriber
+    ros::Subscriber ws_sub_;      //!< Wheelspeed input subscriber
+    ros::Subscriber corr_sub_;    //!< GNSS correction data input subscriber
+    ros::Subscriber ws_conv_sub_; //!< Wheelspeed input converter subscriber
 
     // TF2 broadcasters
     tf2_ros::TransformBroadcaster tf_br_;

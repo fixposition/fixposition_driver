@@ -27,6 +27,13 @@ namespace fixposition {
 /* ****************************************************************************************************************** */
 
 /**
+ * @brief Enum with input types for the wheelspeed converter
+ *
+ * See launch/config.yaml for documentation
+ */
+enum class VelTopicType : int8_t { TWIST = 0, TWISTWITHCOV = 1, ODOMETRY = 2, UNSPECIFIED = -1 };
+
+/**
  * @brief Parameters for the sensor driver
  *
  * See launch/config.yaml for documentation
@@ -39,6 +46,14 @@ struct DriverParams {
     bool raw_output_ = false;
     bool cov_warning_ = false;
     bool nav2_mode_ = false;
+
+    bool converter_enabled_ = false;
+    VelTopicType converter_topic_type_ = VelTopicType::UNSPECIFIED;
+    std::string converter_input_topic_;
+    double converter_scale_factor_ = 1.0;
+    bool converter_use_x_ = false;
+    bool converter_use_y_ = false;
+    bool converter_use_z_ = false;
 
     // Check if entry is in messges_
     bool MessageEnabled(const std::string& message_name) const;
