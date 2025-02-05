@@ -92,11 +92,10 @@ std::vector<WheelSpeedData> SpeedConverterCallback(const T& msg, const DriverPar
     std::tie(x, y, z) = getLinearComponents(msg);
 
     std::vector<WheelSpeedData> data;
-    data.push_back({"RC", 
-                    params_.converter_use_x_, static_cast<int32_t>(std::round(x * params_.converter_scale_factor_)), 
-                    params_.converter_use_y_, static_cast<int32_t>(std::round(y * params_.converter_scale_factor_)), 
-                    params_.converter_use_z_, static_cast<int32_t>(std::round(z * params_.converter_scale_factor_))}
-    );
+    data.push_back({"RC", params_.converter_use_x_,
+                    static_cast<int32_t>(std::round(x * params_.converter_scale_factor_)), params_.converter_use_y_,
+                    static_cast<int32_t>(std::round(y * params_.converter_scale_factor_)), params_.converter_use_z_,
+                    static_cast<int32_t>(std::round(z * params_.converter_scale_factor_))});
     return data;
 }
 
