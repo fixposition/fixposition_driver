@@ -52,6 +52,8 @@
 #include <fixposition_driver_msgs/NmeaRmc.h>
 #include <fixposition_driver_msgs/NmeaVtg.h>
 #include <fixposition_driver_msgs/NmeaZda.h>
+// - NOV-B
+#include <fixposition_driver_msgs/NovbInspvax.h>
 
 #pragma GCC diagnostic pop
 #endif  // __FIXPOSITION_DRIVER_ROS1_ROS_MSGS_HPP__

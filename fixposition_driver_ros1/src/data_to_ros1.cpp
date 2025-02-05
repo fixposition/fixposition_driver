@@ -424,6 +424,50 @@ bool PublishNovbBestgnsspos(const novb::NovbHeader* header, const novb::NovbBest
 
 // ---------------------------------------------------------------------------------------------------------------------
 
+bool PublishNovbInspvax(const novb::NovbHeader* header, const novb::NovbInspvax* payload, ros::Publisher& pub) {
+    if ((header == NULL) || (payload == NULL) || !header->IsLongHeader()) {
+        return false;
+    }
+    if (pub.getNumSubscribers() > 0) {
+        fixposition_driver_msgs::NovbInspvax msg;
+
+        time::Time stamp;
+        if (stamp.SetWnoTow({header->long_header.gps_week, (double)header->long_header.gps_milliseconds * 1e-3,
+                             time::WnoTow::Sys::GPS})) {
+            msg.header.stamp = ros1::utils::ConvTime(stamp);
+        }
+
+        msg.ins_status = payload->ins_status;
+        msg.pos_type = payload->pos_type;
+        msg.latitude = payload->latitude;
+        msg.longitude = payload->longitude;
+        msg.height = payload->height;
+        msg.undulation = payload->undulation;
+        msg.north_velocity = payload->north_velocity;
+        msg.east_velocity = payload->east_velocity;
+        msg.up_velocity = payload->up_velocity;
+        msg.roll = payload->roll;
+        msg.pitch = payload->pitch;
+        msg.azimuth = payload->azimuth;
+        msg.latitude_stdev = payload->latitude_stdev;
+        msg.longitude_stdev = payload->longitude_stdev;
+        msg.height_stdev = payload->height_stdev;
+        msg.north_velocity_stdev = payload->north_velocity_stdev;
+        msg.east_velocity_stdev = payload->east_velocity_stdev;
+        msg.up_velocity_stdev = payload->up_velocity_stdev;
+        msg.roll_stdev = payload->roll_stdev;
+        msg.pitch_stdev = payload->pitch_stdev;
+        msg.azimuth_stdev = payload->azimuth_stdev;
+        msg.extended_status = payload->extended_status;
+        msg.time_since_update = payload->time_since_update;
+
+        pub.publish(msg);
+    }
+    return true;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+
 void PublishNmeaGga(const fpsdk::common::parser::nmea::NmeaGgaPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::NmeaGga msg;

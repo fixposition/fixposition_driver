@@ -232,6 +232,17 @@ bool FixpositionDriverNode::StartNode() {
             });
     }
 
+    // NOV_B-INSPVAX
+    if (driver_params_.MessageEnabled(novb::NOV_B_INSPVAX_STRID)) {
+        _PUB(novb_inspvax_pub_, fixposition_driver_msgs::NovbInspvax, output_ns + "/nobv/inspvax", 5);
+        driver_.AddNovbObserver(  //
+            novb::NOV_B_INSPVAX_STRID, [this](const novb::NovbHeader* header, const uint8_t* payload) {
+                if (!PublishNovbInspvax(header, (novb::NovbInspvax*)payload, novb_inspvax_pub_)) {
+                    ROS_WARN_THROTTLE(1.0, "Bad NOV_B-INSPVAX");
+                }
+            });
+    }
+
     // NMEA-GP-GGA
     if (driver_params_.MessageEnabled(nmea::NmeaGgaPayload::FORMATTER)) {
         _PUB(nmea_gga_pub_, fixposition_driver_msgs::NmeaGga, output_ns + "/nmea/gga", 5);
@@ -394,6 +405,8 @@ void FixpositionDriverNode::StopNode() {
     nmea_rmc_pub_.shutdown();
     nmea_vtg_pub_.shutdown();
     nmea_zda_pub_.shutdown();
+    // - NOV_B messages
+    novb_inspvax_pub_.shutdown();
     // - Odometry
     odometry_ecef_pub_.shutdown();
     odometry_enu_pub_.shutdown();
@@ -467,6 +480,14 @@ void FixpositionDriverNode::ProcessTfData(const TfData& tf_data) {
 // ---------------------------------------------------------------------------------------------------------------------
 
 void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_data) {
+    // Send a warning if the system experiences delays
+    // This message computes the difference between the message time and the local system time. 
+    // Thus, if the local time is off, the message might be triggered or not triggered when it should.
+    const double _delay = (ros::Time::now() - fpsdk::ros1::utils::ConvTime(odometry_data.stamp)).toSec();
+    if (_delay > 0.01) {
+        ROS_WARN_THROTTLE(1.0, "The system is experiencing significant delays! (estimated delay: %.3f seconds)", _delay);
+    }
+    
     switch (odometry_data.type) {
         case OdometryData::Type::ODOMETRY:
 
