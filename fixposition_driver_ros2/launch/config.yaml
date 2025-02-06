@@ -59,7 +59,7 @@
                 enabled: false
                 topic_type: "Twist"        # Supported types: nav_msgs/{Twist, TwistWithCov, Odometry}
                 input_topic: "/robot/odom" # Input topic name
-                scale_factor: 1000         # To convert from the original unit of measurement to mm/s
+                scale_factor: 1000.0       # To convert from the original unit of measurement to mm/s (note: this must be a float!)
                 use_x: true                # Transmit the x axis of the input velocity
                 use_y: false               # Transmit the y axis of the input velocity
                 use_z: false               # Transmit the z axis of the input velocity
