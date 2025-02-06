@@ -87,6 +87,7 @@ bool FixpositionDriverNode::StartNode() {
             odometry_data.SetFromFpaOdomPayload(odometry_payload);
             PublishOdometryData(odometry_data, odometry_ecef_pub_);
             ProcessOdometryData(odometry_data);
+            fusion_epoch_data_.CollectFpaOdometry(odometry_payload);
         });
     }
 
@@ -101,6 +102,7 @@ bool FixpositionDriverNode::StartNode() {
             odometry_data.SetFromFpaOdomPayload(odomsh_payload);
             PublishOdometryData(odometry_data, odometry_smooth_pub_);
             ProcessOdometryData(odometry_data);
+            fusion_epoch_data_.CollectFpaOdomsh(odomsh_payload);
         });
     }
 
@@ -117,6 +119,7 @@ bool FixpositionDriverNode::StartNode() {
             odometry_data.SetFromFpaOdomPayload(odomenu_payload);
             PublishOdometryData(odometry_data, odometry_enu_pub_);
             ProcessOdometryData(odometry_data);
+            fusion_epoch_data_.CollectFpaOdomenu(odomenu_payload);
         });
     }
 
@@ -124,7 +127,9 @@ bool FixpositionDriverNode::StartNode() {
     if (driver_params_.MessageEnabled(fpa::FpaOdomstatusPayload::MSG_NAME)) {
         _PUB(fpa_odomstatus_pub_, fixposition_driver_msgs::FpaOdomstatus, output_ns + "/fpa/odomstatus", 5);
         driver_.AddFpaObserver(fpa::FpaOdomstatusPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
-            PublishFpaOdomstatus(dynamic_cast<const fpa::FpaOdomstatusPayload&>(payload), fpa_odomstatus_pub_);
+            auto odomstatus_payload = dynamic_cast<const fpa::FpaOdomstatusPayload&>(payload);
+            PublishFpaOdomstatus(odomstatus_payload, fpa_odomstatus_pub_);
+            fusion_epoch_data_.CollectFpaOdomstatus(odomstatus_payload);
         });
     }
 
@@ -134,12 +139,16 @@ bool FixpositionDriverNode::StartNode() {
         driver_.AddFpaObserver(fpa::FpaEoePayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             auto eoe_payload = dynamic_cast<const fpa::FpaEoePayload&>(payload);
             PublishFpaEoe(eoe_payload, fpa_eoe_pub_);
-            // Generate Nav2 TF tree
-            if (driver_params_.nav2_mode_ && (eoe_payload.epoch == fpa::FpaEpoch::FUSION)) {
-                PublishNav2Tf();
+            if (eoe_payload.epoch == fpa::FpaEpoch::FUSION) {
+                // Fusion epoch
+                PublishFusionEpochData(fusion_epoch_data_.CompleteAndReset(eoe_payload), fusion_epoch_pub_);
+                // Generate Nav2 TF tree
+                if (driver_params_.nav2_mode_) {
+                    PublishNav2Tf();
+                }
             }
             // NMEA epoch
-            if (driver_params_.nmea_epoch_ == eoe_payload.epoch) {
+            else if (driver_params_.nmea_epoch_ == eoe_payload.epoch) {
                 PublishNmeaEpochData(nmea_epoch_data_.CompleteAndReset(), nmea_epoch_pub_);
             }
         });
@@ -183,7 +192,9 @@ bool FixpositionDriverNode::StartNode() {
     if (driver_params_.MessageEnabled(fpa::FpaImubiasPayload::MSG_NAME)) {
         _PUB(fpa_imubias_pub_, fixposition_driver_msgs::FpaImubias, output_ns + "/fpa/imubias", 5);
         driver_.AddFpaObserver(fpa::FpaImubiasPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
-            PublishFpaImubias(dynamic_cast<const fpa::FpaImubiasPayload&>(payload), fpa_imubias_pub_);
+            auto imubias_payload = dynamic_cast<const fpa::FpaImubiasPayload&>(payload);
+            PublishFpaImubias(imubias_payload, fpa_imubias_pub_);
+            fusion_epoch_data_.CollectFpaImubias(imubias_payload);
         });
     }
 
@@ -234,12 +245,13 @@ bool FixpositionDriverNode::StartNode() {
 
     // NOV_B-INSPVAX
     if (driver_params_.MessageEnabled(novb::NOV_B_INSPVAX_STRID)) {
-        _PUB(novb_inspvax_pub_, fixposition_driver_msgs::NovbInspvax, output_ns + "/nobv/inspvax", 5);
+        _PUB(novb_inspvax_pub_, fixposition_driver_msgs::NovbInspvax, output_ns + "/novb/inspvax", 5);
         driver_.AddNovbObserver(  //
             novb::NOV_B_INSPVAX_STRID, [this](const novb::NovbHeader* header, const uint8_t* payload) {
                 if (!PublishNovbInspvax(header, (novb::NovbInspvax*)payload, novb_inspvax_pub_)) {
                     ROS_WARN_THROTTLE(1.0, "Bad NOV_B-INSPVAX");
                 }
+                fusion_epoch_data_.CollectNovbInspvax(header, (novb::NovbInspvax*)payload);
             });
     }
 
@@ -340,6 +352,12 @@ bool FixpositionDriverNode::StartNode() {
         driver_.AddRawObserver([this](const parser::ParserMsg& msg) { PublishParserMsg(msg, raw_pub_); });
     }
 
+    // Fusion epoch
+    if (driver_params_.fusion_epoch_) {
+        _PUB(fusion_epoch_pub_, fixposition_driver_msgs::FusionEpoch, output_ns + "/fusion", 5);
+        // Publish is triggered by FP_A-EOE above
+    }
+
     // NMEA epoch
     if (driver_params_.nmea_epoch_ != fpa::FpaEpoch::UNSPECIFIED) {
         _PUB(nmea_epoch_pub_, fixposition_driver_msgs::NmeaEpoch, output_ns + "/nmea", 5);
@@ -371,19 +389,19 @@ bool FixpositionDriverNode::StartNode() {
     if (driver_params_.converter_enabled_) {
         if (!driver_params_.converter_input_topic_.empty()) {
             switch (driver_params_.converter_topic_type_) {
-                case VelTopicType::TWIST:
+                case DriverParams::VelTopicType::TWIST:
                     _SUB(ws_conv_sub_, geometry_msgs::Twist, driver_params_.converter_input_topic_, 10,
                          [this](const geometry_msgs::TwistConstPtr& msg) {
                              driver_.SendWheelspeedData(SpeedConverterCallback(*msg, driver_params_));
                          });
                     break;
-                case VelTopicType::TWISTWITHCOV:
+                case DriverParams::VelTopicType::TWISTWITHCOV:
                     _SUB(ws_conv_sub_, geometry_msgs::TwistWithCovariance, driver_params_.converter_input_topic_, 10,
                          [this](const geometry_msgs::TwistWithCovarianceConstPtr& msg) {
                              driver_.SendWheelspeedData(SpeedConverterCallback(*msg, driver_params_));
                          });
                     break;
-                case VelTopicType::ODOMETRY:
+                case DriverParams::VelTopicType::ODOMETRY:
                     _SUB(ws_conv_sub_, nav_msgs::Odometry, driver_params_.converter_input_topic_, 10,
                          [this](const nav_msgs::OdometryConstPtr& msg) {
                              driver_.SendWheelspeedData(SpeedConverterCallback(*msg, driver_params_));

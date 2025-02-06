@@ -31,6 +31,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
     const std::string STREAM = ns + ".stream";
     const std::string RECONNECT_DELAY = ns + ".reconnect_delay";
     const std::string MESSAGES = ns + ".messages";
+    const std::string FUSION_EPOCH = ns + ".fusion_epoch";
     const std::string NMEA_EPOCH = ns + ".nmea_epoch";
     const std::string RAW_OUTPUT = ns + ".raw_output";
     const std::string COV_WARNING = ns + ".cov_warning";
@@ -47,6 +48,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
     nh->declare_parameter(STREAM, params.stream_);
     nh->declare_parameter(RECONNECT_DELAY, params.reconnect_delay_);
     nh->declare_parameter(MESSAGES, params.messages_);
+    nh->declare_parameter(FUSION_EPOCH, params.fusion_epoch_);
     nh->declare_parameter(NMEA_EPOCH, "");
     nh->declare_parameter(RAW_OUTPUT, params.raw_output_);
     nh->declare_parameter(COV_WARNING, params.cov_warning_);
@@ -69,6 +71,10 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
     }
     if (!nh->get_parameter(MESSAGES, params.messages_)) {
         RCLCPP_WARN(logger, "Failed loading %s param", MESSAGES.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(FUSION_EPOCH, params.fusion_epoch_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", FUSION_EPOCH.c_str());
         ok = false;
     }
     std::string epoch_str;
@@ -121,13 +127,13 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
         ok = false;
     } else {
         if (topic_type_string_ == "Twist") {
-            params.converter_topic_type_ = VelTopicType::TWIST;
+            params.converter_topic_type_ = DriverParams::VelTopicType::TWIST;
         } else if (topic_type_string_ == "TwistWithCov") {
-            params.converter_topic_type_ = VelTopicType::TWISTWITHCOV;
+            params.converter_topic_type_ = DriverParams::VelTopicType::TWISTWITHCOV;
         } else if (topic_type_string_ == "Odometry") {
-            params.converter_topic_type_ = VelTopicType::ODOMETRY;
+            params.converter_topic_type_ = DriverParams::VelTopicType::ODOMETRY;
         } else {
-            params.converter_topic_type_ = VelTopicType::UNSPECIFIED;
+            params.converter_topic_type_ = DriverParams::VelTopicType::UNSPECIFIED;
         }
     }
 
@@ -136,6 +142,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
     for (std::size_t ix = 0; ix < params.messages_.size(); ix++) {
         RCLCPP_INFO(logger, "DriverParams: messages[%" PRIuMAX "]=%s", ix, params.messages_[ix].c_str());
     }
+    RCLCPP_INFO(logger, "DriverParams: fusion_epoch=%s", fusion_epoch_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: nmea_epoch=%s", epoch_str.c_str());
     RCLCPP_INFO(logger, "DriverParams: raw_output=%s", params.raw_output_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: cov_warning=%s", params.cov_warning_ ? "true" : "false");

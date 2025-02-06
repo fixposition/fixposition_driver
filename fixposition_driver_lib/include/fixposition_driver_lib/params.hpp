@@ -27,13 +27,6 @@ namespace fixposition {
 /* ****************************************************************************************************************** */
 
 /**
- * @brief Enum with input types for the wheelspeed converter
- *
- * See launch/config.yaml for documentation
- */
-enum class VelTopicType : int8_t { TWIST = 0, TWISTWITHCOV = 1, ODOMETRY = 2, UNSPECIFIED = -1 };
-
-/**
  * @brief Parameters for the sensor driver
  *
  * See launch/config.yaml for documentation
@@ -43,10 +36,12 @@ struct DriverParams {
     double reconnect_delay_ = 5.0;
     std::vector<std::string> messages_;
     fpsdk::common::parser::fpa::FpaEpoch nmea_epoch_ = fpsdk::common::parser::fpa::FpaEpoch::UNSPECIFIED;
+    bool fusion_epoch_ = true;
     bool raw_output_ = false;
     bool cov_warning_ = false;
     bool nav2_mode_ = false;
 
+    enum class VelTopicType { UNSPECIFIED, TWIST, TWISTWITHCOV, ODOMETRY };
     bool converter_enabled_ = false;
     VelTopicType converter_topic_type_ = VelTopicType::UNSPECIFIED;
     std::string converter_input_topic_;

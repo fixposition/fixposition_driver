@@ -100,6 +100,7 @@ void PublishParserMsg(const fpsdk::common::parser::ParserMsg& msg,
 void PublishNmeaEpochData(const NmeaEpochData& data, rclcpp::Publisher<fpmsgs::NmeaEpoch>::SharedPtr& pub);
 void PublishOdometryData(const OdometryData& data, rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr& pub);
 void PublishJumpWarning(const JumpDetector& jump_detector, rclcpp::Publisher<fpmsgs::CovWarn>::SharedPtr& pub);
+void PublishFusionEpochData(const FusionEpochData& data, rclcpp::Publisher<fpmsgs::FusionEpoch>::SharedPtr& pub);
 
 inline std::tuple<double, double, double> getLinearComponents(const geometry_msgs::msg::Twist& msg) {
     return std::make_tuple(msg.linear.x, msg.linear.y, msg.linear.z);

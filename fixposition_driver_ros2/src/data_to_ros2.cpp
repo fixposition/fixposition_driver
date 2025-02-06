@@ -85,37 +85,50 @@ static void FpaOdomToRos(const SomeFpaOdoPayload& payload, SomeOdoMsg& msg) {
     TwistWithCovDataToMsg(velocity, msg.velocity);
 }
 
+static void FpaOdometryToMsg(const fpa::FpaOdometryPayload& payload, fpmsgs::FpaOdometry& msg) {
+    msg.header.frame_id = ODOMETRY_FRAME_ID;
+    msg.pose_frame = ODOMETRY_CHILD_FRAME_ID;
+    msg.kin_frame = ODOMETRY_CHILD_FRAME_ID;
+    FpaOdomToRos(payload, msg);
+    msg.version = payload.version;
+}
+
 void PublishFpaOdometry(const fpa::FpaOdometryPayload& payload,
                         rclcpp::Publisher<fpmsgs::FpaOdometry>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::FpaOdometry msg;
-        msg.header.frame_id = ODOMETRY_FRAME_ID;
-        msg.pose_frame = ODOMETRY_CHILD_FRAME_ID;
-        msg.kin_frame = ODOMETRY_CHILD_FRAME_ID;
-        FpaOdomToRos(payload, msg);
-        msg.version = payload.version;
+        FpaOdometryToMsg(payload, msg);
         pub->publish(msg);
     }
+}
+
+static void FpaOdomenuToMsg(const fpa::FpaOdomenuPayload& payload, fpmsgs::FpaOdomenu& msg) {
+    msg.header.frame_id = ODOMENU_FRAME_ID;
+    msg.pose_frame = ODOMENU_CHILD_FRAME_ID;
+    msg.kin_frame = ODOMENU_CHILD_FRAME_ID;
+    FpaOdomToRos(payload, msg);
 }
 
 void PublishFpaOdomenu(const fpa::FpaOdomenuPayload& payload, rclcpp::Publisher<fpmsgs::FpaOdomenu>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::FpaOdomenu msg;
-        msg.header.frame_id = ODOMENU_FRAME_ID;
-        msg.pose_frame = ODOMENU_CHILD_FRAME_ID;
-        msg.kin_frame = ODOMENU_CHILD_FRAME_ID;
+        FpaOdomenuToMsg(payload, msg);
         FpaOdomToRos(payload, msg);
         pub->publish(msg);
     }
 }
 
+static void FpaOdomshToMsg(const fpa::FpaOdomshPayload& payload, fpmsgs::FpaOdomsh& msg) {
+    msg.header.frame_id = ODOMSH_FRAME_ID;
+    msg.pose_frame = ODOMSH_CHILD_FRAME_ID;
+    msg.kin_frame = ODOMSH_CHILD_FRAME_ID;
+    FpaOdomToRos(payload, msg);
+}
+
 void PublishFpaOdomsh(const fpa::FpaOdomshPayload& payload, rclcpp::Publisher<fpmsgs::FpaOdomsh>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::FpaOdomsh msg;
-        msg.header.frame_id = ODOMSH_FRAME_ID;
-        msg.pose_frame = ODOMSH_CHILD_FRAME_ID;
-        msg.kin_frame = ODOMSH_CHILD_FRAME_ID;
-        FpaOdomToRos(payload, msg);
+        FpaOdomshToMsg(payload, msg);
         pub->publish(msg);
     }
 }
@@ -206,34 +219,37 @@ void PublishFpaOdomenuVector3Stamped(const fpa::FpaOdomenuPayload& payload,
 
 // ---------------------------------------------------------------------------------------------------------------------
 
+static void FpaOdomstatusToMsg(const fpa::FpaOdomstatusPayload& payload, fpmsgs::FpaOdomstatus& msg) {
+    // clang-format off
+    msg.header.stamp    = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+    msg.init_status     = FpaInitStatusToMsg(msg, payload.init_status);
+    msg.fusion_imu      = FpaMeasStatusToMsg(msg, payload.fusion_imu);
+    msg.fusion_gnss1    = FpaMeasStatusToMsg(msg, payload.fusion_gnss1);
+    msg.fusion_gnss2    = FpaMeasStatusToMsg(msg, payload.fusion_gnss2);
+    msg.fusion_corr     = FpaMeasStatusToMsg(msg, payload.fusion_corr);
+    msg.fusion_cam1     = FpaMeasStatusToMsg(msg, payload.fusion_cam1);
+    msg.fusion_ws       = FpaMeasStatusToMsg(msg, payload.fusion_ws);
+    msg.fusion_markers  = FpaMeasStatusToMsg(msg, payload.fusion_markers);
+    msg.imu_status      = FpaImuStatusToMsg(msg, payload.imu_status);
+    msg.imu_noise       = FpaImuNoiseToMsg(msg, payload.imu_noise);
+    msg.imu_conv        = FpaImuConvToMsg(msg, payload.imu_conv);
+    msg.gnss1_status    = FpaGnssStatusToMsg(msg, payload.gnss1_status);
+    msg.gnss2_status    = FpaGnssStatusToMsg(msg, payload.gnss2_status);
+    msg.baseline_status = FpaBaselineStatusToMsg(msg, payload.baseline_status);
+    msg.corr_status     = FpaCorrStatusToMsg(msg, payload.corr_status);
+    msg.cam1_status     = FpaCamStatusToMsg(msg, payload.cam1_status);
+    msg.ws_status       = FpaWsStatusToMsg(msg, payload.ws_status);
+    msg.ws_conv         = FpaWsConvToMsg(msg, payload.ws_conv);
+    msg.markers_status  = FpaMarkersStatusToMsg(msg, payload.markers_status);
+    msg.markers_conv    = FpaMarkersConvToMsg(msg, payload.markers_conv);
+    // clang-format on
+}
+
 void PublishFpaOdomstatus(const fpa::FpaOdomstatusPayload& payload,
                           rclcpp::Publisher<fpmsgs::FpaOdomstatus>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::FpaOdomstatus msg;
-        msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
-
-        // clang-format off
-        msg.init_status     = FpaInitStatusToMsg(msg, payload.init_status);
-        msg.fusion_imu      = FpaMeasStatusToMsg(msg, payload.fusion_imu);
-        msg.fusion_gnss1    = FpaMeasStatusToMsg(msg, payload.fusion_gnss1);
-        msg.fusion_gnss2    = FpaMeasStatusToMsg(msg, payload.fusion_gnss2);
-        msg.fusion_corr     = FpaMeasStatusToMsg(msg, payload.fusion_corr);
-        msg.fusion_cam1     = FpaMeasStatusToMsg(msg, payload.fusion_cam1);
-        msg.fusion_ws       = FpaMeasStatusToMsg(msg, payload.fusion_ws);
-        msg.fusion_markers  = FpaMeasStatusToMsg(msg, payload.fusion_markers);
-        msg.imu_status      = FpaImuStatusToMsg(msg, payload.imu_status);
-        msg.imu_noise       = FpaImuNoiseToMsg(msg, payload.imu_noise);
-        msg.imu_conv        = FpaImuConvToMsg(msg, payload.imu_conv);
-        msg.gnss1_status    = FpaGnssStatusToMsg(msg, payload.gnss1_status);
-        msg.gnss2_status    = FpaGnssStatusToMsg(msg, payload.gnss2_status);
-        msg.baseline_status = FpaBaselineStatusToMsg(msg, payload.baseline_status);
-        msg.corr_status     = FpaCorrStatusToMsg(msg, payload.corr_status);
-        msg.cam1_status     = FpaCamStatusToMsg(msg, payload.cam1_status);
-        msg.ws_status       = FpaWsStatusToMsg(msg, payload.ws_status);
-        msg.ws_conv         = FpaWsConvToMsg(msg, payload.ws_conv);
-        msg.markers_status  = FpaMarkersStatusToMsg(msg, payload.markers_status);
-        msg.markers_conv    = FpaMarkersConvToMsg(msg, payload.markers_conv);
-        // clang-format on
+        FpaOdomstatusToMsg(payload, msg);
         pub->publish(msg);
     }
 }
@@ -268,19 +284,23 @@ void PublishFpaEoe(const fpa::FpaEoePayload& payload, rclcpp::Publisher<fpmsgs::
 
 // ---------------------------------------------------------------------------------------------------------------------
 
+static void FpaImubiasToMsg(const fpa::FpaImubiasPayload& payload, fpmsgs::FpaImubias& msg) {
+    msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+    msg.header.frame_id = IMU_FRAME_ID;
+    msg.fusion_imu = FpaMeasStatusToMsg(msg, payload.fusion_imu);
+    msg.imu_status = FpaImuStatusToMsg(msg, payload.imu_status);
+    msg.imu_noise = FpaImuNoiseToMsg(msg, payload.imu_noise);
+    msg.imu_conv = FpaImuConvToMsg(msg, payload.imu_conv);
+    FpaFloat3ToVector3(payload.bias_acc, msg.bias_acc);
+    FpaFloat3ToVector3(payload.bias_gyr, msg.bias_gyr);
+    FpaFloat3ToVector3(payload.bias_cov_acc, msg.bias_cov_acc);
+    FpaFloat3ToVector3(payload.bias_cov_gyr, msg.bias_cov_gyr);
+}
+
 void PublishFpaImubias(const fpa::FpaImubiasPayload& payload, rclcpp::Publisher<fpmsgs::FpaImubias>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::FpaImubias msg;
-        msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
-        msg.header.frame_id = IMU_FRAME_ID;
-        msg.fusion_imu = FpaMeasStatusToMsg(msg, payload.fusion_imu);
-        msg.imu_status = FpaImuStatusToMsg(msg, payload.imu_status);
-        msg.imu_noise = FpaImuNoiseToMsg(msg, payload.imu_noise);
-        msg.imu_conv = FpaImuConvToMsg(msg, payload.imu_conv);
-        FpaFloat3ToVector3(payload.bias_acc, msg.bias_acc);
-        FpaFloat3ToVector3(payload.bias_gyr, msg.bias_gyr);
-        FpaFloat3ToVector3(payload.bias_cov_acc, msg.bias_cov_acc);
-        FpaFloat3ToVector3(payload.bias_cov_gyr, msg.bias_cov_gyr);
+        FpaImubiasToMsg(payload, msg);
         pub->publish(msg);
     }
 }
@@ -433,14 +453,9 @@ bool PublishNovbBestgnsspos(const novb::NovbHeader* header, const novb::NovbBest
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-bool PublishNovbInspvax(const novb::NovbHeader* header, const novb::NovbInspvax* payload,
-                        rclcpp::Publisher<fpmsgs::NovbInspvax>::SharedPtr& pub) {
-    if ((header == NULL) || (payload == NULL) || !header->IsLongHeader()) {
-        return false;
-    }
-    if (pub->get_subscription_count() > 0) {
-        fpmsgs::NovbInspvax msg;
-
+static void NovbInspvaxToMsg(const novb::NovbHeader* header, const novb::NovbInspvax* payload,
+                             fpmsgs::NovbInspvax& msg) {
+    if ((header != NULL) && (payload != NULL) && header->IsLongHeader()) {
         time::Time stamp;
         if (stamp.SetWnoTow({header->long_header.gps_week, (double)header->long_header.gps_milliseconds * 1e-3,
                              time::WnoTow::Sys::GPS})) {
@@ -470,7 +485,14 @@ bool PublishNovbInspvax(const novb::NovbHeader* header, const novb::NovbInspvax*
         msg.azimuth_stdev = payload->azimuth_stdev;
         msg.extended_status = payload->extended_status;
         msg.time_since_update = payload->time_since_update;
+    }
+}
 
+bool PublishNovbInspvax(const novb::NovbHeader* header, const novb::NovbInspvax* payload,
+                        rclcpp::Publisher<fpmsgs::NovbInspvax>::SharedPtr& pub) {
+    if (pub->get_subscription_count() > 0) {
+        fpmsgs::NovbInspvax msg;
+        NovbInspvaxToMsg(header, payload, msg);
         pub->publish(msg);
     }
     return true;
@@ -797,5 +819,38 @@ void PublishJumpWarning(const JumpDetector& jump_detector, rclcpp::Publisher<fpm
     }
 }
 
+// ---------------------------------------------------------------------------------------------------------------------
+
+void PublishFusionEpochData(const FusionEpochData& data, rclcpp::Publisher<fpmsgs::FusionEpoch>::SharedPtr& pub) {
+    if (pub->get_subscription_count() > 0) {
+        fixposition_driver_msgs::FusionEpoch msg;
+        msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(data.fpa_eoe_.gps_time));
+        if (data.fpa_odometry_avail_) {
+            msg.fpa_odometry_avail = true;
+            FpaOdometryToMsg(data.fpa_odometry_, msg.fpa_odometry);
+        }
+        if (data.fpa_odomsh_avail_) {
+            msg.fpa_odomsh_avail = true;
+            FpaOdomshToMsg(data.fpa_odomsh_, msg.fpa_odomsh);
+        }
+        if (data.fpa_odomenu_avail_) {
+            msg.fpa_odomenu_avail = true;
+            FpaOdomenuToMsg(data.fpa_odomenu_, msg.fpa_odomenu);
+        }
+        if (data.fpa_odomstatus_avail_) {
+            msg.fpa_odomstatus_avail = true;
+            FpaOdomstatusToMsg(data.fpa_odomstatus_, msg.fpa_odomstatus);
+        }
+        if (data.novb_inspvax_avail_) {
+            msg.novb_inspvax_avail = true;
+            NovbInspvaxToMsg(&data.novb_inspvax_header_, &data.novb_inspvax_payload_, msg.novb_inspvax);
+        }
+        if (data.fpa_imubias_avail_) {
+            msg.fpa_imubias_avail = true;
+            FpaImubiasToMsg(data.fpa_imubias_, msg.fpa_imubias);
+        }
+        pub->publish(msg);
+    }
+}
 /* ****************************************************************************************************************** */
 }  // namespace fixposition

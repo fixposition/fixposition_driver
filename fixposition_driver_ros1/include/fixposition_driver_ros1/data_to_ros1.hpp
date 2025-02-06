@@ -73,6 +73,7 @@ void PublishParserMsg(const fpsdk::common::parser::ParserMsg& msg, ros::Publishe
 void PublishNmeaEpochData(const NmeaEpochData& data, ros::Publisher& pub);
 void PublishOdometryData(const OdometryData& data, ros::Publisher& pub);
 void PublishJumpWarning(const JumpDetector& jump_detector, ros::Publisher& pub);
+void PublishFusionEpochData(const FusionEpochData& data, ros::Publisher& pub);
 
 inline std::tuple<double, double, double> getLinearComponents(const geometry_msgs::Twist& msg) {
     return std::make_tuple(msg.linear.x, msg.linear.y, msg.linear.z);

@@ -94,6 +94,8 @@ class FixpositionDriverNode {
     ros::Publisher odometry_enu_pub_;     //!< ENU odometry
     ros::Publisher odometry_llh_pub_;     //!< LLH odometry
     ros::Publisher odometry_smooth_pub_;  //!< Smooth Odometry (ECEF)
+    // - Fusion
+    ros::Publisher fusion_epoch_pub_;  //!< Fusion epoch data
     // - Orientation
     ros::Publisher eul_pub_;      //!< Euler angles yaw-pitch-roll in local ENU
     ros::Publisher eul_imu_pub_;  //!< Euler angles pitch-roll as estimated from the IMU in local horizontal
@@ -120,7 +122,8 @@ class FixpositionDriverNode {
 
     // State
     JumpDetector jump_detector_;
-    NmeaEpochData nmea_epoch_data_;  //!< NMEA collector
+    NmeaEpochData nmea_epoch_data_;      //!< NMEA epoch data collector
+    FusionEpochData fusion_epoch_data_;  //!< Fusion epoch data collector
 
     // TFs
     struct Tfs {

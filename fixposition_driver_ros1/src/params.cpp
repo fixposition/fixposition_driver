@@ -43,6 +43,10 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
         ROS_WARN("Failed loading %s/messages param", ns.c_str());
         ok = false;
     }
+    if (!utils::LoadRosParam(ns + "/fusion_epoch", params.fusion_epoch_)) {
+        ROS_WARN("Failed loading %s/fusion_epoch param", ns.c_str());
+        ok = false;
+    }
     std::string epoch_str;
     if (!utils::LoadRosParam(ns + "/nmea_epoch", epoch_str)) {
         ROS_WARN("Failed loading %s/nmea_epoch param", ns.c_str());
@@ -94,13 +98,13 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
         ok = false;
     } else {
         if (topic_type_string_ == "Twist") {
-            params.converter_topic_type_ = VelTopicType::TWIST;
+            params.converter_topic_type_ = DriverParams::VelTopicType::TWIST;
         } else if (topic_type_string_ == "TwistWithCov") {
-            params.converter_topic_type_ = VelTopicType::TWISTWITHCOV;
+            params.converter_topic_type_ = DriverParams::VelTopicType::TWISTWITHCOV;
         } else if (topic_type_string_ == "Odometry") {
-            params.converter_topic_type_ = VelTopicType::ODOMETRY;
+            params.converter_topic_type_ = DriverParams::VelTopicType::ODOMETRY;
         } else {
-            params.converter_topic_type_ = VelTopicType::UNSPECIFIED;
+            params.converter_topic_type_ = DriverParams::VelTopicType::UNSPECIFIED;
         }
     }
 
@@ -110,6 +114,7 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
         ROS_INFO("DriverParams: messages[%" PRIuMAX "]=%s", ix, params.messages_[ix].c_str());
     }
     ROS_INFO("DriverParams: nmea_epoch=%s", epoch_str.c_str());
+    ROS_INFO("DriverParams: fusion_epoch=%s", params.fusion_epoch_ ? "true" : "false");
     ROS_INFO("DriverParams: raw_output=%s", params.raw_output_ ? "true" : "false");
     ROS_INFO("DriverParams: cov_warning=%s", params.cov_warning_ ? "true" : "false");
     ROS_INFO("DriverParams: nav2_mode=%s", params.nav2_mode_ ? "true" : "false");

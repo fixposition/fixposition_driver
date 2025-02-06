@@ -213,7 +213,7 @@ struct NmeaEpochData {
     fpsdk::common::parser::nmea::NmeaZdaPayload zda_;
     fpsdk::common::parser::nmea::NmeaCollectGsaGsv gsa_gsv_;
 
-    // "Best of" data, populated by Complete()
+    // "Best of" data, populated by Complete(), NmeaEpoch.msg for docu
     fpsdk::common::time::Time stamp_;
     std::string frame_id_;
     fpsdk::common::parser::nmea::NmeaDate date_;
@@ -254,6 +254,43 @@ struct NmeaEpochData {
 
     // Completes the data and returns it, and resets the instance back to empty
     NmeaEpochData CompleteAndReset();
+};
+
+// Fusion epoch data, see FusionEpoch.msg for docu
+struct FusionEpochData {
+    FusionEpochData();
+
+    bool fpa_odometry_avail_ = false;
+    fpsdk::common::parser::fpa::FpaOdometryPayload fpa_odometry_;
+    void CollectFpaOdometry(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload);
+
+    bool fpa_odomsh_avail_ = false;
+    fpsdk::common::parser::fpa::FpaOdomshPayload fpa_odomsh_;
+    void CollectFpaOdomsh(const fpsdk::common::parser::fpa::FpaOdomshPayload& payload);
+
+    bool fpa_odomenu_avail_ = false;
+    fpsdk::common::parser::fpa::FpaOdomenuPayload fpa_odomenu_;
+    void CollectFpaOdomenu(const fpsdk::common::parser::fpa::FpaOdomenuPayload& payload);
+
+    bool fpa_odomstatus_avail_ = false;
+    fpsdk::common::parser::fpa::FpaOdomstatusPayload fpa_odomstatus_;
+    void CollectFpaOdomstatus(const fpsdk::common::parser::fpa::FpaOdomstatusPayload& payload);
+
+    bool novb_inspvax_avail_ = false;
+    fpsdk::common::parser::novb::NovbHeader novb_inspvax_header_;
+    fpsdk::common::parser::novb::NovbInspvax novb_inspvax_payload_;
+    void CollectNovbInspvax(const fpsdk::common::parser::novb::NovbHeader* header,
+                            const fpsdk::common::parser::novb::NovbInspvax* payload);
+
+    bool fpa_eoe_avail_ = false;
+    fpsdk::common::parser::fpa::FpaEoePayload fpa_eoe_;
+
+    bool fpa_imubias_avail_ = false;
+    fpsdk::common::parser::fpa::FpaImubiasPayload fpa_imubias_;
+    void CollectFpaImubias(const fpsdk::common::parser::fpa::FpaImubiasPayload& payload);
+
+    // Completes the data and returns it, and sets up the instance for the next epoch
+    FusionEpochData CompleteAndReset(const fpsdk::common::parser::fpa::FpaEoePayload& eoe);
 };
 
 void HelloWorld();

@@ -323,6 +323,60 @@ NmeaEpochData NmeaEpochData::CompleteAndReset() {
 
 // ---------------------------------------------------------------------------------------------------------------------
 
+FusionEpochData::FusionEpochData() {}
+
+void FusionEpochData::CollectFpaOdometry(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload) {
+    fpa_odometry_ = payload;
+    fpa_odometry_avail_ = true;
+}
+
+void FusionEpochData::CollectFpaOdomsh(const fpsdk::common::parser::fpa::FpaOdomshPayload& payload) {
+    fpa_odomsh_ = payload;
+    fpa_odomsh_avail_ = true;
+}
+
+void FusionEpochData::CollectFpaOdomenu(const fpsdk::common::parser::fpa::FpaOdomenuPayload& payload) {
+    fpa_odomenu_ = payload;
+    fpa_odomenu_avail_ = true;
+}
+
+void FusionEpochData::CollectFpaOdomstatus(const fpsdk::common::parser::fpa::FpaOdomstatusPayload& payload) {
+    fpa_odomstatus_ = payload;
+    fpa_odomstatus_avail_ = true;
+}
+
+void FusionEpochData::CollectNovbInspvax(const novb::NovbHeader* header, const novb::NovbInspvax* payload) {
+    if ((header != NULL) && (payload != NULL)) {
+        novb_inspvax_avail_ = true;
+        novb_inspvax_header_ = *header;
+        novb_inspvax_payload_ = *payload;
+    }
+}
+
+void FusionEpochData::CollectFpaImubias(const fpsdk::common::parser::fpa::FpaImubiasPayload& payload) {
+    fpa_imubias_ = payload;
+    fpa_imubias_avail_ = true;
+}
+
+FusionEpochData FusionEpochData::CompleteAndReset(const fpsdk::common::parser::fpa::FpaEoePayload& eoe) {
+    if (eoe.epoch != fpa::FpaEpoch::FUSION) {
+        return FusionEpochData();
+    }
+    fpa_eoe_avail_ = true;
+    fpa_eoe_ = eoe;
+
+    FusionEpochData data;
+    // We'll keep the imubias as this updates with 1 Hz only (and isn't strictly part of the fusion epoch...)
+    if (fpa_imubias_avail_) {
+        data.CollectFpaImubias(fpa_imubias_);
+    }
+
+    std::swap(data, *this);
+    return data;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+
 void HelloWorld() {
     NOTICE("Fixposition driver (https://github.com/fixposition/fixposition_driver)");
     NOTICE("Fixposition SDK %s", utils::GetVersionString());

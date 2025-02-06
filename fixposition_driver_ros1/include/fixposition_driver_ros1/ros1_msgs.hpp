@@ -24,6 +24,7 @@
 
 // Fixposition ROS messages
 // - Generic
+#include <fixposition_driver_msgs/FusionEpoch.h>
 #include <fixposition_driver_msgs/NmeaEpoch.h>
 #include <fixposition_driver_msgs/ParserMsg.h>
 #include <fixposition_driver_msgs/Speed.h>

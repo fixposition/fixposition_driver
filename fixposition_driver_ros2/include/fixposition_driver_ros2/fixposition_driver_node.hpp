@@ -99,6 +99,8 @@ class FixpositionDriverNode {
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_enu_pub_;      //!< ENU odometry
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_smooth_pub_;   //!< Smooth odometry (ECEF)
     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr odometry_llh_pub_;  //!< LLH odometry
+    // - Fusion
+    rclcpp::Publisher<fpmsgs::FusionEpoch>::SharedPtr fusion_epoch_pub_;  //!< Fusion epoch data
     // - Orientation
     //! Euler angles yaw-pitch-roll in local ENU
     rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr eul_pub_;
@@ -132,7 +134,8 @@ class FixpositionDriverNode {
 
     // State
     JumpDetector jump_detector_;
-    NmeaEpochData nmea_epoch_data_;  //!< NMEA collector
+    NmeaEpochData nmea_epoch_data_;      //!< NMEA epoch data collector
+    FusionEpochData fusion_epoch_data_;  //!< Fusion epoch data collector
 
     // TFs
     struct Tfs {

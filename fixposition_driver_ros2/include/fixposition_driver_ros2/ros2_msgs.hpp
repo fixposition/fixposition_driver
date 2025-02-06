@@ -26,6 +26,7 @@
 
 // Fixposition ROS messages
 // - Generic
+#include <fixposition_driver_msgs/msg/fusion_epoch.hpp>
 #include <fixposition_driver_msgs/msg/nmea_epoch.hpp>
 #include <fixposition_driver_msgs/msg/parser_msg.hpp>
 #include <fixposition_driver_msgs/msg/speed.hpp>

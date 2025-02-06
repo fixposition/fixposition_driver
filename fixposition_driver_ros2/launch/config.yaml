@@ -50,10 +50,11 @@
                 - "NOV_B-BESTGNSSPOS"      # This can be one or both of the _GNSS1 and _GNSS2 variants
 
             # Driver behaviour
-            nmea_epoch:  "GNSS"   # Choice for NMEA collection, must match NMEA message configuration type (<epoch> above)
-            raw_output:  false    # Enable raw messages output
-            cov_warning: false    # Enable covariance warnings
-            nav2_mode:   false    # Enable nav2 mode
+            fusion_epoch: true     # Enable fusion epoch output
+            nmea_epoch:   "GNSS"   # Choice for NMEA collection, must match NMEA message configuration type (<epoch> above), "" to disable
+            raw_output:   false    # Enable raw messages output
+            cov_warning:  false    # Enable covariance warnings
+            nav2_mode:    false    # Enable nav2 mode
 
             converter:
                 enabled: false
