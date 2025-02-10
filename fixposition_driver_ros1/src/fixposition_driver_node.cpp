@@ -145,7 +145,7 @@ bool FixpositionDriverNode::StartNode() {
                     PublishNav2Tf();
                 }
             }
-            
+
             // NMEA epoch (which can be FUSION, too)
             if (params_.nmea_epoch_ == eoe_payload.epoch) {
                 PublishNmeaEpochData(nmea_epoch_data_.CompleteAndReset(), nmea_epoch_pub_);
