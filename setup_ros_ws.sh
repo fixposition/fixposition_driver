@@ -33,7 +33,7 @@ function main
                 echo
                 echo "Setup Fixposition driver for a ROS workspace"
                 echo
-                echo "This script sets up the Fixpostion driver repo to be used in a existing ROS"
+                echo "This script sets up the Fixposition driver repo to be used in a existing ROS"
                 echo "workspace. It assumes that you cloned the fixposition_driver repo to the src"
                 echo "directory of your ROS workspace."
                 echo
