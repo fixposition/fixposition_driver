@@ -29,12 +29,11 @@ namespace fixposition {
  * @brief Load sensor parameters from rosparam server
  *
  * @param[in]  nh      Node handle
- * @param[in]  ns      Namespace to load the parameters from
  * @param[out] params  The sensor parameters
  *
  * @returns true on success, false otherwise
  */
-bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns, DriverParams& params);
+bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params);
 
 /* ****************************************************************************************************************** */
 }  // namespace fixposition

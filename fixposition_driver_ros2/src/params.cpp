@@ -23,31 +23,30 @@
 namespace fixposition {
 /* ****************************************************************************************************************** */
 
-bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns, DriverParams& params) {
+bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params) {
     auto logger = nh->get_logger();
     bool ok = true;
-    RCLCPP_INFO(logger, "DriverParams: loading from %s", ns.c_str());
 
-    const std::string STREAM = ns + ".stream";
-    const std::string RECONNECT_DELAY = ns + ".reconnect_delay";
-    const std::string DELAY_WARNING = ns + ".delay_warning";
-    const std::string MESSAGES = ns + ".messages";
-    const std::string FUSION_EPOCH = ns + ".fusion_epoch";
-    const std::string NMEA_EPOCH = ns + ".nmea_epoch";
-    const std::string RAW_OUTPUT = ns + ".raw_output";
-    const std::string COV_WARNING = ns + ".cov_warning";
-    const std::string NAV2_MODE = ns + ".nav2_mode";
-    const std::string CONVERTER_ENABLED = ns + ".converter.enabled";
-    const std::string CONVERTER_INPUT_TOPIC = ns + ".converter.input_topic";
-    const std::string CONVERTER_SCALE_FACTOR = ns + ".converter.scale_factor";
-    const std::string CONVERTER_USE_X = ns + ".converter.use_x";
-    const std::string CONVERTER_USE_Y = ns + ".converter.use_y";
-    const std::string CONVERTER_USE_Z = ns + ".converter.use_z";
-    const std::string CONVERTER_TOPIC_TYPE = ns + ".converter.topic_type";
-    const std::string OUTPUT_NS = ns + ".output_ns";
-    const std::string SPEED_TOPIC = ns + ".speed_topic";
-    const std::string CORR_TOPIC = ns + ".corr_topic";
-    const std::string QOS_TYPE = ns + ".qos_type";
+    const std::string STREAM = "stream";
+    const std::string RECONNECT_DELAY = "reconnect_delay";
+    const std::string DELAY_WARNING = "delay_warning";
+    const std::string MESSAGES = "messages";
+    const std::string FUSION_EPOCH = "fusion_epoch";
+    const std::string NMEA_EPOCH = "nmea_epoch";
+    const std::string RAW_OUTPUT = "raw_output";
+    const std::string COV_WARNING = "cov_warning";
+    const std::string NAV2_MODE = "nav2_mode";
+    const std::string CONVERTER_ENABLED = "converter.enabled";
+    const std::string CONVERTER_INPUT_TOPIC = "converter.input_topic";
+    const std::string CONVERTER_SCALE_FACTOR = "converter.scale_factor";
+    const std::string CONVERTER_USE_X = "converter.use_x";
+    const std::string CONVERTER_USE_Y = "converter.use_y";
+    const std::string CONVERTER_USE_Z = "converter.use_z";
+    const std::string CONVERTER_TOPIC_TYPE = "converter.topic_type";
+    const std::string OUTPUT_NS = "output_ns";
+    const std::string SPEED_TOPIC = "speed_topic";
+    const std::string CORR_TOPIC = "corr_topic";
+    const std::string QOS_TYPE = "qos_type";
 
     std::string topic_type_string_;
     nh->declare_parameter(STREAM, params.stream_);
@@ -71,7 +70,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
     nh->declare_parameter(CORR_TOPIC, params.corr_topic_);
     nh->declare_parameter(QOS_TYPE, params.qos_type_);
 
-    if (!nh->get_parameter(STREAM, params.stream_)) {
+    if (!nh->get_parameter(STREAM, params.stream_) || params.stream_.empty()) {
         RCLCPP_WARN(logger, "Failed loading %s param", STREAM.c_str());
         ok = false;
     }
@@ -83,7 +82,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
         RCLCPP_WARN(logger, "Failed loading %s param", DELAY_WARNING.c_str());
         ok = false;
     }
-    if (!nh->get_parameter(MESSAGES, params.messages_)) {
+    if (!nh->get_parameter(MESSAGES, params.messages_) || params.messages_.empty()) {
         RCLCPP_WARN(logger, "Failed loading %s param", MESSAGES.c_str());
         ok = false;
     }

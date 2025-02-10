@@ -703,7 +703,7 @@ int main(int argc, char** argv) {
     // Load parameters
     RCLCPP_INFO(logger, "Loading parameters...");
     DriverParams driver_params;
-    if (!LoadParamsFromRos2(nh, "", driver_params)) {
+    if (!LoadParamsFromRos2(nh, driver_params)) {
         RCLCPP_ERROR(logger, "Failed loading sensor params");
         ok = false;
     }

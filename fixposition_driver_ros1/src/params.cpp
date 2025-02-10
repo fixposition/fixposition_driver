@@ -43,7 +43,7 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
         ROS_WARN("Failed loading %s/delay_warning param", ns.c_str());
         ok = false;
     }
-    if (!utils::LoadRosParam(ns + "/messages", params.messages_)) {
+    if (!utils::LoadRosParam(ns + "/messages", params.messages_) || params.messages_.empty()) {
         ROS_WARN("Failed loading %s/messages param", ns.c_str());
         ok = false;
     }
