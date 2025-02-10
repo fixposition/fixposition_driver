@@ -39,6 +39,10 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
         ROS_WARN("Failed loading %s/reconnect_delay param", ns.c_str());
         ok = false;
     }
+    if (!utils::LoadRosParam(ns + "/delay_warning", params.delay_warning_)) {
+        ROS_WARN("Failed loading %s/delay_warning param", ns.c_str());
+        ok = false;
+    }
     if (!utils::LoadRosParam(ns + "/messages", params.messages_)) {
         ROS_WARN("Failed loading %s/messages param", ns.c_str());
         ok = false;
@@ -110,6 +114,7 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
 
     ROS_INFO("DriverParams: stream=%s", params.stream_.c_str());
     ROS_INFO("DriverParams: reconnect_delay=%.1f", params.reconnect_delay_);
+    ROS_INFO("DriverParams: delay_warning=%.3f", params.delay_warning_);
     for (std::size_t ix = 0; ix < params.messages_.size(); ix++) {
         ROS_INFO("DriverParams: messages[%" PRIuMAX "]=%s", ix, params.messages_[ix].c_str());
     }

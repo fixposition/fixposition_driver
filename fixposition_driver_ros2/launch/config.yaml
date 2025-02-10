@@ -9,6 +9,8 @@
             stream: tcpcli://10.0.2.1:21000
             # Wait time in [s] to attempt reconnecting after connection lost
             reconnect_delay: 5.0
+            # Delay warning threshold [s]. Note that this only works if your system time is synced to the VRTK2. This must be a float.
+            delay_warning: 0.01
 
             # Messages that should be used by the driver. Note that the sensor must be configured accordingly for the correct
             # port used in the "connection" above.

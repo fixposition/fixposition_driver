@@ -30,6 +30,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
 
     const std::string STREAM = ns + ".stream";
     const std::string RECONNECT_DELAY = ns + ".reconnect_delay";
+    const std::string DELAY_WARNING = ns + ".delay_warning";
     const std::string MESSAGES = ns + ".messages";
     const std::string FUSION_EPOCH = ns + ".fusion_epoch";
     const std::string NMEA_EPOCH = ns + ".nmea_epoch";
@@ -47,6 +48,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
     std::string topic_type_string_;
     nh->declare_parameter(STREAM, params.stream_);
     nh->declare_parameter(RECONNECT_DELAY, params.reconnect_delay_);
+    nh->declare_parameter(DELAY_WARNING, params.delay_warning_);
     nh->declare_parameter(MESSAGES, params.messages_);
     nh->declare_parameter(FUSION_EPOCH, params.fusion_epoch_);
     nh->declare_parameter(NMEA_EPOCH, "");
@@ -67,6 +69,10 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
     }
     if (!nh->get_parameter(RECONNECT_DELAY, params.reconnect_delay_)) {
         RCLCPP_WARN(logger, "Failed loading %s param", RECONNECT_DELAY.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(DELAY_WARNING, params.delay_warning_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", DELAY_WARNING.c_str());
         ok = false;
     }
     if (!nh->get_parameter(MESSAGES, params.messages_)) {
@@ -139,6 +145,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
 
     RCLCPP_INFO(logger, "DriverParams: stream=%s", params.stream_.c_str());
     RCLCPP_INFO(logger, "DriverParams: reconnect_delay=%.1f", params.reconnect_delay_);
+    RCLCPP_INFO(logger, "DriverParams: delay_warning=%.3f", params.delay_warning_);
     for (std::size_t ix = 0; ix < params.messages_.size(); ix++) {
         RCLCPP_INFO(logger, "DriverParams: messages[%" PRIuMAX "]=%s", ix, params.messages_[ix].c_str());
     }

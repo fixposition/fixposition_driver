@@ -531,10 +531,12 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
     // Send a warning if the system experiences delays
     // This message computes the difference between the message time and the local system time.
     // Thus, if the local time is off, the message might be triggered or not triggered when it should.
-    const double _delay = (ros::Time::now() - fpsdk::ros1::utils::ConvTime(odometry_data.stamp)).toSec();
-    if (_delay > 0.01) {
-        ROS_WARN_THROTTLE(1.0, "The system is experiencing significant delays! (estimated delay: %.3f seconds)",
-                          _delay);
+    if (driver_params_.delay_warning_ > 0.0) {
+        const double delay = (ros::Time::now() - fpsdk::ros1::utils::ConvTime(odometry_data.stamp)).toSec();
+        if (delay > driver_params_.delay_warning_) {
+            ROS_WARN_THROTTLE(1.0, "The system is experiencing significant delays! (estimated delay: %.3f seconds)",
+                              delay);
+        }
     }
 
     switch (odometry_data.type) {
