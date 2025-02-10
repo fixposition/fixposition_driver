@@ -35,11 +35,10 @@ class FixpositionDriverNode {
     /**
      * @brief Constructor
      *
-     * @param[in]  driver_params  Parameters
-     * @param[in]  node_params    Parameters
-     * @param[in]  nh             Node handle
+     * @param[in]  params  Parameters
+     * @param[in]  nh      Node handle
      */
-    FixpositionDriverNode(const DriverParams& driver_params, const NodeParams& node_params, ros::NodeHandle& nh);
+    FixpositionDriverNode(const DriverParams& params, ros::NodeHandle& nh);
 
     /**
      * @brief Destructor
@@ -59,10 +58,9 @@ class FixpositionDriverNode {
     void StopNode();
 
    private:
-    ros::NodeHandle nh_;          //!< ROS node handle
-    DriverParams driver_params_;  //!< Sensor/driver parameters
-    NodeParams node_params_;      //!< Node parameters
-    FixpositionDriver driver_;    //!< Sensor driver
+    ros::NodeHandle nh_;        //!< ROS node handle
+    DriverParams params_;       //!< Sensor/driver parameters
+    FixpositionDriver driver_;  //!< Sensor driver
 
     // ROS publishers
     // - FP_A messages

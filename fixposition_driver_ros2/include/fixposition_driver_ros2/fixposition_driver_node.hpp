@@ -37,12 +37,10 @@ class FixpositionDriverNode {
     /**
      * @brief Constructor
      *
-     * @param[in]  nh             Node handle
-     * @param[in]  driver_params  Parameters
-     * @param[in]  node_params    Parameters
+     * @param[in]  nh      Node handle
+     * @param[in]  params  Parameters
      */
-    FixpositionDriverNode(std::shared_ptr<rclcpp::Node> nh, const DriverParams& driver_params,
-                          const NodeParams& node_params);
+    FixpositionDriverNode(std::shared_ptr<rclcpp::Node> nh, const DriverParams& params);
 
     /**
      * @brief Destructor
@@ -63,8 +61,7 @@ class FixpositionDriverNode {
 
    private:
     std::shared_ptr<rclcpp::Node> nh_;  //!< Node handle
-    DriverParams driver_params_;        //!< Sensor/driver parameters
-    NodeParams node_params_;            //!< Node parameters
+    DriverParams params_;               //!< Sensor/driver parameters
     rclcpp::Logger logger_;             //!< Logger
     FixpositionDriver driver_;          //!< Sensor driver
     rclcpp::QoS qos_settings_;          //!< QoS settings

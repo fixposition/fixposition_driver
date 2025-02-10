@@ -36,17 +36,6 @@ namespace fixposition {
  */
 bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns, DriverParams& params);
 
-/**
- * @brief Load node parameters from rosparam server
- *
- * @param[in]  nh      Node handle
- * @param[in]  ns      Namespace to load the parameters from
- * @param[out] params  The sensor parameters
- *
- * @returns true on success, false otherwise
- */
-bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns, NodeParams& params);
-
 /* ****************************************************************************************************************** */
 }  // namespace fixposition
 #endif  // __FIXPOSITION_DRIVER_ROS2_PARAMS_HPP__

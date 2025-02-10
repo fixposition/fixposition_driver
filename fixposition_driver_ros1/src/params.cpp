@@ -112,6 +112,19 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
         }
     }
 
+    if (!utils::LoadRosParam(ns + "/output_ns", params.output_ns_)) {
+        ROS_WARN("Failed loading %s/output_ns param", ns.c_str());
+        ok = false;
+    }
+    if (!utils::LoadRosParam(ns + "/speed_topic", params.speed_topic_)) {
+        ROS_WARN("Failed loading %s/speed_topic param", ns.c_str());
+        ok = false;
+    }
+    if (!utils::LoadRosParam(ns + "/corr_topic", params.corr_topic_)) {
+        ROS_WARN("Failed loading %s/corr_topic param", ns.c_str());
+        ok = false;
+    }
+
     ROS_INFO("DriverParams: stream=%s", params.stream_.c_str());
     ROS_INFO("DriverParams: reconnect_delay=%.1f", params.reconnect_delay_);
     ROS_INFO("DriverParams: delay_warning=%.3f", params.delay_warning_);
@@ -130,32 +143,9 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
     ROS_INFO("DriverParams: converter_use_x=%s", params.converter_use_x_ ? "true" : "false");
     ROS_INFO("DriverParams: converter_use_y=%s", params.converter_use_y_ ? "true" : "false");
     ROS_INFO("DriverParams: converter_use_z=%s", params.converter_use_z_ ? "true" : "false");
-
-    return ok;
-}
-
-// ---------------------------------------------------------------------------------------------------------------------
-
-bool LoadParamsFromRos1(const std::string& ns, NodeParams& params) {
-    bool ok = true;
-    ROS_INFO("NodeParams: loading from %s", ns.c_str());
-
-    if (!utils::LoadRosParam(ns + "/output_ns", params.output_ns_)) {
-        ROS_WARN("Failed loading %s/output_ns param", ns.c_str());
-        ok = false;
-    }
-    if (!utils::LoadRosParam(ns + "/speed_topic", params.speed_topic_)) {
-        ROS_WARN("Failed loading %s/speed_topic param", ns.c_str());
-        ok = false;
-    }
-    if (!utils::LoadRosParam(ns + "/corr_topic", params.corr_topic_)) {
-        ROS_WARN("Failed loading %s/corr_topic param", ns.c_str());
-        ok = false;
-    }
-
-    ROS_INFO("NodeParams: output_ns=%s", params.output_ns_.c_str());
-    ROS_INFO("NodeParams: speed_topic=%s", params.speed_topic_.c_str());
-    ROS_INFO("NodeParams: corr_topic=%s", params.corr_topic_.c_str());
+    ROS_INFO("DriverParams: output_ns=%s", params.output_ns_.c_str());
+    ROS_INFO("DriverParams: speed_topic=%s", params.speed_topic_.c_str());
+    ROS_INFO("DriverParams: corr_topic=%s", params.corr_topic_.c_str());
 
     return ok;
 }

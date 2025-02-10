@@ -39,13 +39,11 @@ namespace fixposition {
 using namespace fpsdk::common;
 using namespace fpsdk::common::parser;
 
-FixpositionDriverNode::FixpositionDriverNode(const DriverParams& driver_params, const NodeParams& node_params,
-                                             ros::NodeHandle& nh) /* clang-format off */ :
+FixpositionDriverNode::FixpositionDriverNode(const DriverParams& params, ros::NodeHandle& nh) /* clang-format off */ :
     nh_                { nh },
-    driver_params_     { driver_params },
-    node_params_       { node_params },
-    driver_            { driver_params },
-    nmea_epoch_data_   { driver_params_.nmea_epoch_ }  // clang-format on
+    params_            { params },
+    driver_            { params_ },
+    nmea_epoch_data_   { params_.nmea_epoch_ }  // clang-format on
 {}
 
 FixpositionDriverNode::~FixpositionDriverNode() { StopNode(); }
@@ -70,10 +68,10 @@ bool FixpositionDriverNode::StartNode() {
     ROS_INFO("Starting...");
 
     // Add observers and advertise output topics, depending on configuration
-    const std::string output_ns = (node_params_.output_ns_.empty() ? nh_.getNamespace() : node_params_.output_ns_);
+    const std::string output_ns = (params_.output_ns_.empty() ? nh_.getNamespace() : params_.output_ns_);
 
     // FP_A-ODOMETRY
-    if (driver_params_.MessageEnabled(fpa::FpaOdometryPayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaOdometryPayload::MSG_NAME)) {
         _PUB(fpa_odometry_pub_, fixposition_driver_msgs::FpaOdometry, output_ns + "/fpa/odometry", 5);
         _PUB(odometry_ecef_pub_, nav_msgs::Odometry, output_ns + "/odometry_ecef", 5);
         _PUB(odometry_llh_pub_, sensor_msgs::NavSatFix, output_ns + "/odometry_llh", 5);
@@ -92,7 +90,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // FP_A-ODOMSH
-    if (driver_params_.MessageEnabled(fpa::FpaOdomshPayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaOdomshPayload::MSG_NAME)) {
         _PUB(fpa_odomsh_pub_, fixposition_driver_msgs::FpaOdomsh, output_ns + "/fpa/odomsh", 5);
         _PUB(odometry_smooth_pub_, nav_msgs::Odometry, output_ns + "/odometry_smooth", 5);
         driver_.AddFpaObserver(fpa::FpaOdomshPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
@@ -107,7 +105,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // FP_A-ODOMENU
-    if (driver_params_.MessageEnabled(fpa::FpaOdomenuPayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaOdomenuPayload::MSG_NAME)) {
         _PUB(fpa_odomenu_pub_, fixposition_driver_msgs::FpaOdomenu, output_ns + "/fpa/odomenu", 5);
         _PUB(odometry_enu_pub_, nav_msgs::Odometry, output_ns + "/odometry_enu", 5);
         _PUB(eul_pub_, geometry_msgs::Vector3Stamped, output_ns + "/ypr", 5);
@@ -124,7 +122,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // FP_A-ODOMSTATUS
-    if (driver_params_.MessageEnabled(fpa::FpaOdomstatusPayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaOdomstatusPayload::MSG_NAME)) {
         _PUB(fpa_odomstatus_pub_, fixposition_driver_msgs::FpaOdomstatus, output_ns + "/fpa/odomstatus", 5);
         driver_.AddFpaObserver(fpa::FpaOdomstatusPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             auto odomstatus_payload = dynamic_cast<const fpa::FpaOdomstatusPayload&>(payload);
@@ -134,7 +132,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // FP_A-EOE
-    if (driver_params_.MessageEnabled(fpa::FpaEoePayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaEoePayload::MSG_NAME)) {
         _PUB(fpa_eoe_pub_, fixposition_driver_msgs::FpaEoe, output_ns + "/fpa/eoe", 5);
         driver_.AddFpaObserver(fpa::FpaEoePayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             auto eoe_payload = dynamic_cast<const fpa::FpaEoePayload&>(payload);
@@ -143,19 +141,19 @@ bool FixpositionDriverNode::StartNode() {
                 // Fusion epoch
                 PublishFusionEpochData(fusion_epoch_data_.CompleteAndReset(eoe_payload), fusion_epoch_pub_);
                 // Generate Nav2 TF tree
-                if (driver_params_.nav2_mode_) {
+                if (params_.nav2_mode_) {
                     PublishNav2Tf();
                 }
             }
             // NMEA epoch
-            else if (driver_params_.nmea_epoch_ == eoe_payload.epoch) {
+            else if (params_.nmea_epoch_ == eoe_payload.epoch) {
                 PublishNmeaEpochData(nmea_epoch_data_.CompleteAndReset(), nmea_epoch_pub_);
             }
         });
     }
 
     // FP_A-TF
-    if (driver_params_.MessageEnabled(fpa::FpaTfPayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaTfPayload::MSG_NAME)) {
         _PUB(eul_imu_pub_, geometry_msgs::Vector3Stamped, output_ns + "/imu_ypr", 5);
         driver_.AddFpaObserver(fpa::FpaTfPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             TfData tf;
@@ -165,7 +163,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // FP_A-LLH
-    if (driver_params_.MessageEnabled(fpa::FpaLlhPayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaLlhPayload::MSG_NAME)) {
         _PUB(fpa_llh_pub_, fixposition_driver_msgs::FpaLlh, output_ns + "/fpa/llh", 5);
         driver_.AddFpaObserver(fpa::FpaLlhPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             PublishFpaLlh(dynamic_cast<const fpa::FpaLlhPayload&>(payload), fpa_llh_pub_);
@@ -173,7 +171,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // FP_A-GNSSANT
-    if (driver_params_.MessageEnabled(fpa::FpaGnssantPayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaGnssantPayload::MSG_NAME)) {
         _PUB(fpa_gnssant_pub_, fixposition_driver_msgs::FpaGnssant, output_ns + "/fpa/gnssant", 5);
         driver_.AddFpaObserver(fpa::FpaGnssantPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             PublishFpaGnssant(dynamic_cast<const fpa::FpaGnssantPayload&>(payload), fpa_gnssant_pub_);
@@ -181,7 +179,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // FP_A-GNSSCORR
-    if (driver_params_.MessageEnabled(fpa::FpaGnsscorrPayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaGnsscorrPayload::MSG_NAME)) {
         _PUB(fpa_gnsscorr_pub_, fixposition_driver_msgs::FpaGnsscorr, output_ns + "/fpa/gnsscorr", 5);
         driver_.AddFpaObserver(fpa::FpaGnsscorrPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             PublishFpaGnsscorr(dynamic_cast<const fpa::FpaGnsscorrPayload&>(payload), fpa_gnsscorr_pub_);
@@ -189,7 +187,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // FP_A-IMUBIAS
-    if (driver_params_.MessageEnabled(fpa::FpaImubiasPayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaImubiasPayload::MSG_NAME)) {
         _PUB(fpa_imubias_pub_, fixposition_driver_msgs::FpaImubias, output_ns + "/fpa/imubias", 5);
         driver_.AddFpaObserver(fpa::FpaImubiasPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             auto imubias_payload = dynamic_cast<const fpa::FpaImubiasPayload&>(payload);
@@ -199,7 +197,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // FP_A-RAWIMU
-    if (driver_params_.MessageEnabled(fpa::FpaRawimuPayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaRawimuPayload::MSG_NAME)) {
         _PUB(rawimu_pub_, sensor_msgs::Imu, output_ns + "/fpa/rawimu", 5);
         driver_.AddFpaObserver(fpa::FpaRawimuPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             PublishFpaRawimu(dynamic_cast<const fpa::FpaRawimuPayload&>(payload), rawimu_pub_);
@@ -207,7 +205,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // FP_A-CORRIMU
-    if (driver_params_.MessageEnabled(fpa::FpaCorrimuPayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaCorrimuPayload::MSG_NAME)) {
         _PUB(corrimu_pub_, sensor_msgs::Imu, output_ns + "/fpa/corrimu", 5);
         driver_.AddFpaObserver(fpa::FpaCorrimuPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             PublishFpaCorrimu(dynamic_cast<const fpa::FpaCorrimuPayload&>(payload), corrimu_pub_);
@@ -215,7 +213,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // FP_A-TEXT
-    if (driver_params_.MessageEnabled(fpa::FpaTextPayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaTextPayload::MSG_NAME)) {
         _PUB(fpa_text_pub_, fixposition_driver_msgs::FpaText, output_ns + "/fpa/text", 5);
         driver_.AddFpaObserver(fpa::FpaTextPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             PublishFpaText(dynamic_cast<const fpa::FpaTextPayload&>(payload), fpa_text_pub_);
@@ -223,7 +221,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // FP_A-TP
-    if (driver_params_.MessageEnabled(fpa::FpaTpPayload::MSG_NAME)) {
+    if (params_.MessageEnabled(fpa::FpaTpPayload::MSG_NAME)) {
         _PUB(fpa_tp_pub_, fixposition_driver_msgs::FpaTp, output_ns + "/fpa/tp", 5);
         driver_.AddFpaObserver(fpa::FpaTpPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             PublishFpaTp(dynamic_cast<const fpa::FpaTpPayload&>(payload), fpa_tp_pub_);
@@ -231,7 +229,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // NOV_B-BESTGNSSPOS
-    if (driver_params_.MessageEnabled(novb::NOV_B_BESTGNSSPOS_STRID)) {
+    if (params_.MessageEnabled(novb::NOV_B_BESTGNSSPOS_STRID)) {
         _PUB(navsatfix_gnss1_pub_, sensor_msgs::NavSatFix, output_ns + "/gnss1", 5);
         _PUB(navsatfix_gnss2_pub_, sensor_msgs::NavSatFix, output_ns + "/gnss2", 5);
         driver_.AddNovbObserver(  //
@@ -244,7 +242,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // NOV_B-INSPVAX
-    if (driver_params_.MessageEnabled(novb::NOV_B_INSPVAX_STRID)) {
+    if (params_.MessageEnabled(novb::NOV_B_INSPVAX_STRID)) {
         _PUB(novb_inspvax_pub_, fixposition_driver_msgs::NovbInspvax, output_ns + "/novb/inspvax", 5);
         driver_.AddNovbObserver(  //
             novb::NOV_B_INSPVAX_STRID, [this](const novb::NovbHeader* header, const uint8_t* payload) {
@@ -256,7 +254,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // NMEA-GP-GGA
-    if (driver_params_.MessageEnabled(nmea::NmeaGgaPayload::FORMATTER)) {
+    if (params_.MessageEnabled(nmea::NmeaGgaPayload::FORMATTER)) {
         _PUB(nmea_gga_pub_, fixposition_driver_msgs::NmeaGga, output_ns + "/nmea/gga", 5);
         driver_.AddNmeaObserver(nmea::NmeaGgaPayload::FORMATTER, [this](const nmea::NmeaPayload& payload) {
             auto gga_payload = dynamic_cast<const nmea::NmeaGgaPayload&>(payload);
@@ -266,7 +264,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // NMEA-GP-GLL
-    if (driver_params_.MessageEnabled(nmea::NmeaGllPayload::FORMATTER)) {
+    if (params_.MessageEnabled(nmea::NmeaGllPayload::FORMATTER)) {
         _PUB(nmea_gll_pub_, fixposition_driver_msgs::NmeaGll, output_ns + "/nmea/gll", 5);
         driver_.AddNmeaObserver(nmea::NmeaGllPayload::FORMATTER, [this](const nmea::NmeaPayload& payload) {
             auto gll_payload = dynamic_cast<const nmea::NmeaGllPayload&>(payload);
@@ -276,7 +274,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // NMEA-GN-GSA
-    if (driver_params_.MessageEnabled(nmea::NmeaGsaPayload::FORMATTER)) {
+    if (params_.MessageEnabled(nmea::NmeaGsaPayload::FORMATTER)) {
         _PUB(nmea_gsa_pub_, fixposition_driver_msgs::NmeaGsa, output_ns + "/nmea/gsa", 5);
         driver_.AddNmeaObserver(nmea::NmeaGsaPayload::FORMATTER, [this](const nmea::NmeaPayload& payload) {
             auto gsa_payload_ = dynamic_cast<const nmea::NmeaGsaPayload&>(payload);
@@ -287,7 +285,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // NMEA-GP-GST
-    if (driver_params_.MessageEnabled(nmea::NmeaGstPayload::FORMATTER)) {
+    if (params_.MessageEnabled(nmea::NmeaGstPayload::FORMATTER)) {
         _PUB(nmea_gst_pub_, fixposition_driver_msgs::NmeaGst, output_ns + "/nmea/gst", 5);
         driver_.AddNmeaObserver(nmea::NmeaGstPayload::FORMATTER, [this](const nmea::NmeaPayload& payload) {
             auto gst_payload = dynamic_cast<const nmea::NmeaGstPayload&>(payload);
@@ -297,7 +295,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // NMEA-GX-GSV
-    if (driver_params_.MessageEnabled(nmea::NmeaGsvPayload::FORMATTER)) {
+    if (params_.MessageEnabled(nmea::NmeaGsvPayload::FORMATTER)) {
         _PUB(nmea_gsv_pub_, fixposition_driver_msgs::NmeaGsv, output_ns + "/nmea/gsv", 5);
         driver_.AddNmeaObserver(nmea::NmeaGsvPayload::FORMATTER, [this](const nmea::NmeaPayload& payload) {
             auto gsv_payload_ = dynamic_cast<const nmea::NmeaGsvPayload&>(payload);
@@ -307,7 +305,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // NMEA-GP-HDT
-    if (driver_params_.MessageEnabled(nmea::NmeaHdtPayload::FORMATTER)) {
+    if (params_.MessageEnabled(nmea::NmeaHdtPayload::FORMATTER)) {
         _PUB(nmea_hdt_pub_, fixposition_driver_msgs::NmeaHdt, output_ns + "/nmea/hdt", 5);
         driver_.AddNmeaObserver(nmea::NmeaHdtPayload::FORMATTER, [this](const nmea::NmeaPayload& payload) {
             auto hdt_payload = dynamic_cast<const nmea::NmeaHdtPayload&>(payload);
@@ -317,7 +315,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // NMEA-GP-RMC
-    if (driver_params_.MessageEnabled(nmea::NmeaRmcPayload::FORMATTER)) {
+    if (params_.MessageEnabled(nmea::NmeaRmcPayload::FORMATTER)) {
         _PUB(nmea_rmc_pub_, fixposition_driver_msgs::NmeaRmc, output_ns + "/nmea/rmc", 5);
         driver_.AddNmeaObserver(nmea::NmeaRmcPayload::FORMATTER, [this](const nmea::NmeaPayload& payload) {
             auto rmc_payload = dynamic_cast<const nmea::NmeaRmcPayload&>(payload);
@@ -327,7 +325,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // NMEA-GP-VTG
-    if (driver_params_.MessageEnabled(nmea::NmeaVtgPayload::FORMATTER)) {
+    if (params_.MessageEnabled(nmea::NmeaVtgPayload::FORMATTER)) {
         _PUB(nmea_vtg_pub_, fixposition_driver_msgs::NmeaVtg, output_ns + "/nmea/vtg", 5);
         driver_.AddNmeaObserver(nmea::NmeaVtgPayload::FORMATTER, [this](const nmea::NmeaPayload& payload) {
             auto vtg_payload = dynamic_cast<const nmea::NmeaVtgPayload&>(payload);
@@ -337,7 +335,7 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // NMEA-GP-ZDA
-    if (driver_params_.MessageEnabled(nmea::NmeaZdaPayload::FORMATTER)) {
+    if (params_.MessageEnabled(nmea::NmeaZdaPayload::FORMATTER)) {
         _PUB(nmea_zda_pub_, fixposition_driver_msgs::NmeaZda, output_ns + "/nmea/zda", 5);
         driver_.AddNmeaObserver(nmea::NmeaZdaPayload::FORMATTER, [this](const nmea::NmeaPayload& payload) {
             auto zda_payload = dynamic_cast<const nmea::NmeaZdaPayload&>(payload);
@@ -347,64 +345,63 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // Raw messages
-    if (driver_params_.raw_output_) {
+    if (params_.raw_output_) {
         _PUB(raw_pub_, fixposition_driver_msgs::ParserMsg, output_ns + "/raw", 5);
         driver_.AddRawObserver([this](const parser::ParserMsg& msg) { PublishParserMsg(msg, raw_pub_); });
     }
 
     // Fusion epoch
-    if (driver_params_.fusion_epoch_) {
+    if (params_.fusion_epoch_) {
         _PUB(fusion_epoch_pub_, fixposition_driver_msgs::FusionEpoch, output_ns + "/fusion", 5);
         // Publish is triggered by FP_A-EOE above
     }
 
     // NMEA epoch
-    if (driver_params_.nmea_epoch_ != fpa::FpaEpoch::UNSPECIFIED) {
+    if (params_.nmea_epoch_ != fpa::FpaEpoch::UNSPECIFIED) {
         _PUB(nmea_epoch_pub_, fixposition_driver_msgs::NmeaEpoch, output_ns + "/nmea", 5);
         // Publish is triggered by FP_A-EOE above
     }
 
     // Jump warning message
-    if (driver_params_.cov_warning_) {
+    if (params_.cov_warning_) {
         _PUB(jump_pub_, fixposition_driver_msgs::CovWarn, output_ns + "/extras/jump", 5);
     }
 
     // Subscribe to correction data input
-    if (!node_params_.corr_topic_.empty()) {
-        _SUB(corr_sub_, rtcm_msgs::Message, node_params_.corr_topic_, 100,
-             [this](const rtcm_msgs::MessageConstPtr& msg) {
-                 driver_.SendCorrectionData(msg->message.data(), msg->message.size());
-             });
+    if (!params_.corr_topic_.empty()) {
+        _SUB(corr_sub_, rtcm_msgs::Message, params_.corr_topic_, 100, [this](const rtcm_msgs::MessageConstPtr& msg) {
+            driver_.SendCorrectionData(msg->message.data(), msg->message.size());
+        });
     }
 
     // Subscribe to wheelspeed input
-    if (!node_params_.speed_topic_.empty()) {
-        _SUB(ws_sub_, fixposition_driver_msgs::Speed, node_params_.speed_topic_, 10,
+    if (!params_.speed_topic_.empty()) {
+        _SUB(ws_sub_, fixposition_driver_msgs::Speed, params_.speed_topic_, 10,
              [this](const fixposition_driver_msgs::SpeedConstPtr& msg) {
                  driver_.SendWheelspeedData(SpeedMsgToWheelspeedData(*msg));
              });
     }
 
     // Subscribe to wheelspeed input
-    if (driver_params_.converter_enabled_) {
-        if (!driver_params_.converter_input_topic_.empty()) {
-            switch (driver_params_.converter_topic_type_) {
+    if (params_.converter_enabled_) {
+        if (!params_.converter_input_topic_.empty()) {
+            switch (params_.converter_topic_type_) {
                 case DriverParams::VelTopicType::TWIST:
-                    _SUB(ws_conv_sub_, geometry_msgs::Twist, driver_params_.converter_input_topic_, 10,
+                    _SUB(ws_conv_sub_, geometry_msgs::Twist, params_.converter_input_topic_, 10,
                          [this](const geometry_msgs::TwistConstPtr& msg) {
-                             driver_.SendWheelspeedData(SpeedConverterCallback(*msg, driver_params_));
+                             driver_.SendWheelspeedData(SpeedConverterCallback(*msg, params_));
                          });
                     break;
                 case DriverParams::VelTopicType::TWISTWITHCOV:
-                    _SUB(ws_conv_sub_, geometry_msgs::TwistWithCovariance, driver_params_.converter_input_topic_, 10,
+                    _SUB(ws_conv_sub_, geometry_msgs::TwistWithCovariance, params_.converter_input_topic_, 10,
                          [this](const geometry_msgs::TwistWithCovarianceConstPtr& msg) {
-                             driver_.SendWheelspeedData(SpeedConverterCallback(*msg, driver_params_));
+                             driver_.SendWheelspeedData(SpeedConverterCallback(*msg, params_));
                          });
                     break;
                 case DriverParams::VelTopicType::ODOMETRY:
-                    _SUB(ws_conv_sub_, nav_msgs::Odometry, driver_params_.converter_input_topic_, 10,
+                    _SUB(ws_conv_sub_, nav_msgs::Odometry, params_.converter_input_topic_, 10,
                          [this](const nav_msgs::OdometryConstPtr& msg) {
-                             driver_.SendWheelspeedData(SpeedConverterCallback(*msg, driver_params_));
+                             driver_.SendWheelspeedData(SpeedConverterCallback(*msg, params_));
                          });
                     break;
                 default:
@@ -505,7 +502,7 @@ void FixpositionDriverNode::ProcessTfData(const TfData& tf_data) {
     else if ((tf.child_frame_id == "FP_POISH") && (tf.header.frame_id == "FP_POI")) {
         tf_br_.sendTransform(tf);
         // Store TF if Nav2 mode is enabled
-        if (driver_params_.nav2_mode_) {
+        if (params_.nav2_mode_) {
             std::unique_lock<std::mutex> lock(tfs_.mutex_);
             tfs_.poi_poish_ = std::make_unique<geometry_msgs::TransformStamped>(tf);
         }
@@ -514,7 +511,7 @@ void FixpositionDriverNode::ProcessTfData(const TfData& tf_data) {
     else if ((tf.child_frame_id == "FP_ENU0") && (tf.header.frame_id == "FP_ECEF")) {
         static_br_.sendTransform(tf);
         // Store TF if Nav2 mode is enabled
-        if (driver_params_.nav2_mode_) {
+        if (params_.nav2_mode_) {
             std::unique_lock<std::mutex> lock(tfs_.mutex_);
             tfs_.ecef_enu0_ = std::make_unique<geometry_msgs::TransformStamped>(tf);
         }
@@ -531,9 +528,9 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
     // Send a warning if the system experiences delays
     // This message computes the difference between the message time and the local system time.
     // Thus, if the local time is off, the message might be triggered or not triggered when it should.
-    if (driver_params_.delay_warning_ > 0.0) {
+    if (params_.delay_warning_ > 0.0) {
         const double delay = (ros::Time::now() - fpsdk::ros1::utils::ConvTime(odometry_data.stamp)).toSec();
-        if (delay > driver_params_.delay_warning_) {
+        if (delay > params_.delay_warning_) {
             ROS_WARN_THROTTLE(1.0, "The system is experiencing significant delays! (estimated delay: %.3f seconds)",
                               delay);
         }
@@ -549,7 +546,7 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
             }
 
             // Output jump warning
-            if (driver_params_.cov_warning_ && odometry_data.valid && jump_detector_.Check(odometry_data)) {
+            if (params_.cov_warning_ && odometry_data.valid && jump_detector_.Check(odometry_data)) {
                 ROS_WARN(jump_detector_.warning_.c_str());
                 PublishJumpWarning(jump_detector_, jump_pub_);
             }
@@ -558,7 +555,7 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
 
         case OdometryData::Type::ODOMENU:
             // Store FP_ENU0 -> FP_POI TF if Nav2 mode is selected
-            if (driver_params_.nav2_mode_ && odometry_data.valid) {
+            if (params_.nav2_mode_ && odometry_data.valid) {
                 std::unique_lock<std::mutex> lock(tfs_.mutex_);
                 tfs_.enu0_poi_ = std::make_unique<geometry_msgs::TransformStamped>();
                 OdometryDataToTransformStamped(odometry_data, *tfs_.enu0_poi_);
@@ -567,7 +564,7 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
 
         case OdometryData::Type::ODOMSH:
             // Store FP_ECEF -> FP_POISH TF if Nav2 mode is selected
-            if (driver_params_.nav2_mode_ && odometry_data.valid) {
+            if (params_.nav2_mode_ && odometry_data.valid) {
                 std::unique_lock<std::mutex> lock(tfs_.mutex_);
                 tfs_.ecef_poish_ = std::make_unique<geometry_msgs::TransformStamped>();
                 OdometryDataToTransformStamped(odometry_data, *tfs_.ecef_poish_);
@@ -668,13 +665,8 @@ int main(int argc, char** argv) {
     // Load parameters
     ROS_INFO("Loading parameters...");
     DriverParams driver_params;
-    if (!LoadParamsFromRos1("~/driver", driver_params)) {
+    if (!LoadParamsFromRos1("~", driver_params)) {
         ROS_ERROR("Failed loading sensor params");
-        ok = false;
-    }
-    NodeParams node_params;
-    if (!LoadParamsFromRos1("~/node", node_params)) {
-        ROS_ERROR("Failed loading node params");
         ok = false;
     }
 
@@ -685,7 +677,7 @@ int main(int argc, char** argv) {
     std::unique_ptr<FixpositionDriverNode> node;
     if (ok) {
         try {
-            node = std::make_unique<FixpositionDriverNode>(driver_params, node_params, node_handle);
+            node = std::make_unique<FixpositionDriverNode>(driver_params, node_handle);
         } catch (const std::exception& ex) {
             ROS_ERROR("Failed creating node: %s", ex.what());
             ok = false;

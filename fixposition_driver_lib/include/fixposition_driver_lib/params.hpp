@@ -27,7 +27,7 @@ namespace fixposition {
 /* ****************************************************************************************************************** */
 
 /**
- * @brief Parameters for the sensor driver
+ * @brief Parameters for the Fixposition driver
  *
  * See launch/config.yaml for documentation
  */
@@ -51,20 +51,13 @@ struct DriverParams {
     bool converter_use_y_ = false;
     bool converter_use_z_ = false;
 
-    // Check if entry is in messges_
-    bool MessageEnabled(const std::string& message_name) const;
-};
-
-/**
- * @brief Parameters for the ROS nodes
- *
- * See launch/config.yaml for documentation
- */
-struct NodeParams {
     std::string output_ns_;
     std::string speed_topic_;
     std::string corr_topic_;
     std::string qos_type_;
+
+    // Check if entry is in messges_
+    bool MessageEnabled(const std::string& message_name) const;
 };
 
 bool StrToEpoch(const std::string& str, fpsdk::common::parser::fpa::FpaEpoch& epoch);

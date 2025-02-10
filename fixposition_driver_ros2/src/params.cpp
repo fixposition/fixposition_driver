@@ -44,6 +44,10 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
     const std::string CONVERTER_USE_Y = ns + ".converter.use_y";
     const std::string CONVERTER_USE_Z = ns + ".converter.use_z";
     const std::string CONVERTER_TOPIC_TYPE = ns + ".converter.topic_type";
+    const std::string OUTPUT_NS = ns + ".output_ns";
+    const std::string SPEED_TOPIC = ns + ".speed_topic";
+    const std::string CORR_TOPIC = ns + ".corr_topic";
+    const std::string QOS_TYPE = ns + ".qos_type";
 
     std::string topic_type_string_;
     nh->declare_parameter(STREAM, params.stream_);
@@ -62,6 +66,10 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
     nh->declare_parameter(CONVERTER_USE_Y, params.converter_use_y_);
     nh->declare_parameter(CONVERTER_USE_Z, params.converter_use_z_);
     nh->declare_parameter(CONVERTER_TOPIC_TYPE, topic_type_string_);
+    nh->declare_parameter(OUTPUT_NS, params.output_ns_);
+    nh->declare_parameter(SPEED_TOPIC, params.speed_topic_);
+    nh->declare_parameter(CORR_TOPIC, params.corr_topic_);
+    nh->declare_parameter(QOS_TYPE, params.qos_type_);
 
     if (!nh->get_parameter(STREAM, params.stream_)) {
         RCLCPP_WARN(logger, "Failed loading %s param", STREAM.c_str());
@@ -143,6 +151,23 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
         }
     }
 
+    if (!nh->get_parameter(OUTPUT_NS, params.output_ns_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", OUTPUT_NS.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(SPEED_TOPIC, params.speed_topic_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", SPEED_TOPIC.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(CORR_TOPIC, params.corr_topic_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", CORR_TOPIC.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(QOS_TYPE, params.qos_type_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", QOS_TYPE.c_str());
+        ok = false;
+    }
+
     RCLCPP_INFO(logger, "DriverParams: stream=%s", params.stream_.c_str());
     RCLCPP_INFO(logger, "DriverParams: reconnect_delay=%.1f", params.reconnect_delay_);
     RCLCPP_INFO(logger, "DriverParams: delay_warning=%.3f", params.delay_warning_);
@@ -161,48 +186,10 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
     RCLCPP_INFO(logger, "DriverParams: converter_use_x=%s", params.converter_use_x_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: converter_use_y=%s", params.converter_use_y_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: converter_use_z=%s", params.converter_use_z_ ? "true" : "false");
-
-    return ok;
-}
-
-// ---------------------------------------------------------------------------------------------------------------------
-
-bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns, NodeParams& params) {
-    auto logger = nh->get_logger();
-    bool ok = true;
-    RCLCPP_INFO(logger, "nhParams: loading from %s", ns.c_str());
-
-    const std::string OUTPUT_NS = ns + ".output_ns";
-    const std::string SPEED_TOPIC = ns + ".speed_topic";
-    const std::string CORR_TOPIC = ns + ".corr_topic";
-    const std::string QOS_TYPE = ns + ".qos_type";
-
-    nh->declare_parameter(OUTPUT_NS, params.output_ns_);
-    nh->declare_parameter(SPEED_TOPIC, params.speed_topic_);
-    nh->declare_parameter(CORR_TOPIC, params.corr_topic_);
-    nh->declare_parameter(QOS_TYPE, params.qos_type_);
-
-    if (!nh->get_parameter(OUTPUT_NS, params.output_ns_)) {
-        RCLCPP_WARN(logger, "Failed loading %s param", OUTPUT_NS.c_str());
-        ok = false;
-    }
-    if (!nh->get_parameter(SPEED_TOPIC, params.speed_topic_)) {
-        RCLCPP_WARN(logger, "Failed loading %s param", SPEED_TOPIC.c_str());
-        ok = false;
-    }
-    if (!nh->get_parameter(CORR_TOPIC, params.corr_topic_)) {
-        RCLCPP_WARN(logger, "Failed loading %s param", CORR_TOPIC.c_str());
-        ok = false;
-    }
-    if (!nh->get_parameter(QOS_TYPE, params.qos_type_)) {
-        RCLCPP_WARN(logger, "Failed loading %s param", QOS_TYPE.c_str());
-        ok = false;
-    }
-
-    RCLCPP_INFO(logger, "NodeParams: output_ns=%s", params.output_ns_.c_str());
-    RCLCPP_INFO(logger, "NodeParams: speed_topic=%s", params.speed_topic_.c_str());
-    RCLCPP_INFO(logger, "NodeParams: corr_topic=%s", params.corr_topic_.c_str());
-    RCLCPP_INFO(logger, "NodeParams: qos_type=%s", params.qos_type_.c_str());
+    RCLCPP_INFO(logger, "DriverParams: output_ns=%s", params.output_ns_.c_str());
+    RCLCPP_INFO(logger, "DriverParams: speed_topic=%s", params.speed_topic_.c_str());
+    RCLCPP_INFO(logger, "DriverParams: corr_topic=%s", params.corr_topic_.c_str());
+    RCLCPP_INFO(logger, "DriverParams: qos_type=%s", params.qos_type_.c_str());
 
     return ok;
 }

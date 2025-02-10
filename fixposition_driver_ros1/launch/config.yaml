@@ -1,72 +1,68 @@
-# Configuration for the Vision-RTK 2 sensor
-driver:
-    # Connection to the sensor one of:
-    # - Serial (<device>:<baudrate>)
-    # stream: serial:///dev/ttyUSB0:115200
-    # - TCP client (<ip_address>:<port>)
-    stream: tcpcli://10.0.2.1:21000
-    # Wait time in [s] to attempt reconnecting after connection lost
-    reconnect_delay: 5.0
-    # Delay warning threshold [s]. Note that this only works if your system time is synced to the VRTK2.
-    delay_warning: 0.01
+# Connection to the sensor one of:
+# - Serial (<device>:<baudrate>)
+# stream: serial:///dev/ttyUSB0:115200
+# - TCP client (<ip_address>:<port>)
+stream: tcpcli://10.0.2.1:21000
+# Wait time in [s] to attempt reconnecting after connection lost
+reconnect_delay: 5.0
+# Delay warning threshold [s]. Note that this only works if your system time is synced to the VRTK2.
+delay_warning: 0.01
 
-    # Messages that should be used by the driver. Note that the sensor must be configured accordingly for the correct
-    # port used in the "connection" above.
-    messages:
-        ##### Fusion output
-        # - Odometry and status
-        - "FP_A-ODOMETRY"          # configuration: FP_A-ODOMETRY
-        - "FP_A-ODOMENU"           # configuration: FP_A-ODOMENU
-        - "FP_A-ODOMSH"            # configuration: FP_A-ODOMSH
-        - "FP_A-ODOMSTATUS"        # configuration: FP_A-ODOMSTATUS
-        - "FP_A-IMUBIAS"           # configuration: FP_A-IMUBIAS
-        - "FP_A-EOE"               # configuration: FP_A-EOE_FUSION and FP_A-EOE_<epoch>
-        # - Transforms
-        - "FP_A-TF"                # configuration: FP_A-TF_{POIIMUH,VRTKCAM,POIVRTK,ECEFENU0,POIPOISH}
-        # - IMU data
-        - "FP_A-RAWIMU"            # configuration: FP_A-RAWIMU
-        - "FP_A-CORRIMU"           # configuration: FP_A-CORRIMU
-        # - LLH output
-        - "FP_A-LLH"               # configuration: FP_A-LLH
-        # - NOV_B
-        - "NOV_B-INSPVAX"          # configuration: NOV_B-INSPVAX
-        ##### Info messages
-        - "FP_A-TEXT"              # configuration: FP_A-TEXT_{ERROR,WARNING,INFO,DEBUG} (one or more)
-        ##### GNSS related data
-        - "FP_A-GNSSANT"           # configuration: FP_A-GNSSANT
-        - "FP_A-GNSSCORR"          # configuration: FP_A-GNSSCORR
-        - "FP_A-TP"                # configuration: FP_A-TP
-        ##### NMEA (see also nmea_epoch param below)
-        - "GGA"                    # configuration: NMEA-GN-GGA_<epoch> (or NMEA-GP-GGA_<epoch>)
-        - "GLL"                    # configuration: NMEA-GN-GLL_<epoch> (or NMEA-GP-GLL_<epoch>)
-        - "GSA"                    # configuration: NMEA-GN-GSA_<epoch>
-        - "GST"                    # configuration: NMEA-GN-GST_<epoch> (or NMEA-GP-GST_<epoch>)
-        - "GSV"                    # configuration: NMEA-GX-GSV_<epoch>
-        - "HDT"                    # configuration: NMEA-GN-HDT_<epoch> (or NMEA-GP-HDT_<epoch>)
-        - "RMC"                    # configuration: NMEA-GN-RMC_<epoch> (or NMEA-GP-RMC_<epoch>)
-        - "VTG"                    # configuration: NMEA-GN-VTG_<epoch> (or NMEA-GP-VTG_<epoch>)
-        - "ZDA"                    # configuration: NMEA-GN-ZDA_<epoch> (or NMEA-GP-ZDA_<epoch>)
-        ##### GNSS only position
-        - "NOV_B-BESTGNSSPOS"      # This can be one or both of the _GNSS1 and _GNSS2 variants
+# Messages that should be used by the driver. Note that the sensor must be configured accordingly for the correct
+# port used in the "connection" above.
+messages:
+    ##### Fusion output
+    # - Odometry and status
+    - "FP_A-ODOMETRY"          # configuration: FP_A-ODOMETRY
+    - "FP_A-ODOMENU"           # configuration: FP_A-ODOMENU
+    - "FP_A-ODOMSH"            # configuration: FP_A-ODOMSH
+    - "FP_A-ODOMSTATUS"        # configuration: FP_A-ODOMSTATUS
+    - "FP_A-IMUBIAS"           # configuration: FP_A-IMUBIAS
+    - "FP_A-EOE"               # configuration: FP_A-EOE_FUSION and FP_A-EOE_<epoch>
+    # - Transforms
+    - "FP_A-TF"                # configuration: FP_A-TF_{POIIMUH,VRTKCAM,POIVRTK,ECEFENU0,POIPOISH}
+    # - IMU data
+    - "FP_A-RAWIMU"            # configuration: FP_A-RAWIMU
+    - "FP_A-CORRIMU"           # configuration: FP_A-CORRIMU
+    # - LLH output
+    - "FP_A-LLH"               # configuration: FP_A-LLH
+    # - NOV_B
+    - "NOV_B-INSPVAX"          # configuration: NOV_B-INSPVAX
+    ##### Info messages
+    - "FP_A-TEXT"              # configuration: FP_A-TEXT_{ERROR,WARNING,INFO,DEBUG} (one or more)
+    ##### GNSS related data
+    - "FP_A-GNSSANT"           # configuration: FP_A-GNSSANT
+    - "FP_A-GNSSCORR"          # configuration: FP_A-GNSSCORR
+    - "FP_A-TP"                # configuration: FP_A-TP
+    ##### NMEA (see also nmea_epoch param below)
+    - "GGA"                    # configuration: NMEA-GN-GGA_<epoch> (or NMEA-GP-GGA_<epoch>)
+    - "GLL"                    # configuration: NMEA-GN-GLL_<epoch> (or NMEA-GP-GLL_<epoch>)
+    - "GSA"                    # configuration: NMEA-GN-GSA_<epoch>
+    - "GST"                    # configuration: NMEA-GN-GST_<epoch> (or NMEA-GP-GST_<epoch>)
+    - "GSV"                    # configuration: NMEA-GX-GSV_<epoch>
+    - "HDT"                    # configuration: NMEA-GN-HDT_<epoch> (or NMEA-GP-HDT_<epoch>)
+    - "RMC"                    # configuration: NMEA-GN-RMC_<epoch> (or NMEA-GP-RMC_<epoch>)
+    - "VTG"                    # configuration: NMEA-GN-VTG_<epoch> (or NMEA-GP-VTG_<epoch>)
+    - "ZDA"                    # configuration: NMEA-GN-ZDA_<epoch> (or NMEA-GP-ZDA_<epoch>)
+    ##### GNSS only position
+    - "NOV_B-BESTGNSSPOS"      # This can be one or both of the _GNSS1 and _GNSS2 variants
 
-    # Driver behaviour
-    fusion_epoch: true     # Enable fusion epoch output
-    nmea_epoch:   "GNSS"   # Choice for NMEA collection, must match NMEA message configuration type (<epoch> above), "" to disable
-    raw_output:   false    # Enable raw messages output
-    cov_warning:  false    # Enable covariance warnings
-    nav2_mode:    false    # Enable nav2 mode
+# Driver behaviour
+fusion_epoch: true     # Enable fusion epoch output
+nmea_epoch:   "GNSS"   # Choice for NMEA collection, must match NMEA message configuration type (<epoch> above), "" to disable
+raw_output:   false    # Enable raw messages output
+cov_warning:  false    # Enable covariance warnings
+nav2_mode:    false    # Enable nav2 mode
 
-    converter:
-        enabled: false
-        topic_type: "Twist"        # Supported types: nav_msgs/{Twist, TwistWithCov, Odometry}
-        input_topic: "/robot/odom" # Input topic name
-        scale_factor: 1000.0       # To convert from the original unit of measurement to mm/s (float)
-        use_x: true                # Transmit the x axis of the input velocity
-        use_y: false               # Transmit the y axis of the input velocity
-        use_z: false               # Transmit the z axis of the input velocity
+converter:
+    enabled: false
+    topic_type: "Twist"        # Supported types: nav_msgs/{Twist, TwistWithCov, Odometry}
+    input_topic: "/robot/odom" # Input topic name
+    scale_factor: 1000.0       # To convert from the original unit of measurement to mm/s (float)
+    use_x: true                # Transmit the x axis of the input velocity
+    use_y: false               # Transmit the y axis of the input velocity
+    use_z: false               # Transmit the z axis of the input velocity
 
-# Node parameters
-node:
-    output_ns:   "/fixposition"              # Namespace for output topics, leave empty to use node namespace
-    speed_topic: "/fixposition/speed"        # Wheelspeed input, empty to disable
-    corr_topic:  "/rtcm"                     # Correction data input, empty to disable
+output_ns:   "/fixposition"              # Namespace for output topics, leave empty to use node namespace
+speed_topic: "/fixposition/speed"        # Wheelspeed input, empty to disable
+corr_topic:  "/rtcm"                     # Correction data input, empty to disable
