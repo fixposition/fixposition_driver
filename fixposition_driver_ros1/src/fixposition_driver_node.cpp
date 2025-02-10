@@ -145,8 +145,9 @@ bool FixpositionDriverNode::StartNode() {
                     PublishNav2Tf();
                 }
             }
-            // NMEA epoch
-            else if (params_.nmea_epoch_ == eoe_payload.epoch) {
+            
+            // NMEA epoch (which can be FUSION, too)
+            if (params_.nmea_epoch_ == eoe_payload.epoch) {
                 PublishNmeaEpochData(nmea_epoch_data_.CompleteAndReset(), nmea_epoch_pub_);
             }
         });
@@ -466,6 +467,7 @@ void FixpositionDriverNode::StopNode() {
     // - GNSS
     navsatfix_gnss1_pub_.shutdown();
     navsatfix_gnss2_pub_.shutdown();
+    fusion_epoch_pub_.shutdown();
     nmea_epoch_pub_.shutdown();
     // - Other
     jump_pub_.shutdown();

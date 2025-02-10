@@ -34,7 +34,7 @@ namespace fixposition {
 struct DriverParams {
     std::string stream_;
     double reconnect_delay_ = 5.0;
-    double delay_warning_ = 0.001;
+    double delay_warning_ = 0.01;
     std::vector<std::string> messages_;
     fpsdk::common::parser::fpa::FpaEpoch nmea_epoch_ = fpsdk::common::parser::fpa::FpaEpoch::UNSPECIFIED;
     bool fusion_epoch_ = true;
