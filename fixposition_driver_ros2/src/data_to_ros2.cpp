@@ -823,7 +823,7 @@ void PublishJumpWarning(const JumpDetector& jump_detector, rclcpp::Publisher<fpm
 
 void PublishFusionEpochData(const FusionEpochData& data, rclcpp::Publisher<fpmsgs::FusionEpoch>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
-        fixposition_driver_msgs::FusionEpoch msg;
+        fpmsgs::FusionEpoch msg;
         msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(data.fpa_eoe_.gps_time));
         if (data.fpa_odometry_avail_) {
             msg.fpa_odometry_avail = true;

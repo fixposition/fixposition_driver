@@ -44,26 +44,26 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> nh,
     nh_                { nh },
     params_            { params },
     logger_            { nh_->get_logger() },
-    driver_            { driver_params },
+    driver_            { params },
     qos_settings_      { rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default) },
     nmea_epoch_data_   { params_.nmea_epoch_ }  // clang-format on
 
 {
     // Override default QoS settings
     // - Short-queue sensor-type QoS
-    if (node_params.qos_type_ == "sensor_short") {
+    if (params_.qos_type_ == "sensor_short") {
         qos_settings_ = rclcpp::QoS(rclcpp::KeepLast(5), rmw_qos_profile_sensor_data);
     }
     // - Long-queue sensor-type QoS
-    else if (node_params.qos_type_ == "sensor_long") {
+    else if (params_.qos_type_ == "sensor_long") {
         qos_settings_ = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_sensor_data);
     }
     // - Short-queue default-type QoS
-    else if (node_params.qos_type_ == "default_short") {
+    else if (params_.qos_type_ == "default_short") {
         qos_settings_ = rclcpp::QoS(rclcpp::KeepLast(5), rmw_qos_profile_default);
     }
     // - Long-queue default-type QoS
-    else if (node_params.qos_type_ == "default_long") {
+    else if (params_.qos_type_ == "default_long") {
         qos_settings_ = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default);
     }
 }
@@ -380,7 +380,7 @@ bool FixpositionDriverNode::StartNode() {
 
     // Fusion epoch
     if (params_.fusion_epoch_) {
-        _PUB(fusion_epoch_pub_, fixposition_driver_msgs::FusionEpoch, output_ns + "/fusion", 5);
+        _PUB(fusion_epoch_pub_, fpmsgs::FusionEpoch, output_ns + "/fusion", 5);
         // Publish is triggered by FP_A-EOE above
     }
 

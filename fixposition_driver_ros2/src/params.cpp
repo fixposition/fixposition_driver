@@ -174,7 +174,7 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, const std::string& ns
     for (std::size_t ix = 0; ix < params.messages_.size(); ix++) {
         RCLCPP_INFO(logger, "DriverParams: messages[%" PRIuMAX "]=%s", ix, params.messages_[ix].c_str());
     }
-    RCLCPP_INFO(logger, "DriverParams: fusion_epoch=%s", fusion_epoch_ ? "true" : "false");
+    RCLCPP_INFO(logger, "DriverParams: fusion_epoch=%s", params.fusion_epoch_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: nmea_epoch=%s", epoch_str.c_str());
     RCLCPP_INFO(logger, "DriverParams: raw_output=%s", params.raw_output_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: cov_warning=%s", params.cov_warning_ ? "true" : "false");
