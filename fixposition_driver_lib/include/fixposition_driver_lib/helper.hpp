@@ -29,6 +29,7 @@
 #include <fpsdk_common/time.hpp>
 
 /* PACKAGE */
+#include "fixposition_driver_lib/params.hpp"
 
 namespace fixposition {
 /* ****************************************************************************************************************** */
@@ -195,6 +196,17 @@ inline std::vector<WheelSpeedData> SpeedMsgToWheelspeedData(const RosMsgT& msg) 
         data.push_back(
             {sensor.location, sensor.vx_valid, sensor.vx, sensor.vy_valid, sensor.vy, sensor.vz_valid, sensor.vz});
     }
+    return data;
+}
+
+template <typename RosMsgVector3T>
+std::vector<WheelSpeedData> Vector3MsgToWheelspeedData(const RosMsgVector3T& linear_msg, const DriverParams& params_) {
+    std::vector<WheelSpeedData> data;
+    data.push_back(
+        {"RC", params_.converter_use_x_,
+         static_cast<int32_t>(std::round(linear_msg.x * params_.converter_scale_factor_)), params_.converter_use_y_,
+         static_cast<int32_t>(std::round(linear_msg.y * params_.converter_scale_factor_)), params_.converter_use_z_,
+         static_cast<int32_t>(std::round(linear_msg.z * params_.converter_scale_factor_))});
     return data;
 }
 

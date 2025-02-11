@@ -416,19 +416,19 @@ bool FixpositionDriverNode::StartNode() {
                 case DriverParams::VelTopicType::TWIST:
                     _SUB(ws_conv_twist_sub_, geometry_msgs::msg::Twist, params_.converter_input_topic_, 10,
                          [this](const geometry_msgs::msg::Twist& msg) {
-                             driver_.SendWheelspeedData(SpeedConverterCallback(msg, params_));
+                             driver_.SendWheelspeedData(Vector3MsgToWheelspeedData(msg.linear, params_));
                          });
                     break;
                 case DriverParams::VelTopicType::TWISTWITHCOV:
                     _SUB(ws_conv_twistcov_sub_, geometry_msgs::msg::TwistWithCovariance, params_.converter_input_topic_,
                          10, [this](const geometry_msgs::msg::TwistWithCovariance& msg) {
-                             driver_.SendWheelspeedData(SpeedConverterCallback(msg, params_));
+                             driver_.SendWheelspeedData(Vector3MsgToWheelspeedData(msg.twist.linear, params_));
                          });
                     break;
                 case DriverParams::VelTopicType::ODOMETRY:
                     _SUB(ws_conv_odom_sub_, nav_msgs::msg::Odometry, params_.converter_input_topic_, 10,
                          [this](const nav_msgs::msg::Odometry& msg) {
-                             driver_.SendWheelspeedData(SpeedConverterCallback(msg, params_));
+                             driver_.SendWheelspeedData(Vector3MsgToWheelspeedData(msg.twist.twist.linear, params_));
                          });
                     break;
                 default:

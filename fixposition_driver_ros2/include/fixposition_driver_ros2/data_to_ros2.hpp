@@ -102,31 +102,6 @@ void PublishOdometryData(const OdometryData& data, rclcpp::Publisher<nav_msgs::m
 void PublishJumpWarning(const JumpDetector& jump_detector, rclcpp::Publisher<fpmsgs::CovWarn>::SharedPtr& pub);
 void PublishFusionEpochData(const FusionEpochData& data, rclcpp::Publisher<fpmsgs::FusionEpoch>::SharedPtr& pub);
 
-inline std::tuple<double, double, double> getLinearComponents(const geometry_msgs::msg::Twist& msg) {
-    return std::make_tuple(msg.linear.x, msg.linear.y, msg.linear.z);
-}
-
-inline std::tuple<double, double, double> getLinearComponents(const geometry_msgs::msg::TwistWithCovariance& msg) {
-    return std::make_tuple(msg.twist.linear.x, msg.twist.linear.y, msg.twist.linear.z);
-}
-
-inline std::tuple<double, double, double> getLinearComponents(const nav_msgs::msg::Odometry& msg) {
-    return std::make_tuple(msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.linear.z);
-}
-
-template <typename T>
-std::vector<WheelSpeedData> SpeedConverterCallback(const T& msg, const DriverParams& params_) {
-    double x, y, z;
-    std::tie(x, y, z) = getLinearComponents(msg);
-
-    std::vector<WheelSpeedData> data;
-    data.push_back({"RC", params_.converter_use_x_,
-                    static_cast<int32_t>(std::round(x * params_.converter_scale_factor_)), params_.converter_use_y_,
-                    static_cast<int32_t>(std::round(y * params_.converter_scale_factor_)), params_.converter_use_z_,
-                    static_cast<int32_t>(std::round(z * params_.converter_scale_factor_))});
-    return data;
-}
-
 /* ****************************************************************************************************************** */
 }  // namespace fixposition
 #endif  // __FIXPOSITION_DRIVER_ROS2_DATA_TO_ROS2_HPP__
