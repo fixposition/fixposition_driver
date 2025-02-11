@@ -6,6 +6,8 @@
 > [!IMPORTANT]
 > Tags 8.0.0 onward break compatibility with previous versions. For more details on how to migrate to the new version, please refer to [Migration Guide](https://docs.fixposition.com/fd/migration-guide).
 
+[![CI](https://github.com/fixposition/fixposition_driver/actions/workflows/ci.yml/badge.svg)](https://github.com/fixposition/fixposition_driver/actions/workflows/ci.yml)
+
 ## Driver documentation
 
 For installation, usage, and more information, please refer to
