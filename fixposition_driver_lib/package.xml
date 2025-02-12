@@ -1,13 +1,10 @@
 <?xml version="1.0"?>
 <package format="3">
     <name>fixposition_driver_lib</name>
-    <version>5.0.0</version>
-    <description>Fixposition ROS Driver Lib</description>
-
-    <maintainer email="info@fixposition.com">Fixposition AG</maintainer>
-
+    <version>8.0.0</version>
+    <description>Fixposition ROS driver lib</description>
+    <maintainer email="support@fixposition.com">Fixposition Support</maintainer>
     <license>MIT</license>
-
     <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
     <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
     <test_depend condition="$ROS_VERSION == 2">ament_cmake_gtest</test_depend>
@@ -20,6 +17,10 @@
     <depend>geometry_msgs</depend>
     <depend condition="$ROS_VERSION == 1">message_generation</depend>
     <depend condition="$ROS_VERSION == 1">message_runtime</depend>
+    <depend>fpsdk_common</depend>
+    <depend condition="$ROS_VERSION == 1">fpsdk_ros1</depend>
+    <depend condition="$ROS_VERSION == 2">fpsdk_ros2</depend>
+
     <export>
         <build_type>cmake</build_type>
     </export>

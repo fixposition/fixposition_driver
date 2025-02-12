@@ -1,58 +1,49 @@
 # GENERAL ==============================================================================================================
-cmake_minimum_required(VERSION 3.5)
-project(fixposition_driver_lib VERSION 5.0.0 LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic\
-    -Wshadow -Wunused-parameter -Wformat -Wpointer-arith")
+
+cmake_minimum_required(VERSION 3.16)
+
+project(fixposition_driver_lib VERSION 8.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror\
+    -Wshadow -Wunused-parameter -Wformat -Wpointer-arith -Woverloaded-virtual")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(NDEBUG)
+endif()
+
 
 # DEPENDENCIES =========================================================================================================
+
 find_package(Boost 1.65.0 REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(fpsdk_common REQUIRED)
 
 include_directories(include
   ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
+  ${fpsdk_common_INCLUDE_DIR}
 )
+
 
 # BUILD EXECUTABLE =====================================================================================================
+
 add_library(
   ${PROJECT_NAME} SHARED
-  src/messages/fpa/corrimu.cpp
-  src/messages/fpa/eoe.cpp
-  src/messages/fpa/gnssant.cpp
-  src/messages/fpa/gnsscorr.cpp
-  src/messages/fpa/imubias.cpp
-  src/messages/fpa/llh.cpp
-  src/messages/fpa/odomenu.cpp
-  src/messages/fpa/odometry.cpp
-  src/messages/fpa/odomsh.cpp
-  src/messages/fpa/odomstatus.cpp
-  src/messages/fpa/rawimu.cpp
-  src/messages/fpa/text.cpp
-  src/messages/fpa/tf.cpp
-  src/messages/fpa/tp.cpp
-  src/messages/nmea/gpgga.cpp
-  src/messages/nmea/gpgll.cpp
-  src/messages/nmea/gngsa.cpp
-  src/messages/nmea/gpgst.cpp
-  src/messages/nmea/gxgsv.cpp
-  src/messages/nmea/gphdt.cpp
-  src/messages/nmea/gprmc.cpp
-  src/messages/nmea/gpvtg.cpp
-  src/messages/nmea/gpzda.cpp
-  src/messages/nmea/nmea.cpp
   src/fixposition_driver.cpp
   src/helper.cpp
-  src/parser.cpp
-  src/gnss_tf.cpp
+  src/params.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} pthread)
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${fpsdk_common_LIBRARIES} pthread)
+
 
 # INSTALL ==============================================================================================================
+
 list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 
 install(

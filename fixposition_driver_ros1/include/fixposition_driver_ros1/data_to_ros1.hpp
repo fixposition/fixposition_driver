@@ -1,150 +1,80 @@
 /**
- *  @file
- *  @brief Convert Data classes to ROS1 msgs
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Convert data to ROS1 msgs
  */
 
-#ifndef __FIXPOSITION_DRIVER_ROS1_DATA_TO_ROS1__
-#define __FIXPOSITION_DRIVER_ROS1_DATA_TO_ROS1__
+#ifndef __FIXPOSITION_DRIVER_ROS1_DATA_TO_ROS1_HPP__
+#define __FIXPOSITION_DRIVER_ROS1_DATA_TO_ROS1_HPP__
 
-/* FIXPOSITION DRIVER LIB */
-#include <fixposition_driver_lib/messages/msg_data.hpp>
+/* LIBC/STL */
+#include <memory>
+#include <unordered_map>
+
+/* EXTERNAL */
 #include <fixposition_driver_lib/fixposition_driver.hpp>
+#include <fixposition_driver_lib/helper.hpp>
+#include <fpsdk_common/parser/fpa.hpp>
+#include <fpsdk_common/parser/novb.hpp>
+#include <fpsdk_ros1/ext/ros.hpp>
 
 /* PACKAGE */
-#include <fixposition_driver_ros1/fixposition_driver_node.hpp>
+#include "ros1_msgs.hpp"
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
-/**
- * @brief
- *
- * @param[in] data
- * @param[out] msg
- */
-void FpToRosMsg( const OdometryData& data, ros::Publisher& pub);
-void FpToRosMsg(      const ImuData& data, ros::Publisher& pub);
-void FpToRosMsg(       const FP_EOE& data, ros::Publisher& pub);
-void FpToRosMsg(   const FP_GNSSANT& data, ros::Publisher& pub);
-void FpToRosMsg(  const FP_GNSSCORR& data, ros::Publisher& pub);
-void FpToRosMsg(   const FP_IMUBIAS& data, ros::Publisher& pub);
-void FpToRosMsg(       const FP_LLH& data, ros::Publisher& pub);
-void FpToRosMsg(   const FP_ODOMENU& data, ros::Publisher& pub);
-void FpToRosMsg(  const FP_ODOMETRY& data, ros::Publisher& pub);
-void FpToRosMsg(    const FP_ODOMSH& data, ros::Publisher& pub);
-void FpToRosMsg(const FP_ODOMSTATUS& data, ros::Publisher& pub);
-void FpToRosMsg(        const FP_TP& data, ros::Publisher& pub);
-void FpToRosMsg(      const FP_TEXT& data, ros::Publisher& pub);
+void TfDataToTransformStamped(const TfData& data, geometry_msgs::TransformStamped& msg);
+void OdometryDataToTransformStamped(const OdometryData& data, geometry_msgs::TransformStamped& msg);
 
-void FpToRosMsg(const GP_GGA& data, ros::Publisher& pub);
-void FpToRosMsg(const GP_GLL& data, ros::Publisher& pub);
-void FpToRosMsg(const GN_GSA& data, ros::Publisher& pub);
-void FpToRosMsg(const GP_GST& data, ros::Publisher& pub);
-void FpToRosMsg(const GX_GSV& data, ros::Publisher& pub);
-void FpToRosMsg(const GP_HDT& data, ros::Publisher& pub);
-void FpToRosMsg(const GP_RMC& data, ros::Publisher& pub);
-void FpToRosMsg(const GP_VTG& data, ros::Publisher& pub);
-void FpToRosMsg(const GP_ZDA& data, ros::Publisher& pub);
+void PublishFpaOdometry(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, ros::Publisher& pub);
+void PublishFpaOdometryDataImu(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, ros::Publisher& pub);
+void PublishFpaOdometryDataNavSatFix(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload,
+                                     ros::Publisher& pub);
+void PublishFpaOdomenu(const fpsdk::common::parser::fpa::FpaOdomenuPayload& payload, ros::Publisher& pub);
+void PublishFpaOdomenuVector3Stamped(const fpsdk::common::parser::fpa::FpaOdomenuPayload& payload, ros::Publisher& pub);
+void PublishFpaOdomsh(const fpsdk::common::parser::fpa::FpaOdomshPayload& payload, ros::Publisher& pub);
+void PublishFpaOdomstatus(const fpsdk::common::parser::fpa::FpaOdomstatusPayload& payload, ros::Publisher& pub);
+void PublishFpaLlh(const fpsdk::common::parser::fpa::FpaLlhPayload& payload, ros::Publisher& pub);
+void PublishFpaEoe(const fpsdk::common::parser::fpa::FpaEoePayload& payload, ros::Publisher& pub);
+void PublishFpaImubias(const fpsdk::common::parser::fpa::FpaImubiasPayload& payload, ros::Publisher& pub);
+void PublishFpaGnssant(const fpsdk::common::parser::fpa::FpaGnssantPayload& payload, ros::Publisher& pub);
+void PublishFpaGnsscorr(const fpsdk::common::parser::fpa::FpaGnsscorrPayload& payload, ros::Publisher& pub);
+void PublishFpaTp(const fpsdk::common::parser::fpa::FpaTpPayload& payload, ros::Publisher& pub);
+void PublishFpaText(const fpsdk::common::parser::fpa::FpaTextPayload& payload, ros::Publisher& pub);
+void PublishFpaRawimu(const fpsdk::common::parser::fpa::FpaRawimuPayload& payload, ros::Publisher& pub);
+void PublishFpaCorrimu(const fpsdk::common::parser::fpa::FpaCorrimuPayload& payload, ros::Publisher& pub);
 
-/**
- * @brief
- *
- * @param[in] data
- * @param[out] msg
- */
-void TfDataToMsg(const TfData& data, geometry_msgs::TransformStamped& msg);
+bool PublishNovbBestgnsspos(const fpsdk::common::parser::novb::NovbHeader* header,
+                            const fpsdk::common::parser::novb::NovbBestgnsspos* payload, ros::Publisher& pub1,
+                            ros::Publisher& pub2);
+bool PublishNovbInspvax(const fpsdk::common::parser::novb::NovbHeader* header,
+                        const fpsdk::common::parser::novb::NovbInspvax* payload, ros::Publisher& pub);
 
-/**
- * @brief
- *
- * @param[in] data
- * @param[out] msg
- */
-void NavSatFixDataToMsg(const NavSatFixData& data, sensor_msgs::NavSatFix& msg);
+void PublishNmeaGga(const fpsdk::common::parser::nmea::NmeaGgaPayload& payload, ros::Publisher& pub);
+void PublishNmeaGll(const fpsdk::common::parser::nmea::NmeaGllPayload& payload, ros::Publisher& pub);
+void PublishNmeaGsa(const fpsdk::common::parser::nmea::NmeaGsaPayload& payload, ros::Publisher& pub);
+void PublishNmeaGst(const fpsdk::common::parser::nmea::NmeaGstPayload& payload, ros::Publisher& pub);
+void PublishNmeaGsv(const fpsdk::common::parser::nmea::NmeaGsvPayload& payload, ros::Publisher& pub);
+void PublishNmeaHdt(const fpsdk::common::parser::nmea::NmeaHdtPayload& payload, ros::Publisher& pub);
+void PublishNmeaRmc(const fpsdk::common::parser::nmea::NmeaRmcPayload& payload, ros::Publisher& pub);
+void PublishNmeaVtg(const fpsdk::common::parser::nmea::NmeaVtgPayload& payload, ros::Publisher& pub);
+void PublishNmeaZda(const fpsdk::common::parser::nmea::NmeaZdaPayload& payload, ros::Publisher& pub);
 
-/**
- * @brief
- *
- * @param[in] data
- * @param[out] msg
- */
-void PoseWithCovDataToMsg(const PoseWithCovData& data, geometry_msgs::PoseWithCovariance& msg);
+void PublishParserMsg(const fpsdk::common::parser::ParserMsg& msg, ros::Publisher& pub);
 
-/**
- * @brief
- *
- * @param[in] data
- * @param[out] msg
- */
-void TwistWithCovDataToMsg(const TwistWithCovData& data, geometry_msgs::TwistWithCovariance& msg);
+void PublishNmeaEpochData(const NmeaEpochData& data, ros::Publisher& pub);
+void PublishOdometryData(const OdometryData& data, ros::Publisher& pub);
+void PublishJumpWarning(const JumpDetector& jump_detector, ros::Publisher& pub);
+void PublishFusionEpochData(const FusionEpochData& data, ros::Publisher& pub);
 
-/**
- * @brief
- *
- * @param[in] data
- * @param[out] msg
- */
-void OdometryDataToTf(const FP_ODOMETRY& data, tf2_ros::TransformBroadcaster& pub);
-
-/**
- * @brief
- *
- * @param[in] data
- * @param[out] tf
- */
-void OdomToTf(const OdometryData& data, geometry_msgs::TransformStamped& tf);
-
-/**
- * @brief
- *
- * @param[in] tf_map
- * @param[out] static_br_
- * @param[out] br_
- */
-void PublishNav2Tf(const std::map<std::string, std::shared_ptr<geometry_msgs::TransformStamped>>& tf_map, tf2_ros::StaticTransformBroadcaster& static_br_, tf2_ros::TransformBroadcaster& br_);
-
-/**
- * @brief
- *
- * @param[in] data
- * @param[out] msg
- */
-void OdomToNavSatFix(const FP_ODOMETRY& data, ros::Publisher& pub);
-
-/**
- * @brief
- *
- * @param[in] data
- * @param[out] msg
- */
-void OdomToImuMsg(const FP_ODOMETRY& data, ros::Publisher& pub);
-
-/**
- * @brief
- *
- * @param[in] data
- * @param[out] msg
- */
-void OdomToYprMsg(const OdometryData& data, ros::Publisher& pub);
-
-/**
- * @brief
- *
- * @param[in] stamp
- * @param[in] pos_diff
- * @param[in] prev_cov
- * @param[out] msg
- */
-void JumpWarningMsg(const times::GpsTime& stamp, const Eigen::Vector3d& pos_diff, const Eigen::MatrixXd& prev_cov, ros::Publisher& pub);
-
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
-
-#endif
+#endif  // __FIXPOSITION_DRIVER_ROS1_DATA_TO_ROS1_HPP__

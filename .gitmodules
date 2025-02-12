@@ -1,0 +1,4 @@
+[submodule "fixposition-sdk"]
+	path = fixposition-sdk
+	url = https://github.com/fixposition/fixposition-sdk.git
+	branch = main

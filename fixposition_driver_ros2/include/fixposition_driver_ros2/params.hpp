@@ -1,61 +1,40 @@
 /**
- *  @file
- *  @brief Parameters
- *
  * \verbatim
- *  ___    ___
- *  \  \  /  /
- *   \  \/  /   Fixposition AG
- *   /  /\  \   All right reserved.
- *  /__/  \__\
+ * ___    ___
+ * \  \  /  /
+ *  \  \/  /   Copyright (c) Fixposition AG (www.fixposition.com) and contributors
+ *  /  /\  \   License: see the LICENSE file
+ * /__/  \__\
  * \endverbatim
  *
+ * @file
+ * @brief Parameters
  */
 
 #ifndef __FIXPOSITION_DRIVER_ROS2_PARAMS_HPP__
 #define __FIXPOSITION_DRIVER_ROS2_PARAMS_HPP__
 
-/* ROS */
-#include <fixposition_driver_ros2/ros2_msgs.hpp>
+/* LIBC/STL */
 
-/* FIXPOSITION */
+/* EXTERNAL */
 #include <fixposition_driver_lib/params.hpp>
+#include <fpsdk_ros2/ext/rclcpp.hpp>
+
+/* PACKAGE */
 
 namespace fixposition {
+/* ****************************************************************************************************************** */
 
 /**
- * @brief Load all parameters from ROS parameter server
+ * @brief Load sensor parameters from rosparam server
  *
- * @param[in] node
- * @param[in] ns namespace to load the parameters from
- * @param[out] params
- * @return true
- * @return false
- */
-bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& ns, FpOutputParams& params);
-
-/**
- * @brief Load all parameters from ROS parameter server
+ * @param[in]  nh      Node handle
+ * @param[out] params  The sensor parameters
  *
- * @param[in] node
- * @param[in] ns namespace to load the parameters from
- * @param[out] params
- * @return true
- * @return false
+ * @returns true on success, false otherwise
  */
+bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params);
 
-bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, const std::string& ns, CustomerInputParams& params);
-
-/**
- * @brief Load all parameters from ROS parameter server
- *
- * @param[in] node
- * @param[out] params
- * @return true
- * @return false
- */
-bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node> node, FixpositionDriverParams& params);
-
+/* ****************************************************************************************************************** */
 }  // namespace fixposition
-
-#endif
+#endif  // __FIXPOSITION_DRIVER_ROS2_PARAMS_HPP__

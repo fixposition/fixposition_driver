@@ -1,0 +1,235 @@
+{
+    "folders": [
+        { "path": ".", "name": "fixposition_driver" }
+    ],
+
+    "settings": {
+        "editor.detectIndentation":     false,
+        "editor.tabSize":               4,      // Note: only active if editor.-
+        "editor.insertSpaces":          true,   //       detectIndentation is false!
+        //"editor.trimAutoWhitespace":    true,
+        "files.trimTrailingWhitespace": true,
+
+        // Leave big brother in the dark, mainly settings from @tag:usesOnlineServices
+        "telemetry.enableTelemetry": false,
+        "gitlens.telemetry.enabled": false,
+        "redhat.telemetry.enabled": false,
+        "telemetry.telemetrylevel": "off",
+        "workbench.enableExperiments": false,
+        "workbench.settings.enableNaturalLanguageSearch": false,
+        "npm.fetchOnlinePackageInfo": false,
+
+        // Exclude files and folders from explorer (it automatically excludes .git)
+        "files.exclude": {
+            ".ackrc": true,
+            ".vscode-cache": true,
+            "**/*~": true,
+            ".vstags": true,
+            "core": true,
+            ".devcontainer/.vscode-server/**": true,
+            "**/.devcontainer/.vscode-server/**": true,
+            "**/.vscode-server/**": true
+        },
+        // Exclude things from search (this automatically uses files.exclude + what you add here)
+        "search.exclude": {
+            "output": true,
+            "tmp": true,
+            "**/ros1_ws/**": true,
+            "**/ros2_ws/**": true
+        },
+        // Exclude some things from the files watcher
+        "files.watcherExclude": {
+            "**/.git/objects/**": true,
+            "**/.git/refs/**": true,
+            "**/.git/logs/**": true,
+            "**/.git/subtree-cache/**": true,
+            "**/.git/worktrees/**": true,
+            "**/.vscode-*/**": true,
+            "**/ros1_ws/**": true,
+            "**/ros2_ws/**": true
+        },
+
+        // Microsoft C++ extension (ms-vscode.cpptools)
+        "C_Cpp.intelliSenseCachePath": "${workspaceFolder}/.vscode-cache",
+        // defaults for .vscode/c_cpp_properties.json (which makes that file optional)
+        // see .vscode/c_cpp_properties.json-example for details
+        // https://code.visualstudio.com/docs/cpp/customize-default-settings-cpp,
+        // https://code.visualstudio.com/docs/cpp/c-cpp-properties-schema-reference)
+        "C_Cpp.default.includePath":           [
+            "${workspaceFolder}/fixposition-sdk/fpsdk_common/**",
+            "${workspaceFolder}/fixposition-sdk/fpsdk_ros1/**",
+            "${workspaceFolder}/fixposition-sdk/fpsdk_ros2/**",
+            "${workspaceFolder}/fixposition-sdk/fpsdk_apps/**",
+            "${workspaceFolder}/fixposition_driver_lib/**",
+            "${workspaceFolder}/fixposition_driver_ros1/**",
+            "${workspaceFolder}/fixposition_driver_ros2/**",
+            "/opt/ros/noetic/include/**", "/opt/ros/humble/include/**", "/opt/ros/jazzy/include/**" ],
+        "C_Cpp.default.defines":               [ "FP_USE_ROS1" ],
+        //"C_Cpp.default.compileCommands":       "",
+        //"C_Cpp.default.forcedIncludes":      [ ],
+        "C_Cpp.default.intelliSenseMode":        "gcc-x64",
+        "C_Cpp.default.compilerPath":            "/usr/bin/gcc",
+        "C_Cpp.default.cStandard":               "gnu99",
+        "C_Cpp.default.cppStandard":             "gnu++17",
+        "C_Cpp.default.browse.path":           [ "${workspaceFolder}/**" ],
+        //"C_Cpp.default.configurationProvider": "b2.catkin_tools",
+        "C_Cpp.default.browse.databaseFilename": "${workspaceFolder}/.vscode-cache/browse.db",
+        //"C_Cpp.default.compileCommands":         "${workspaceFolder}/build/Debug/compile_commands.json",
+        "C_Cpp.default.browse.limitSymbolsToIncludedHeaders": false,
+        //"C_Cpp.clang_format_style": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 120 }",
+        "C_Cpp.files.exclude": {
+            ".devcontainer/.vscode-server/**": true
+        },
+        "editor.formatOnSave": false,
+
+        "cmake.configureOnOpen": false,
+        "[shellscript]": {
+            "files.eol": "\n",
+            "files.trimTrailingWhitespace": false
+        },
+        "[yaml]": {
+            "editor.indentSize": 4
+        },
+        "files.associations": {
+            "memory": "cpp",
+            "cctype": "cpp",
+            "clocale": "cpp",
+            "cmath": "cpp",
+            "csignal": "cpp",
+            "cstdarg": "cpp",
+            "cstddef": "cpp",
+            "cstdio": "cpp",
+            "cstdlib": "cpp",
+            "cstring": "cpp",
+            "ctime": "cpp",
+            "cwchar": "cpp",
+            "cwctype": "cpp",
+            "any": "cpp",
+            "array": "cpp",
+            "atomic": "cpp",
+            "strstream": "cpp",
+            "bit": "cpp",
+            "*.tcc": "cpp",
+            "bitset": "cpp",
+            "chrono": "cpp",
+            "cinttypes": "cpp",
+            "codecvt": "cpp",
+            "compare": "cpp",
+            "complex": "cpp",
+            "concepts": "cpp",
+            "condition_variable": "cpp",
+            "cstdint": "cpp",
+            "deque": "cpp",
+            "forward_list": "cpp",
+            "list": "cpp",
+            "map": "cpp",
+            "set": "cpp",
+            "string": "cpp",
+            "unordered_map": "cpp",
+            "unordered_set": "cpp",
+            "vector": "cpp",
+            "exception": "cpp",
+            "algorithm": "cpp",
+            "functional": "cpp",
+            "iterator": "cpp",
+            "memory_resource": "cpp",
+            "numeric": "cpp",
+            "optional": "cpp",
+            "random": "cpp",
+            "ratio": "cpp",
+            "regex": "cpp",
+            "string_view": "cpp",
+            "system_error": "cpp",
+            "tuple": "cpp",
+            "type_traits": "cpp",
+            "utility": "cpp",
+            "fstream": "cpp",
+            "future": "cpp",
+            "initializer_list": "cpp",
+            "iomanip": "cpp",
+            "iosfwd": "cpp",
+            "iostream": "cpp",
+            "istream": "cpp",
+            "limits": "cpp",
+            "mutex": "cpp",
+            "new": "cpp",
+            "numbers": "cpp",
+            "ostream": "cpp",
+            "semaphore": "cpp",
+            "sstream": "cpp",
+            "stdexcept": "cpp",
+            "stop_token": "cpp",
+            "streambuf": "cpp",
+            "thread": "cpp",
+            "cfenv": "cpp",
+            "typeindex": "cpp",
+            "typeinfo": "cpp",
+            "valarray": "cpp",
+            "variant": "cpp",
+            "*.ipp": "cpp",
+            "ranges": "cpp",
+            "shared_mutex": "cpp",
+            "core": "cpp",
+            "splines": "cpp"
+        },
+        "workbench.remoteIndicator.showExtensionRecommendations": true,
+        "yaml.extension.recommendations": false,
+        "catkin_tools.cppStandard": "c++17",
+        "catkin_tools.defaultRosWorkspaces": [
+            "/home/fpsdk/fixposition_driver/ros1_ws",
+            "/home/fpsdk/fixposition_driver/ros2_ws",
+            "ros1_ws",
+            "ros2_ws"
+        ]
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-vscode.cpptools",
+            "twxs.cmake"
+            //,"betwo.b2-catkin-tools"
+        ],
+        "unwantedRecommendations": [
+        ]
+    },
+
+    // Build and test tasks. Users can add more tasks in .vscode/tasks.json.
+    "tasks": {
+        // https://code.visualstudio.com/docs/editor/tasks
+        // https://code.visualstudio.com/docs/editor/tasks-appendix
+        "version": "2.0.0",
+
+        // Defaults for all tasks
+        "options": {
+            "cwd": "${workspaceFolder}",
+            "shell": { "executable": "/bin/bash", "args": [ "-c" ] },
+            "setupCommands": [
+                { "text": "-enable-pretty-printing", "description": "enable pretty printing", "ignoreFailures": true },
+                { "text": "handle SIGPIPE nostop noprint pass", "description": "ignore SIGPIPE", "ignoreFailures": true }
+            ]
+        },
+        "problemMatcher": "$gcc",
+        "type": "shell",
+
+        // Tasks definitions
+        "tasks": [
+            // -----------------------------------------------------------------------------------------
+            {
+                "label": "debug workspaceFolder path",
+                "group": "build",
+                "command": "echo ${workspaceFolder} && readlink -f ${workspaceFolder}"
+            }
+        ],
+
+        // Input variables
+        "inputs": [
+            // https://code.visualstudio.com/docs/editor/variables-reference#_input-variables
+        ]
+    },
+    // Launch (debugging)
+    "launch": {
+        // https://code.visualstudio.com/docs/cpp/launch-json-reference
+        "configurations": [
+        ],
+        "compounds": []
+    }
+}

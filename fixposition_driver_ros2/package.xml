@@ -1,11 +1,9 @@
 <?xml version="1.0"?>
 <package format="3">
     <name>fixposition_driver_ros2</name>
-    <version>5.0.0</version>
-    <description>Fixposition ROS Driver</description>
-
-    <maintainer email="info@fixposition.com">Fixposition AG</maintainer>
-
+    <version>8.0.0</version>
+    <description>Fixposition ROS2 driver</description>
+    <maintainer email="support@fixposition.com">Fixposition Support</maintainer>
     <license>MIT</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
@@ -16,6 +14,7 @@
     <build_depend>builtin_interfaces</build_depend>
 
     <depend>fixposition_driver_lib</depend>
+    <depend>fixposition_driver_msgs</depend>
     <depend>geometry_msgs</depend>
     <depend>nav_msgs</depend>
     <depend>sensor_msgs</depend>
@@ -25,6 +24,8 @@
     <depend>tf2_ros</depend>
     <depend>tf2_geometry_msgs</depend>
     <depend>rtcm_msgs</depend>
+    <depend>fpsdk_common</depend>
+    <depend>fpsdk_ros2</depend>
 
     <exec_depend>rclcpp</exec_depend>
     <exec_depend>rosidl_default_runtime</exec_depend>
