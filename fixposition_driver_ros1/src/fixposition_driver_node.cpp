@@ -93,6 +93,7 @@ bool FixpositionDriverNode::StartNode() {
     if (params_.MessageEnabled(fpa::FpaOdomshPayload::MSG_NAME)) {
         _PUB(fpa_odomsh_pub_, fixposition_driver_msgs::FpaOdomsh, output_ns + "/fpa/odomsh", 5);
         _PUB(odometry_smooth_pub_, nav_msgs::Odometry, output_ns + "/odometry_smooth", 5);
+        _PUB(odometry_enu_smooth_pub_, nav_msgs::Odometry, output_ns + "/odometry_enu_smooth", 5);
         driver_.AddFpaObserver(fpa::FpaOdomshPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             auto odomsh_payload = dynamic_cast<const fpa::FpaOdomshPayload&>(payload);
             PublishFpaOdomsh(odomsh_payload, fpa_odomsh_pub_);
@@ -101,6 +102,14 @@ bool FixpositionDriverNode::StartNode() {
             PublishOdometryData(odometry_data, odometry_smooth_pub_);
             ProcessOdometryData(odometry_data);
             fusion_epoch_data_.CollectFpaOdomsh(odomsh_payload);
+
+            // Convert message to ENU
+            if (ecef_enu0_tf_) {
+                bool enu_valid = odometry_data.ConvertToEnu(*ecef_enu0_tf_);
+                if (enu_valid) {
+                    PublishOdometryData(odometry_data, odometry_enu_smooth_pub_);
+                }
+            }
         });
     }
 
@@ -457,6 +466,7 @@ void FixpositionDriverNode::StopNode() {
     odometry_enu_pub_.shutdown();
     odometry_llh_pub_.shutdown();
     odometry_smooth_pub_.shutdown();
+    odometry_enu_smooth_pub_.shutdown();
     // - Orientation
     eul_pub_.shutdown();
     eul_imu_pub_.shutdown();
@@ -512,6 +522,7 @@ void FixpositionDriverNode::ProcessTfData(const TfData& tf_data) {
     // FP_ECEF -> FP_ENU0
     else if ((tf.child_frame_id == "FP_ENU0") && (tf.header.frame_id == "FP_ECEF")) {
         static_br_.sendTransform(tf);
+        ecef_enu0_tf_ = std::make_unique<TfData>(tf_data);
         // Store TF if Nav2 mode is enabled
         if (params_.nav2_mode_) {
             std::unique_lock<std::mutex> lock(tfs_.mutex_);

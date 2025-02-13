@@ -92,10 +92,11 @@ class FixpositionDriverNode {
     // - NOV_B messages
     rclcpp::Publisher<fpmsgs::NovbInspvax>::SharedPtr novb_inspvax_pub_;  //!< NOV_B-INSPVAX message
     // - Odometry
-    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_ecef_pub_;     //!< ECEF odometry
-    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_enu_pub_;      //!< ENU odometry
-    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_smooth_pub_;   //!< Smooth odometry (ECEF)
-    rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr odometry_llh_pub_;  //!< LLH odometry
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_ecef_pub_;        //!< ECEF odometry
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_enu_pub_;         //!< ENU odometry
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_smooth_pub_;      //!< Smooth odometry (ECEF)
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_enu_smooth_pub_;  //!< Smooth odometry (ENU)
+    rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr odometry_llh_pub_;     //!< LLH odometry
     // - Fusion
     rclcpp::Publisher<fpmsgs::FusionEpoch>::SharedPtr fusion_epoch_pub_;  //!< Fusion epoch data
     // - Orientation
@@ -143,6 +144,7 @@ class FixpositionDriverNode {
         std::unique_ptr<geometry_msgs::msg::TransformStamped> enu0_poi_;
     };
     Tfs tfs_;
+    std::unique_ptr<TfData> ecef_enu0_tf_;
 
     void ProcessTfData(const TfData& tf_data);
     void ProcessOdometryData(const OdometryData& odometry_data);
