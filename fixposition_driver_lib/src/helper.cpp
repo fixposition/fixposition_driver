@@ -179,6 +179,7 @@ bool OdometryData::ConvertToEnu(const TfData& tf_ecef_enu0) {
     pose.position = t_enu_body;
     pose.orientation = q_enu_body;
     pose.cov = cov_enu;
+    frame_id = ODOMENU_FRAME_ID;
 
     return true;
 }
