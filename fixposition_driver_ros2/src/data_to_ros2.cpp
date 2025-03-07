@@ -135,7 +135,7 @@ void PublishFpaOdomsh(const fpa::FpaOdomshPayload& payload, rclcpp::Publisher<fp
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2_mode_, 
+void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2_mode_,
                                rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         sensor_msgs::msg::Imu msg;
@@ -153,7 +153,7 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, bool nav2_mode_, 
+void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, bool nav2_mode_,
                                      rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         sensor_msgs::msg::NavSatFix msg;
@@ -834,7 +834,7 @@ void PublishJumpWarning(const JumpDetector& jump_detector, rclcpp::Publisher<fpm
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-void PublishDatum(const geometry_msgs::msg::Vector3& payload, const builtin_interfaces::msg::Time& stamp, 
+void PublishDatum(const geometry_msgs::msg::Vector3& payload, const builtin_interfaces::msg::Time& stamp,
                   rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         sensor_msgs::msg::NavSatFix msg;

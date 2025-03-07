@@ -194,7 +194,7 @@ void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, boo
             msg.status.status = FpaGnssFixToNavSatStatusStatus(msg.status, fix);
             if (msg.status.status != msg.status.STATUS_NO_FIX) {
                 msg.status.service = (msg.status.SERVICE_GPS | msg.status.SERVICE_GLONASS | msg.status.SERVICE_COMPASS |
-                                    msg.status.SERVICE_GALILEO);
+                                      msg.status.SERVICE_GALILEO);
             }
         }
 

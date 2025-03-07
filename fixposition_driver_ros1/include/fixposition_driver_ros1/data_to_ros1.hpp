@@ -35,8 +35,9 @@ void TfDataToTransformStamped(const TfData& data, geometry_msgs::TransformStampe
 void OdometryDataToTransformStamped(const OdometryData& data, geometry_msgs::TransformStamped& msg);
 
 void PublishFpaOdometry(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, ros::Publisher& pub);
-void PublishFpaOdometryDataImu(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_, ros::Publisher& pub);
-void PublishFpaOdometryDataNavSatFix(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_, 
+void PublishFpaOdometryDataImu(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_,
+                               ros::Publisher& pub);
+void PublishFpaOdometryDataNavSatFix(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_,
                                      ros::Publisher& pub);
 void PublishFpaOdomenu(const fpsdk::common::parser::fpa::FpaOdomenuPayload& payload, ros::Publisher& pub);
 void PublishFpaOdomenuVector3Stamped(const fpsdk::common::parser::fpa::FpaOdomenuPayload& payload, ros::Publisher& pub);

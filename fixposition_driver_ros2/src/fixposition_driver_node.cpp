@@ -157,7 +157,7 @@ bool FixpositionDriverNode::StartNode() {
             PublishFpaOdomenuVector3Stamped(odomenu_payload, eul_pub_);
             OdometryData odometry_data;
             odometry_data.SetFromFpaOdomPayload(odomenu_payload);
-            
+
             // Update frames for Nav2
             if (params_.nav2_mode_) {
                 odometry_data.frame_id = "map";
