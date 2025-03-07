@@ -113,8 +113,9 @@ class FixpositionDriverNode {
     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr navsatfix_gnss1_pub_;  //!< GNSS1 position and status
     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr navsatfix_gnss2_pub_;  //!< GNSS2 position and status
     // - Other
-    rclcpp::Publisher<fpmsgs::CovWarn>::SharedPtr jump_pub_;   //!< Jump warning topic
-    rclcpp::Publisher<fpmsgs::ParserMsg>::SharedPtr raw_pub_;  //!< Raw messages topic
+    rclcpp::Publisher<fpmsgs::CovWarn>::SharedPtr jump_pub_;               //!< Jump warning topic
+    rclcpp::Publisher<fpmsgs::ParserMsg>::SharedPtr raw_pub_;              //!< Raw messages topic
+    rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr datum_pub_;  //!< WGS84 datum topic
 
     // ROS subscribers
     rclcpp::Subscription<fpmsgs::Speed>::SharedPtr ws_sub_;              //!< Wheelspeed input subscriber

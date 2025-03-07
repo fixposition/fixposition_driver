@@ -107,8 +107,9 @@ class FixpositionDriverNode {
     ros::Publisher navsatfix_gnss2_pub_;  //!< GNSS2 position and status
     ros::Publisher nmea_epoch_pub_;       //!< NMEA epoch data
     // - Other
-    ros::Publisher jump_pub_;  //!< Jump warning topic
-    ros::Publisher raw_pub_;   //!< Raw messages topic
+    ros::Publisher jump_pub_;   //!< Jump warning topic
+    ros::Publisher raw_pub_;    //!< Raw messages topic
+    ros::Publisher datum_pub_;  //!< WGS84 datum topic
 
     // ROS subscribers
     ros::Subscriber ws_sub_;       //!< Wheelspeed input subscriber
