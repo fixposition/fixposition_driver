@@ -547,12 +547,12 @@ void FixpositionDriverNode::StopNode() {
 void FixpositionDriverNode::ProcessTfData(const TfData& tf_data) {
     // Check if TF is valid
     if (tf_data.rotation.w() == 0 && tf_data.rotation.vec().isZero()) {
-        RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e4, 
-                             "Invalid TF was found! Is the fusion engine initialized? Source: %s, target: %s", 
+        RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e4,
+                             "Invalid TF was found! Is the fusion engine initialized? Source: %s, target: %s",
                              tf_data.frame_id.c_str(), tf_data.child_frame_id.c_str());
         return;
     }
-    
+
     // Generate TF message
     geometry_msgs::msg::TransformStamped tf;
     TfDataToTransformStamped(tf_data, tf);
@@ -573,7 +573,6 @@ void FixpositionDriverNode::ProcessTfData(const TfData& tf_data) {
         imu_ypr.vector.set__y(imu_ypr_eigen.y());
         imu_ypr.vector.set__z(imu_ypr_eigen.z());
         eul_imu_pub_->publish(imu_ypr);
-
     }
     // FP_POI -> FP_POISH
     else if ((tf.child_frame_id == "FP_POISH") && (tf.header.frame_id == "FP_POI")) {
