@@ -619,7 +619,7 @@ void FixpositionDriverNode::PublishNav2Tf() {
     }
 
     // Publish a static identity transform from FP_ENU0 to map
-    geometry_msgs::msg::TransformStamped static_transform;
+    geometry_msgs::TransformStamped static_transform;
     static_transform.header.stamp = tfs_.ecef_enu0_->header.stamp;
     static_transform.header.frame_id = "FP_ENU0";
     static_transform.child_frame_id = "map";
