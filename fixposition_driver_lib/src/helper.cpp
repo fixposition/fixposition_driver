@@ -18,6 +18,7 @@
 #include <fpsdk_common/logging.hpp>
 #include <fpsdk_common/parser/crc.hpp>
 #include <fpsdk_common/string.hpp>
+#include <fpsdk_common/trafo.hpp>
 #include <fpsdk_common/types.hpp>
 #include <fpsdk_common/utils.hpp>
 
@@ -144,6 +145,42 @@ bool OdometryData::SetFromFpaOdomPayload(const fpa::FpaOdomPayload& payload) {
 
     valid = ok;
     return ok;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+
+bool OdometryData::ConvertToEnu(const TfData& tf_ecef_enu0) {
+    // Check that TF data is valid
+    if (!tf_ecef_enu0.valid) {
+        return false;
+    }
+
+    // Extract data from the odometry message
+    const Eigen::Vector3d t_ecef_body = pose.position;
+    const Eigen::Quaterniond q_ecef_body = pose.orientation;
+    const Eigen::Matrix<double, 6, 6> cov_ecef = pose.cov;
+
+    // Extract data from the TF message (using the arrow operator)
+    const Eigen::Vector3d t_ecef_enu0 = tf_ecef_enu0.translation;
+    const Eigen::Quaterniond q_ecef_enu0 = tf_ecef_enu0.rotation;
+    const Eigen::Matrix3d rot_ecef_enu0 = q_ecef_enu0.toRotationMatrix();
+
+    // Convert position in ECEF into position in ENU
+    const Eigen::Vector3d t_enu_body =
+        fpsdk::common::trafo::TfEnuEcef(t_ecef_body, fpsdk::common::trafo::TfWgs84LlhEcef(t_ecef_enu0));
+    const Eigen::Quaterniond q_enu_body = q_ecef_enu0.inverse() * q_ecef_body;
+
+    // Convert covariance matrix to ENU
+    Eigen::Matrix<double, 6, 6> cov_enu = Eigen::Matrix<double, 6, 6>::Zero();
+    cov_enu.topLeftCorner(3, 3) = rot_ecef_enu0 * cov_ecef.topLeftCorner(3, 3) * rot_ecef_enu0.transpose();
+    cov_enu.bottomRightCorner(3, 3) = rot_ecef_enu0 * cov_ecef.bottomRightCorner(3, 3) * rot_ecef_enu0.transpose();
+
+    // Repopulate odometry data
+    pose.position = t_enu_body;
+    pose.orientation = q_enu_body;
+    pose.cov = cov_enu;
+
+    return true;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

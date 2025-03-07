@@ -105,8 +105,8 @@ bool FixpositionDriverNode::StartNode() {
         driver_.AddFpaObserver(fpa::FpaOdometryPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             auto odometry_payload = dynamic_cast<const fpa::FpaOdometryPayload&>(payload);
             PublishFpaOdometry(odometry_payload, fpa_odometry_pub_);
-            PublishFpaOdometryDataImu(odometry_payload, poiimu_pub_);
-            PublishFpaOdometryDataNavSatFix(odometry_payload, odometry_llh_pub_);
+            PublishFpaOdometryDataImu(odometry_payload, params_.nav2_mode_, poiimu_pub_);
+            PublishFpaOdometryDataNavSatFix(odometry_payload, params_.nav2_mode_, odometry_llh_pub_);
             OdometryData odometry_data;
             odometry_data.SetFromFpaOdomPayload(odometry_payload);
             PublishOdometryData(odometry_data, odometry_ecef_pub_);
@@ -119,14 +119,30 @@ bool FixpositionDriverNode::StartNode() {
     if (params_.MessageEnabled(fpa::FpaOdomshPayload::MSG_NAME)) {
         _PUB(fpa_odomsh_pub_, fpmsgs::FpaOdomsh, output_ns + "/fpa/odomsh", qos_settings_);
         _PUB(odometry_smooth_pub_, nav_msgs::msg::Odometry, output_ns + "/odometry_smooth", qos_settings_);
+        _PUB(odometry_enu_smooth_pub_, nav_msgs::msg::Odometry, output_ns + "/odometry_enu_smooth", qos_settings_);
         driver_.AddFpaObserver(fpa::FpaOdomshPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             auto odomsh_payload = dynamic_cast<const fpa::FpaOdomshPayload&>(payload);
             PublishFpaOdomsh(odomsh_payload, fpa_odomsh_pub_);
             OdometryData odometry_data;
             odometry_data.SetFromFpaOdomPayload(odomsh_payload);
+
+            // Update frames for Nav2
+            if (params_.nav2_mode_) {
+                odometry_data.frame_id = "odom";
+                odometry_data.child_frame_id = "vrtk_link";
+            }
+
             PublishOdometryData(odometry_data, odometry_smooth_pub_);
             ProcessOdometryData(odometry_data);
             fusion_epoch_data_.CollectFpaOdomsh(odomsh_payload);
+
+            // Convert message to ENU
+            if (ecef_enu0_tf_) {
+                bool enu_valid = odometry_data.ConvertToEnu(*ecef_enu0_tf_);
+                if (enu_valid) {
+                    PublishOdometryData(odometry_data, odometry_enu_smooth_pub_);
+                }
+            }
         });
     }
 
@@ -141,6 +157,13 @@ bool FixpositionDriverNode::StartNode() {
             PublishFpaOdomenuVector3Stamped(odomenu_payload, eul_pub_);
             OdometryData odometry_data;
             odometry_data.SetFromFpaOdomPayload(odomenu_payload);
+
+            // Update frames for Nav2
+            if (params_.nav2_mode_) {
+                odometry_data.frame_id = "map";
+                odometry_data.child_frame_id = "vrtk_link";
+            }
+
             PublishOdometryData(odometry_data, odometry_enu_pub_);
             ProcessOdometryData(odometry_data);
             fusion_epoch_data_.CollectFpaOdomenu(odomenu_payload);
@@ -396,6 +419,11 @@ bool FixpositionDriverNode::StartNode() {
         _PUB(jump_pub_, fpmsgs::CovWarn, output_ns + "/extras/jump", qos_settings_);
     }
 
+    // WGS84 datum message
+    if (params_.nav2_mode_) {
+        _PUB(datum_pub_, sensor_msgs::msg::NavSatFix, output_ns + "/datum", qos_settings_);
+    }
+
     // Subscribe to correction data input
     if (!params_.corr_topic_.empty()) {
         _SUB(corr_sub_, rtcm_msgs::msg::Message, params_.corr_topic_, 100, [this](const rtcm_msgs::msg::Message& msg) {
@@ -484,6 +512,7 @@ void FixpositionDriverNode::StopNode() {
     odometry_enu_pub_.reset();
     odometry_llh_pub_.reset();
     odometry_smooth_pub_.reset();
+    odometry_enu_smooth_pub_.reset();
     // - Orientation
     eul_pub_.reset();
     eul_imu_pub_.reset();
@@ -499,6 +528,7 @@ void FixpositionDriverNode::StopNode() {
     // - Other
     jump_pub_.reset();
     raw_pub_.reset();
+    datum_pub_.reset();
 
     // Stop input message subscribers
     ws_sub_.reset();
@@ -515,6 +545,15 @@ void FixpositionDriverNode::StopNode() {
 // ---------------------------------------------------------------------------------------------------------------------
 
 void FixpositionDriverNode::ProcessTfData(const TfData& tf_data) {
+    // Check if TF is valid
+    if (tf_data.rotation.w() == 0 && tf_data.rotation.vec().isZero()) {
+        RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e4,
+                             "Invalid TF was found! Is the fusion engine initialized? Source: %s, target: %s",
+                             tf_data.frame_id.c_str(), tf_data.child_frame_id.c_str());
+        return;
+    }
+
+    // Generate TF message
     geometry_msgs::msg::TransformStamped tf;
     TfDataToTransformStamped(tf_data, tf);
 
@@ -534,7 +573,6 @@ void FixpositionDriverNode::ProcessTfData(const TfData& tf_data) {
         imu_ypr.vector.set__y(imu_ypr_eigen.y());
         imu_ypr.vector.set__z(imu_ypr_eigen.z());
         eul_imu_pub_->publish(imu_ypr);
-
     }
     // FP_POI -> FP_POISH
     else if ((tf.child_frame_id == "FP_POISH") && (tf.header.frame_id == "FP_POI")) {
@@ -548,6 +586,7 @@ void FixpositionDriverNode::ProcessTfData(const TfData& tf_data) {
     // FP_ECEF -> FP_ENU0
     else if ((tf.child_frame_id == "FP_ENU0") && (tf.header.frame_id == "FP_ECEF")) {
         static_br_->sendTransform(tf);
+        ecef_enu0_tf_ = std::make_unique<TfData>(tf_data);
         // Store TF if Nav2 mode is enabled
         if (params_.nav2_mode_) {
             std::unique_lock<std::mutex> lock(tfs_.mutex_);
@@ -624,9 +663,19 @@ void FixpositionDriverNode::PublishNav2Tf() {
         return;
     }
 
-    // Publish FP_ECEF -> map
-    tfs_.ecef_enu0_->child_frame_id = "map";
-    static_br_->sendTransform(*tfs_.ecef_enu0_);
+    // Publish a static identity transform from FP_ENU0 to map
+    geometry_msgs::msg::TransformStamped static_transform;
+    static_transform.header.stamp = tfs_.ecef_enu0_->header.stamp;
+    static_transform.header.frame_id = "FP_ENU0";
+    static_transform.child_frame_id = "map";
+    static_transform.transform.translation.x = 0.0;
+    static_transform.transform.translation.y = 0.0;
+    static_transform.transform.translation.z = 0.0;
+    static_transform.transform.rotation.w = 1.0;
+    static_transform.transform.rotation.x = 0.0;
+    static_transform.transform.rotation.y = 0.0;
+    static_transform.transform.rotation.z = 0.0;
+    static_br_->sendTransform(static_transform);
 
     // Compute FP_ENU0 -> FP_POISH
     // Extract translation and rotation from ECEFENU0
@@ -661,21 +710,22 @@ void FixpositionDriverNode::PublishNav2Tf() {
 
     // Create a new TransformStamped message
     geometry_msgs::msg::TransformStamped tfs_odom;
-    tfs_odom.header.stamp = nh_->now();
+    tfs_odom.header.stamp = tfs_.enu0_poi_->header.stamp;
     tfs_odom.header.frame_id = "map";
     tfs_odom.child_frame_id = "odom";
     tfs_odom.transform = tf2::toMsg(tf_combined);
     tf_br_->sendTransform(tfs_odom);
 
-    // Publish odom -> base_link
+    // Publish odom -> vrtk_link
     geometry_msgs::msg::TransformStamped tf_odom_base;
-    tf_odom_base.header.stamp = nh_->now();
+    tf_odom_base.header.stamp = tfs_.enu0_poi_->header.stamp;
     tf_odom_base.header.frame_id = "odom";
-    tf_odom_base.child_frame_id = "base_link";
+    tf_odom_base.child_frame_id = "vrtk_link";
     tf_odom_base.transform = tf2::toMsg(tf_ENU0POISH);
-
-    // Send the transform
     tf_br_->sendTransform(tf_odom_base);
+
+    // Publish WGS84 datum
+    PublishDatum(trans_ecef_enu0, tfs_.enu0_poi_->header.stamp, datum_pub_);
 }
 
 /* ****************************************************************************************************************** */

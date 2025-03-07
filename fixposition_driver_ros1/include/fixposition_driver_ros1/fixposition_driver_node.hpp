@@ -88,10 +88,11 @@ class FixpositionDriverNode {
     // - NOV_B messages
     ros::Publisher novb_inspvax_pub_;  //!< NOV_B-INSPVAX message
     // - Odometry
-    ros::Publisher odometry_ecef_pub_;    //!< ECEF odometry
-    ros::Publisher odometry_enu_pub_;     //!< ENU odometry
-    ros::Publisher odometry_llh_pub_;     //!< LLH odometry
-    ros::Publisher odometry_smooth_pub_;  //!< Smooth Odometry (ECEF)
+    ros::Publisher odometry_ecef_pub_;        //!< ECEF odometry
+    ros::Publisher odometry_enu_pub_;         //!< ENU odometry
+    ros::Publisher odometry_smooth_pub_;      //!< Smooth Odometry (ECEF)
+    ros::Publisher odometry_enu_smooth_pub_;  //!< Smooth Odometry (ENU)
+    ros::Publisher odometry_llh_pub_;         //!< LLH odometry
     // - Fusion
     ros::Publisher fusion_epoch_pub_;  //!< Fusion epoch data
     // - Orientation
@@ -106,8 +107,9 @@ class FixpositionDriverNode {
     ros::Publisher navsatfix_gnss2_pub_;  //!< GNSS2 position and status
     ros::Publisher nmea_epoch_pub_;       //!< NMEA epoch data
     // - Other
-    ros::Publisher jump_pub_;  //!< Jump warning topic
-    ros::Publisher raw_pub_;   //!< Raw messages topic
+    ros::Publisher jump_pub_;   //!< Jump warning topic
+    ros::Publisher raw_pub_;    //!< Raw messages topic
+    ros::Publisher datum_pub_;  //!< WGS84 datum topic
 
     // ROS subscribers
     ros::Subscriber ws_sub_;       //!< Wheelspeed input subscriber
@@ -132,6 +134,7 @@ class FixpositionDriverNode {
         std::unique_ptr<geometry_msgs::TransformStamped> enu0_poi_;
     };
     Tfs tfs_;
+    std::unique_ptr<TfData> ecef_enu0_tf_;
 
     void ProcessTfData(const TfData& tf_data);
     void ProcessOdometryData(const OdometryData& odometry_data);
