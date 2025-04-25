@@ -135,11 +135,15 @@ void PublishFpaOdomsh(const fpa::FpaOdomshPayload& payload, ros::Publisher& pub)
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, ros::Publisher& pub) {
+void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2_mode_, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         sensor_msgs::Imu msg;
         msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
-        msg.header.frame_id = ODOMETRY_FRAME_ID;
+        if (nav2_mode_) {
+            msg.header.frame_id = "vrtk_link";
+        } else {
+            msg.header.frame_id = ODOMETRY_FRAME_ID;
+        }
         FpaFloat3ToVector3(payload.acc, msg.linear_acceleration);
         FpaFloat3ToVector3(payload.rot, msg.angular_velocity);
         pub.publish(msg);
@@ -148,11 +152,15 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, ros::Publ
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, ros::Publisher& pub) {
+void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, bool nav2_mode_, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         sensor_msgs::NavSatFix msg;
         msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
-        msg.header.frame_id = ODOMETRY_CHILD_FRAME_ID;
+        if (nav2_mode_) {
+            msg.header.frame_id = "vrtk_link";
+        } else {
+            msg.header.frame_id = ODOMETRY_CHILD_FRAME_ID;
+        }
 
         // Populate LLH position
         PoseWithCovData pose;
@@ -178,11 +186,16 @@ void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, ros
         }
 
         // Populate LLH status
-        const fpa::FpaGnssFix fix = (payload.gnss1_fix > payload.gnss2_fix ? payload.gnss1_fix : payload.gnss2_fix);
-        msg.status.status = FpaGnssFixToNavSatStatusStatus(msg.status, fix);
-        if (msg.status.status != msg.status.STATUS_NO_FIX) {
-            msg.status.service = (msg.status.SERVICE_GPS | msg.status.SERVICE_GLONASS | msg.status.SERVICE_COMPASS |
-                                  msg.status.SERVICE_GALILEO);
+        if (nav2_mode_) {
+            msg.status.status = 2;
+            msg.status.service = 15;
+        } else {
+            const fpa::FpaGnssFix fix = (payload.gnss1_fix > payload.gnss2_fix ? payload.gnss1_fix : payload.gnss2_fix);
+            msg.status.status = FpaGnssFixToNavSatStatusStatus(msg.status, fix);
+            if (msg.status.status != msg.status.STATUS_NO_FIX) {
+                msg.status.service = (msg.status.SERVICE_GPS | msg.status.SERVICE_GLONASS | msg.status.SERVICE_COMPASS |
+                                      msg.status.SERVICE_GALILEO);
+            }
         }
 
         // Publish message
@@ -794,6 +807,31 @@ void PublishJumpWarning(const JumpDetector& jump_detector, ros::Publisher& pub) 
         msg.covariance.x = jump_detector.prev_cov_(0, 0);
         msg.covariance.y = jump_detector.prev_cov_(1, 1);
         msg.covariance.z = jump_detector.prev_cov_(2, 2);
+        pub.publish(msg);
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+
+void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp, ros::Publisher& pub) {
+    if (pub.getNumSubscribers() > 0) {
+        sensor_msgs::NavSatFix msg;
+        msg.header.stamp = stamp;
+        msg.header.frame_id = "vrtk_link";
+
+        // Populate LLH position
+        const Eigen::Vector3d position = {payload.x, payload.y, payload.z};
+        const Eigen::Vector3d llh_pos = trafo::TfWgs84LlhEcef(position);
+        msg.latitude = math::RadToDeg(llh_pos(0));
+        msg.longitude = math::RadToDeg(llh_pos(1));
+        msg.altitude = llh_pos(2);
+
+        // Populate status
+        msg.status.status = 2;
+        msg.status.service = 15;
+        msg.position_covariance_type = 3;
+
+        // Publish message
         pub.publish(msg);
     }
 }

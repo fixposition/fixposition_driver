@@ -138,15 +138,13 @@ function main
             catkin config --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
         fi
     else
-        if [ ${dev} -gt 0 ]; then
-            echo 'build:' > ${abspath}/colcon_defaults.yaml
-            echo '    event-handlers: [ "console_direct+" ]' >> ${abspath}/colcon_defaults.yaml
-            echo '    cmake-args: [ "-DCMAKE_BUILD_TYPE=Debug", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" ]' >> ${abspath}/colcon_defaults.yaml
-        else
-            echo 'build:' > ${abspath}/colcon_defaults.yaml
-            echo '#    event-handlers: [ "console_direct+" ]' >> ${abspath}/colcon_defaults.yaml
-            echo '    cmake-args: [ "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" ]' >> ${abspath}/colcon_defaults.yaml
+        echo 'build:' > ${abspath}/colcon_defaults.yaml
+        if [ ${dev} -eq 0 ]; then
+            echo -n '#' >> ${abspath}/colcon_defaults.yaml
         fi
+        echo '    event-handlers: [ "console_direct+" ]' >> ${abspath}/colcon_defaults.yaml
+        echo '    cmake-args: [ "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DFPSDK_BUILD_TESTING=OFF" ]' \
+            >> ${abspath}/colcon_defaults.yaml
     fi
 
     # Happy?
