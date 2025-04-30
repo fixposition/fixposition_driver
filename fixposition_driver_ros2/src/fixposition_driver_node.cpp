@@ -664,18 +664,18 @@ void FixpositionDriverNode::PublishNav2Tf() {
     }
 
     // Publish a static identity transform from FP_ENU0 to map
-    geometry_msgs::msg::TransformStamped static_transform;
-    static_transform.header.stamp = tfs_.ecef_enu0_->header.stamp;
-    static_transform.header.frame_id = "FP_ENU0";
-    static_transform.child_frame_id = "map";
-    static_transform.transform.translation.x = 0.0;
-    static_transform.transform.translation.y = 0.0;
-    static_transform.transform.translation.z = 0.0;
-    static_transform.transform.rotation.w = 1.0;
-    static_transform.transform.rotation.x = 0.0;
-    static_transform.transform.rotation.y = 0.0;
-    static_transform.transform.rotation.z = 0.0;
-    static_br_->sendTransform(static_transform);
+    // geometry_msgs::msg::TransformStamped static_transform;
+    // static_transform.header.stamp = tfs_.ecef_enu0_->header.stamp;
+    // static_transform.header.frame_id = "FP_ENU0";
+    // static_transform.child_frame_id = "map";
+    // static_transform.transform.translation.x = 0.0;
+    // static_transform.transform.translation.y = 0.0;
+    // static_transform.transform.translation.z = 0.0;
+    // static_transform.transform.rotation.w = 1.0;
+    // static_transform.transform.rotation.x = 0.0;
+    // static_transform.transform.rotation.y = 0.0;
+    // static_transform.transform.rotation.z = 0.0;
+    // static_br_->sendTransform(static_transform);
 
     // Compute FP_ENU0 -> FP_POISH
     // Extract translation and rotation from ECEFENU0
@@ -714,7 +714,7 @@ void FixpositionDriverNode::PublishNav2Tf() {
     tfs_odom.header.frame_id = "map";
     tfs_odom.child_frame_id = "odom";
     tfs_odom.transform = tf2::toMsg(tf_combined);
-    tf_br_->sendTransform(tfs_odom);
+    // tf_br_->sendTransform(tfs_odom);
 
     // Publish odom -> vrtk_link
     geometry_msgs::msg::TransformStamped tf_odom_base;
@@ -722,7 +722,7 @@ void FixpositionDriverNode::PublishNav2Tf() {
     tf_odom_base.header.frame_id = "odom";
     tf_odom_base.child_frame_id = "vrtk_link";
     tf_odom_base.transform = tf2::toMsg(tf_ENU0POISH);
-    tf_br_->sendTransform(tf_odom_base);
+    // tf_br_->sendTransform(tf_odom_base);
 
     // Publish WGS84 datum
     PublishDatum(trans_ecef_enu0, tfs_.enu0_poi_->header.stamp, datum_pub_);
