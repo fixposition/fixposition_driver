@@ -664,18 +664,18 @@ void FixpositionDriverNode::PublishNav2Tf() {
     }
 
     // Publish a static identity transform from FP_ENU0 to map
-    // geometry_msgs::msg::TransformStamped static_transform;
-    // static_transform.header.stamp = tfs_.ecef_enu0_->header.stamp;
-    // static_transform.header.frame_id = "FP_ENU0";
-    // static_transform.child_frame_id = "map";
-    // static_transform.transform.translation.x = 0.0;
-    // static_transform.transform.translation.y = 0.0;
-    // static_transform.transform.translation.z = 0.0;
-    // static_transform.transform.rotation.w = 1.0;
-    // static_transform.transform.rotation.x = 0.0;
-    // static_transform.transform.rotation.y = 0.0;
-    // static_transform.transform.rotation.z = 0.0;
-    // static_br_->sendTransform(static_transform);
+    geometry_msgs::msg::TransformStamped static_transform;
+    static_transform.header.stamp = tfs_.ecef_enu0_->header.stamp;
+    static_transform.header.frame_id = "FP_ENU0";
+    static_transform.child_frame_id = "map";
+    static_transform.transform.translation.x = 0.0;
+    static_transform.transform.translation.y = 0.0;
+    static_transform.transform.translation.z = 0.0;
+    static_transform.transform.rotation.w = 1.0;
+    static_transform.transform.rotation.x = 0.0;
+    static_transform.transform.rotation.y = 0.0;
+    static_transform.transform.rotation.z = 0.0;
+    static_br_->sendTransform(static_transform);
 
     // Compute FP_ENU0 -> FP_POISH
     // Extract translation and rotation from ECEFENU0
