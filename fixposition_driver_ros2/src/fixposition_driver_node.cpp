@@ -129,7 +129,7 @@ bool FixpositionDriverNode::StartNode() {
             // Update frames for Nav2
             if (params_.nav2_mode_) {
                 odometry_data.frame_id = "odom";
-                odometry_data.child_frame_id = "base_link";
+                odometry_data.child_frame_id = "vrtk_link";
             }
 
             PublishOdometryData(odometry_data, odometry_smooth_pub_);
@@ -161,7 +161,7 @@ bool FixpositionDriverNode::StartNode() {
             // Update frames for Nav2
             if (params_.nav2_mode_) {
                 odometry_data.frame_id = "map";
-                odometry_data.child_frame_id = "base_link";
+                odometry_data.child_frame_id = "vrtk_link";
             }
 
             PublishOdometryData(odometry_data, odometry_enu_pub_);
