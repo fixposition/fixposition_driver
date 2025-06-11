@@ -164,7 +164,9 @@ bool FixpositionDriverNode::StartNode() {
                 odometry_data.child_frame_id = "vrtk_link";
             }
 
-            PublishOdometryData(odometry_data, odometry_enu_pub_);
+            if (odometry_data.valid) {
+                PublishOdometryData(odometry_data, odometry_enu_pub_);
+            }
             ProcessOdometryData(odometry_data);
             fusion_epoch_data_.CollectFpaOdomenu(odomenu_payload);
         });
