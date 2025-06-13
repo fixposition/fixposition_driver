@@ -142,7 +142,7 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2
         if (!payload.orientation.valid || !payload.acc.valid || !payload.rot.valid) {
             return;
         }
-        
+
         sensor_msgs::msg::Imu msg;
         msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
         if (nav2_mode_) {
@@ -150,30 +150,23 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2
         } else {
             msg.header.frame_id = ODOMETRY_FRAME_ID;  // FP_POI frame
         }
-        
-        // NOTE: Mixed reference frames for navsat_transform_node compatibility:
-        // - Orientation: Earth-referenced (ECEF) frame - what navsat_transform needs
-        // - Angular velocity & acceleration: Body (POI) frame - navsat_transform ignores these
-        // This is intentional as navsat_transform only uses orientation and handles frame transforms via TF
-        
-        // Orientation from payload (earth-referenced frame for navsat_transform compatibility)
-        msg.orientation.w = payload.orientation.values[0];
-        msg.orientation.x = payload.orientation.values[1];
-        msg.orientation.y = payload.orientation.values[2];
-        msg.orientation.z = payload.orientation.values[3];
-        
+
+        const Eigen::Quaterniond quat = {payload.orientation.values[0], payload.orientation.values[1],
+                                         payload.orientation.values[2], payload.orientation.values[3]};
+        msg.orientation = tf2::toMsg(quat);
+
         // Angular velocity and acceleration in body frame (navsat_transform doesn't use these)
         FpaFloat3ToVector3(payload.rot, msg.angular_velocity);
         FpaFloat3ToVector3(payload.acc, msg.linear_acceleration);
-        
+
         // Fill covariance matrices
         // Orientation covariance (3x3 in row-major order)
         if (payload.orientation_cov.valid) {
-            Eigen::Matrix3d ori_cov = BuildCovMat3D(
-                payload.orientation_cov.values[0], payload.orientation_cov.values[1], 
-                payload.orientation_cov.values[2], payload.orientation_cov.values[3], 
-                payload.orientation_cov.values[4], payload.orientation_cov.values[5]);
-            
+            Eigen::Matrix3d ori_cov =
+                BuildCovMat3D(payload.orientation_cov.values[0], payload.orientation_cov.values[1],
+                              payload.orientation_cov.values[2], payload.orientation_cov.values[3],
+                              payload.orientation_cov.values[4], payload.orientation_cov.values[5]);
+
             for (int i = 0; i < 3; ++i) {
                 for (int j = 0; j < 3; ++j) {
                     msg.orientation_covariance[i * 3 + j] = ori_cov(i, j);
@@ -183,21 +176,20 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2
             // Set unknown covariance
             std::fill(msg.orientation_covariance.begin(), msg.orientation_covariance.end(), -1.0);
         }
-        
+
         // Linear acceleration covariance - use velocity covariance as a proxy if available
         if (payload.vel_cov.valid) {
             // Use velocity covariance as a reasonable proxy for acceleration noise
             // Scale by approximate factor to convert from velocity to acceleration covariance
-            Eigen::Matrix3d vel_cov = BuildCovMat3D(
-                payload.vel_cov.values[0], payload.vel_cov.values[1], 
-                payload.vel_cov.values[2], payload.vel_cov.values[3], 
-                payload.vel_cov.values[4], payload.vel_cov.values[5]);
-            
+            Eigen::Matrix3d vel_cov =
+                BuildCovMat3D(payload.vel_cov.values[0], payload.vel_cov.values[1], payload.vel_cov.values[2],
+                              payload.vel_cov.values[3], payload.vel_cov.values[4], payload.vel_cov.values[5]);
+
             // Scale velocity covariance to get approximate acceleration covariance
             // Assuming acceleration noise is related to velocity noise / time_constant
-            const double accel_scale_factor = 0.1; // Heuristic scaling factor
+            const double accel_scale_factor = 0.1;  // Heuristic scaling factor
             Eigen::Matrix3d acc_cov = vel_cov * accel_scale_factor;
-            
+
             std::fill(msg.linear_acceleration_covariance.begin(), msg.linear_acceleration_covariance.end(), 0.0);
             for (int i = 0; i < 3; ++i) {
                 for (int j = 0; j < 3; ++j) {
@@ -211,21 +203,21 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2
             msg.linear_acceleration_covariance[4] = 0.01;  // y variance
             msg.linear_acceleration_covariance[8] = 0.01;  // z variance
         }
-        
+
         // Angular velocity covariance - use orientation covariance as a proxy if available
         if (payload.orientation_cov.valid) {
             // Use orientation covariance as a proxy for angular velocity noise
             // Scale by approximate factor to convert from orientation to angular velocity covariance
-            Eigen::Matrix3d ori_cov = BuildCovMat3D(
-                payload.orientation_cov.values[0], payload.orientation_cov.values[1], 
-                payload.orientation_cov.values[2], payload.orientation_cov.values[3], 
-                payload.orientation_cov.values[4], payload.orientation_cov.values[5]);
-            
+            Eigen::Matrix3d ori_cov =
+                BuildCovMat3D(payload.orientation_cov.values[0], payload.orientation_cov.values[1],
+                              payload.orientation_cov.values[2], payload.orientation_cov.values[3],
+                              payload.orientation_cov.values[4], payload.orientation_cov.values[5]);
+
             // Scale orientation covariance to get approximate angular velocity covariance
             // Assuming angular velocity noise is related to orientation uncertainty / time_constant
-            const double angular_vel_scale_factor = 0.01; // Heuristic scaling factor
+            const double angular_vel_scale_factor = 0.01;  // Heuristic scaling factor
             Eigen::Matrix3d angular_vel_cov = ori_cov * angular_vel_scale_factor;
-            
+
             std::fill(msg.angular_velocity_covariance.begin(), msg.angular_velocity_covariance.end(), 0.0);
             for (int i = 0; i < 3; ++i) {
                 for (int j = 0; j < 3; ++j) {
@@ -239,7 +231,7 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2
             msg.angular_velocity_covariance[4] = 0.001;  // y variance
             msg.angular_velocity_covariance[8] = 0.001;  // z variance
         }
-        
+
         pub->publish(msg);
     }
 }
