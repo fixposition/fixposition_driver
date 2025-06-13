@@ -244,7 +244,7 @@ void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, boo
         sensor_msgs::msg::NavSatFix msg;
         msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
         if (nav2_mode_) {
-            msg.header.frame_id = "vrtk_link";
+            msg.header.frame_id = "base_link";
         } else {
             msg.header.frame_id = ODOMETRY_CHILD_FRAME_ID;
         }
