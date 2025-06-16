@@ -101,11 +101,11 @@ bool FixpositionDriverNode::StartNode() {
         _PUB(fpa_odometry_pub_, fpmsgs::FpaOdometry, output_ns + "/fpa/odometry", qos_settings_);
         _PUB(odometry_ecef_pub_, nav_msgs::msg::Odometry, output_ns + "/odometry_ecef", qos_settings_);
         _PUB(odometry_llh_pub_, sensor_msgs::msg::NavSatFix, output_ns + "/odometry_llh", qos_settings_);
-        _PUB(poiimu_pub_, sensor_msgs::msg::Imu, output_ns + "/poiimu", qos_settings_);
+        // Remove poiimu_pub_ from here since it's now published from ODOMENU
         driver_.AddFpaObserver(fpa::FpaOdometryPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             auto odometry_payload = dynamic_cast<const fpa::FpaOdometryPayload&>(payload);
             PublishFpaOdometry(odometry_payload, fpa_odometry_pub_);
-            PublishFpaOdometryDataImu(odometry_payload, params_.nav2_mode_, poiimu_pub_);
+            // Remove PublishFpaOdometryDataImu call from here
             PublishFpaOdometryDataNavSatFix(odometry_payload, params_.nav2_mode_, odometry_llh_pub_);
             OdometryData odometry_data;
             odometry_data.SetFromFpaOdomPayload(odometry_payload);
@@ -151,10 +151,14 @@ bool FixpositionDriverNode::StartNode() {
         _PUB(fpa_odomenu_pub_, fpmsgs::FpaOdomenu, output_ns + "/fpa/odomenu", qos_settings_);
         _PUB(odometry_enu_pub_, nav_msgs::msg::Odometry, output_ns + "/odometry_enu", qos_settings_);
         _PUB(eul_pub_, geometry_msgs::msg::Vector3Stamped, output_ns + "/ypr", qos_settings_);
+        _PUB(poiimu_pub_, sensor_msgs::msg::Imu, output_ns + "/poiimu", qos_settings_);
         driver_.AddFpaObserver(fpa::FpaOdomenuPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             auto odomenu_payload = dynamic_cast<const fpa::FpaOdomenuPayload&>(payload);
             PublishFpaOdomenu(odomenu_payload, fpa_odomenu_pub_);
             PublishFpaOdomenuVector3Stamped(odomenu_payload, eul_pub_);
+            
+            // Add IMU publishing from the same ENU payload
+            PublishFpaOdometryDataImu(odomenu_payload, params_.nav2_mode_, poiimu_pub_);
 
             OdometryData odometry_data;
             odometry_data.SetFromFpaOdomPayload(odomenu_payload);
