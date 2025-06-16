@@ -148,10 +148,8 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdomenuPayload& payload, bool nav2_
         msg.header.frame_id = nav2_mode_ ? "base_link" : ODOMETRY_FRAME_ID;
 
         // Orientation quaternion
-        // payload.orientation.values is [W, X, Y, Z]
-        // Eigen::Quaterniond initializer list is {x, y, z, w}
-        const Eigen::Quaterniond quat = {payload.orientation.values[1], payload.orientation.values[2],
-                                         payload.orientation.values[3], payload.orientation.values[0]};
+        const Eigen::Quaterniond quat = {payload.orientation.values[0], payload.orientation.values[1],
+                                         payload.orientation.values[2], payload.orientation.values[3]};
         msg.orientation = tf2::toMsg(quat);
 
         // Angular velocity and acceleration in body frame
