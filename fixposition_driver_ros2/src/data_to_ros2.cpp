@@ -147,15 +147,13 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2
         msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
         msg.header.frame_id = nav2_mode_ ? "base_link" : ODOMETRY_FRAME_ID;
 
-        tf2::Quaternion tfq(
-            payload.orientation.values[3],  // w
-            payload.orientation.values[0],  // x
-            payload.orientation.values[1],  // y
-            payload.orientation.values[2]   // z
+        tf2::Quaternion tfq(payload.orientation.values[0],  // x
+                            payload.orientation.values[1],  // y
+                            payload.orientation.values[2],  // z
+                            payload.orientation.values[3]   // w
         );
         // This quaternion already represents the rotation between ENU and FP_POI
         msg.orientation = tf2::toMsg(tfq);
-
 
         // Angular velocity and acceleration in body frame
         FpaFloat3ToVector3(payload.rot, msg.angular_velocity);
