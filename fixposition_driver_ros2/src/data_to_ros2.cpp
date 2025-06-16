@@ -216,7 +216,7 @@ void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, boo
         sensor_msgs::msg::NavSatFix msg;
         msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
         if (nav2_mode_) {
-            msg.header.frame_id = "base_link";
+            msg.header.frame_id = "vrtk_link";
         } else {
             msg.header.frame_id = ODOMETRY_CHILD_FRAME_ID;
         }
@@ -227,22 +227,17 @@ void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, boo
         Eigen::Map<Eigen::Matrix<double, 3, 3>> cov_map =
             Eigen::Map<Eigen::Matrix<double, 3, 3>>(msg.position_covariance.data());
 
-        if (pose.position.isZero()) {
-            msg.position_covariance_type = msg.COVARIANCE_TYPE_UNKNOWN;
-            cov_map = Eigen::Matrix3d::Zero();  // FIXME: necessary?
-        } else {
-            const Eigen::Vector3d llh_pos = trafo::TfWgs84LlhEcef(pose.position);
-            msg.latitude = math::RadToDeg(llh_pos(0));
-            msg.longitude = math::RadToDeg(llh_pos(1));
-            msg.altitude = llh_pos(2);
+        const Eigen::Vector3d llh_pos = trafo::TfWgs84LlhEcef(pose.position);
+        msg.latitude = math::RadToDeg(llh_pos(0));
+        msg.longitude = math::RadToDeg(llh_pos(1));
+        msg.altitude = llh_pos(2);
 
-            // Populate LLH covariance
-            const Eigen::Matrix3d p_cov_e = pose.cov.topLeftCorner(3, 3);
-            const Eigen::Matrix3d C_l_e = trafo::RotEnuEcef(pose.position);
-            const Eigen::Matrix3d p_cov_l = C_l_e * p_cov_e * C_l_e.transpose();
-            cov_map = p_cov_l;
-            msg.position_covariance_type = msg.COVARIANCE_TYPE_KNOWN;
-        }
+        // Populate LLH covariance
+        const Eigen::Matrix3d p_cov_e = pose.cov.topLeftCorner(3, 3);
+        const Eigen::Matrix3d C_l_e = trafo::RotEnuEcef(pose.position);
+        const Eigen::Matrix3d p_cov_l = C_l_e * p_cov_e * C_l_e.transpose();
+        cov_map = p_cov_l;
+        msg.position_covariance_type = msg.COVARIANCE_TYPE_KNOWN;
 
         // Populate LLH status
         if (nav2_mode_) {
