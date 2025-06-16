@@ -142,7 +142,9 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdomenuPayload& payload, bool nav2_
         if (!payload.orientation.valid || !payload.acc.valid || !payload.rot.valid) {
             return;
         }
-
+        if (payload.gnss1_fix != fpa::FpaGnssFix::RTK_FIXED || payload.gnss2_fix != fpa::FpaGnssFix::RTK_FIXED) {
+            return;
+        }
         sensor_msgs::msg::Imu msg;
         msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
         msg.header.frame_id = nav2_mode_ ? "base_link" : ODOMETRY_FRAME_ID;
@@ -251,7 +253,9 @@ void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, boo
                                       msg.status.SERVICE_GALILEO);
             }
         }
-
+        if (payload.gnss1_fix != fpa::FpaGnssFix::RTK_FIXED || payload.gnss2_fix != fpa::FpaGnssFix::RTK_FIXED) {
+            return;
+        }
         // Publish message
         pub->publish(msg);
     }
