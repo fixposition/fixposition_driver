@@ -145,91 +145,66 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2
 
         sensor_msgs::msg::Imu msg;
         msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
-        if (nav2_mode_) {
-            msg.header.frame_id = "base_link";
-        } else {
-            msg.header.frame_id = ODOMETRY_FRAME_ID;  // FP_POI frame
-        }
+        msg.header.frame_id = nav2_mode_ ? "base_link" : ODOMETRY_FRAME_ID;
 
-        const Eigen::Quaterniond quat = {payload.orientation.values[0], payload.orientation.values[1],
-                                         payload.orientation.values[2], payload.orientation.values[3]};
-        msg.orientation = tf2::toMsg(quat);
+        // Build quaternion from payload [x, y, z, w] using tf2 (x,y,z,w)
+        tf2::Quaternion tfq(payload.orientation.values[0],  // x
+                            payload.orientation.values[1],  // y
+                            payload.orientation.values[2],  // z
+                            payload.orientation.values[3]   // w
+        );
+        msg.orientation = tf2::toMsg(tfq);
 
-        // Angular velocity and acceleration in body frame (navsat_transform doesn't use these)
+        // Angular velocity and acceleration in body frame
         FpaFloat3ToVector3(payload.rot, msg.angular_velocity);
         FpaFloat3ToVector3(payload.acc, msg.linear_acceleration);
 
-        // Fill covariance matrices
-        // Orientation covariance (3x3 in row-major order)
+        // Orientation covariance
         if (payload.orientation_cov.valid) {
             Eigen::Matrix3d ori_cov =
                 BuildCovMat3D(payload.orientation_cov.values[0], payload.orientation_cov.values[1],
                               payload.orientation_cov.values[2], payload.orientation_cov.values[3],
                               payload.orientation_cov.values[4], payload.orientation_cov.values[5]);
-
-            for (int i = 0; i < 3; ++i) {
-                for (int j = 0; j < 3; ++j) {
-                    msg.orientation_covariance[i * 3 + j] = ori_cov(i, j);
-                }
+            for (int i = 0; i < 9; ++i) {
+                msg.orientation_covariance[i] = ori_cov(i / 3, i % 3);
             }
         } else {
-            // Set unknown covariance
             std::fill(msg.orientation_covariance.begin(), msg.orientation_covariance.end(), -1.0);
         }
 
-        // Linear acceleration covariance - use velocity covariance as a proxy if available
+        // Linear acceleration covariance
         if (payload.vel_cov.valid) {
-            // Use velocity covariance as a reasonable proxy for acceleration noise
-            // Scale by approximate factor to convert from velocity to acceleration covariance
             Eigen::Matrix3d vel_cov =
                 BuildCovMat3D(payload.vel_cov.values[0], payload.vel_cov.values[1], payload.vel_cov.values[2],
                               payload.vel_cov.values[3], payload.vel_cov.values[4], payload.vel_cov.values[5]);
-
-            // Scale velocity covariance to get approximate acceleration covariance
-            // Assuming acceleration noise is related to velocity noise / time_constant
-            const double accel_scale_factor = 0.1;  // Heuristic scaling factor
-            Eigen::Matrix3d acc_cov = vel_cov * accel_scale_factor;
-
-            std::fill(msg.linear_acceleration_covariance.begin(), msg.linear_acceleration_covariance.end(), 0.0);
-            for (int i = 0; i < 3; ++i) {
-                for (int j = 0; j < 3; ++j) {
-                    msg.linear_acceleration_covariance[i * 3 + j] = acc_cov(i, j);
-                }
+            const double accel_scale = 0.1;
+            Eigen::Matrix3d acc_cov = vel_cov * accel_scale;
+            for (int i = 0; i < 9; ++i) {
+                msg.linear_acceleration_covariance[i] = acc_cov(i / 3, i % 3);
             }
         } else {
-            // Use reasonable default values based on typical IMU performance
             std::fill(msg.linear_acceleration_covariance.begin(), msg.linear_acceleration_covariance.end(), 0.0);
-            msg.linear_acceleration_covariance[0] = 0.01;  // x variance (m/s²)²
-            msg.linear_acceleration_covariance[4] = 0.01;  // y variance
-            msg.linear_acceleration_covariance[8] = 0.01;  // z variance
+            msg.linear_acceleration_covariance[0] = 0.01;
+            msg.linear_acceleration_covariance[4] = 0.01;
+            msg.linear_acceleration_covariance[8] = 0.01;
         }
 
-        // Angular velocity covariance - use orientation covariance as a proxy if available
+        // Angular velocity covariance
         if (payload.orientation_cov.valid) {
-            // Use orientation covariance as a proxy for angular velocity noise
-            // Scale by approximate factor to convert from orientation to angular velocity covariance
             Eigen::Matrix3d ori_cov =
                 BuildCovMat3D(payload.orientation_cov.values[0], payload.orientation_cov.values[1],
                               payload.orientation_cov.values[2], payload.orientation_cov.values[3],
                               payload.orientation_cov.values[4], payload.orientation_cov.values[5]);
-
-            // Scale orientation covariance to get approximate angular velocity covariance
-            // Assuming angular velocity noise is related to orientation uncertainty / time_constant
-            const double angular_vel_scale_factor = 0.01;  // Heuristic scaling factor
-            Eigen::Matrix3d angular_vel_cov = ori_cov * angular_vel_scale_factor;
-
-            std::fill(msg.angular_velocity_covariance.begin(), msg.angular_velocity_covariance.end(), 0.0);
-            for (int i = 0; i < 3; ++i) {
-                for (int j = 0; j < 3; ++j) {
-                    msg.angular_velocity_covariance[i * 3 + j] = angular_vel_cov(i, j);
-                }
+            const double ang_vel_scale = 0.01;
+            Eigen::Matrix3d ang_vel_cov = ori_cov * ang_vel_scale;
+            for (int i = 0; i < 9; ++i) {
+                msg.angular_velocity_covariance[i] = ang_vel_cov(i / 3, i % 3);
             }
         } else {
-            // Use reasonable default values based on typical IMU performance
             std::fill(msg.angular_velocity_covariance.begin(), msg.angular_velocity_covariance.end(), 0.0);
-            msg.angular_velocity_covariance[0] = 0.001;  // x variance (rad/s)²
-            msg.angular_velocity_covariance[4] = 0.001;  // y variance
-            msg.angular_velocity_covariance[8] = 0.001;  // z variance
+            msg.angular_velocity_covariance[0] = 0.001;
+            msg.angular_velocity_covariance[4] = 0.001;
+            msg.angular_velocity_covariance[8] = 0.001;
         }
 
         pub->publish(msg);
