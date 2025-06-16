@@ -36,7 +36,7 @@ void OdometryDataToTransformStamped(const OdometryData& data, geometry_msgs::msg
 
 void PublishFpaOdometry(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload,
                         rclcpp::Publisher<fpmsgs::FpaOdometry>::SharedPtr& pub);
-void PublishFpaOdometryDataImu(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_,
+void PublishFpaOdometryDataImu(const fpsdk::common::parser::fpa::FpaOdomenuPayload& payload, bool nav2_mode_,
                                rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr& pub);
 void PublishFpaOdometryDataNavSatFix(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_,
                                      rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr& pub);

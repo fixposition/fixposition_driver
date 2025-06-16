@@ -135,7 +135,7 @@ void PublishFpaOdomsh(const fpa::FpaOdomshPayload& payload, rclcpp::Publisher<fp
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2_mode_,
+void PublishFpaOdometryDataImu(const fpa::FpaOdomenuPayload& payload, bool nav2_mode_,
                                rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         // Only publish if data is valid
