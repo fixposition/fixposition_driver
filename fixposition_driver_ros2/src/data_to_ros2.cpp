@@ -147,7 +147,7 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdomenuPayload& payload, bool nav2_
         }
         sensor_msgs::msg::Imu msg;
         msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
-        msg.header.frame_id = nav2_mode_ ? "base_link" : ODOMETRY_FRAME_ID;
+        msg.header.frame_id = nav2_mode_ ? "vrtk_link" : ODOMETRY_FRAME_ID;
 
         // Orientation quaternion
         const Eigen::Quaterniond quat = {payload.orientation.values[0], payload.orientation.values[1],
@@ -218,7 +218,7 @@ void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, boo
         sensor_msgs::msg::NavSatFix msg;
         msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
         if (nav2_mode_) {
-            msg.header.frame_id = "base_link";
+            msg.header.frame_id = "vrtk_link";
         } else {
             msg.header.frame_id = ODOMETRY_CHILD_FRAME_ID;
         }

@@ -727,7 +727,7 @@ void FixpositionDriverNode::PublishNav2Tf() {
     geometry_msgs::msg::TransformStamped tf_odom_base;
     tf_odom_base.header.stamp = tfs_.enu0_poi_->header.stamp;
     tf_odom_base.header.frame_id = "odom";
-    tf_odom_base.child_frame_id = "base_link";
+    tf_odom_base.child_frame_id = "vrtk_link";
     tf_odom_base.transform = tf2::toMsg(tf_ENU0POISH);
     // tf_br_->sendTransform(tf_odom_base);
 
