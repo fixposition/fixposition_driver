@@ -403,21 +403,20 @@ static void FpaImuPayloadToRos(const SomeFpaImuPayload& payload, sensor_msgs::ms
     }
 }
 
-void PublishFpaRawimu(const fpa::FpaRawimuPayload& payload, rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr& pub) {
+void PublishFpaRawimu(const fpa::FpaRawimuPayload& payload, rclcpp::Publisher<fpmsgs::FpaImu>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::FpaImu msg;
-        FpaImuPayloadToRos(payload, msg);
+        FpaImuPayloadToRos(payload, msg.data);
         msg.bias_comp = payload.bias_comp;
         msg.imu_status = FpaImuStatusToMsg(msg, payload.imu_status);
         pub->publish(msg);
     }
 }
 
-void PublishFpaCorrimu(const fpa::FpaCorrimuPayload& payload,
-                       rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr& pub) {
+void PublishFpaCorrimu(const fpa::FpaCorrimuPayload& payload, rclcpp::Publisher<fpmsgs::FpaImu>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::FpaImu msg;
-        FpaImuPayloadToRos(payload, msg);
+        FpaImuPayloadToRos(payload, msg.data);
         msg.bias_comp = payload.bias_comp;
         msg.imu_status = FpaImuStatusToMsg(msg, payload.imu_status);
         pub->publish(msg);

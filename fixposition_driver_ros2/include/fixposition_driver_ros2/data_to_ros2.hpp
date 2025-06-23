@@ -63,9 +63,9 @@ void PublishFpaTp(const fpsdk::common::parser::fpa::FpaTpPayload& payload,
 void PublishFpaText(const fpsdk::common::parser::fpa::FpaTextPayload& payload,
                     rclcpp::Publisher<fpmsgs::FpaText>::SharedPtr& pub);
 void PublishFpaRawimu(const fpsdk::common::parser::fpa::FpaRawimuPayload& payload,
-                      rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr& pub);
+                      rclcpp::Publisher<fpmsgs::FpaImu>::SharedPtr& pub);
 void PublishFpaCorrimu(const fpsdk::common::parser::fpa::FpaCorrimuPayload& payload,
-                       rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr& pub);
+                       rclcpp::Publisher<fpmsgs::FpaImu>::SharedPtr& pub);
 
 bool PublishNovbBestgnsspos(const fpsdk::common::parser::novb::NovbHeader* header,
                             const fpsdk::common::parser::novb::NovbBestgnsspos* payload,
