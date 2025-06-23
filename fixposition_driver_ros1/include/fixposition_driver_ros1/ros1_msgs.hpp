@@ -35,6 +35,7 @@
 #include <fixposition_driver_msgs/FpaEoe.h>
 #include <fixposition_driver_msgs/FpaGnssant.h>
 #include <fixposition_driver_msgs/FpaGnsscorr.h>
+#include <fixposition_driver_msgs/FpaImu.h>
 #include <fixposition_driver_msgs/FpaImubias.h>
 #include <fixposition_driver_msgs/FpaLlh.h>
 #include <fixposition_driver_msgs/FpaOdomenu.h>
