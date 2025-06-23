@@ -105,9 +105,9 @@ class FixpositionDriverNode {
     //! Euler angles pitch-roll as estimated from the IMU in local horizontal
     rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr eul_imu_pub_;
     // - IMU
-    rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr rawimu_pub_;   //!< Raw IMU data in IMU frame
-    rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr corrimu_pub_;  //!< Bias corrected IMU data in IMU frame
-    rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr poiimu_pub_;   //!< Bias corrected IMU data in POI frame
+    rclcpp::Publisher<fpmsgs::FpaImu>::SharedPtr rawimu_pub_;         //!< Raw IMU data in IMU frame
+    rclcpp::Publisher<fpmsgs::FpaImu>::SharedPtr corrimu_pub_;        //!< Bias corrected IMU data in IMU frame
+    rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr poiimu_pub_;  //!< Bias corrected IMU data in POI frame
     // - GNSS
     rclcpp::Publisher<fpmsgs::NmeaEpoch>::SharedPtr nmea_epoch_pub_;                 //!< NMEA epoch data
     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr navsatfix_gnss1_pub_;  //!< GNSS1 position and status

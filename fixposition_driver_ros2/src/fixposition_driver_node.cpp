@@ -250,7 +250,7 @@ bool FixpositionDriverNode::StartNode() {
 
     // FP_A-RAWIMU
     if (params_.MessageEnabled(fpa::FpaRawimuPayload::MSG_NAME)) {
-        _PUB(rawimu_pub_, sensor_msgs::msg::Imu, output_ns + "/fpa/rawimu", qos_settings_);
+        _PUB(rawimu_pub_, fpmsgs::FpaImu, output_ns + "/fpa/rawimu", qos_settings_);
         driver_.AddFpaObserver(fpa::FpaRawimuPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             PublishFpaRawimu(dynamic_cast<const fpa::FpaRawimuPayload&>(payload), rawimu_pub_);
         });
@@ -258,7 +258,7 @@ bool FixpositionDriverNode::StartNode() {
 
     // FP_A-CORRIMU
     if (params_.MessageEnabled(fpa::FpaCorrimuPayload::MSG_NAME)) {
-        _PUB(corrimu_pub_, sensor_msgs::msg::Imu, output_ns + "/fpa/corrimu", qos_settings_);
+        _PUB(corrimu_pub_, fpmsgs::FpaImu, output_ns + "/fpa/corrimu", qos_settings_);
         driver_.AddFpaObserver(fpa::FpaCorrimuPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             PublishFpaCorrimu(dynamic_cast<const fpa::FpaCorrimuPayload&>(payload), corrimu_pub_);
         });

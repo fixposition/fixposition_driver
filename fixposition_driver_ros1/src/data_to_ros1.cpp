@@ -397,16 +397,20 @@ static void FpaImuPayloadToRos(const SomeFpaImuPayload& payload, sensor_msgs::Im
 
 void PublishFpaRawimu(const fpa::FpaRawimuPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
-        sensor_msgs::Imu msg;
-        FpaImuPayloadToRos(payload, msg);
+        fixposition_driver_msgs::FpaImu msg;
+        FpaImuPayloadToRos(payload, msg.data);
+        msg.bias_comp = payload.bias_comp;
+        msg.imu_status = FpaImuStatusToMsg(msg, payload.imu_status);
         pub.publish(msg);
     }
 }
 
 void PublishFpaCorrimu(const fpa::FpaCorrimuPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
-        sensor_msgs::Imu msg;
-        FpaImuPayloadToRos(payload, msg);
+        fixposition_driver_msgs::FpaImu msg;
+        FpaImuPayloadToRos(payload, msg.data);
+        msg.bias_comp = payload.bias_comp;
+        msg.imu_status = FpaImuStatusToMsg(msg, payload.imu_status);
         pub.publish(msg);
     }
 }
