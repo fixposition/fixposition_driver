@@ -156,7 +156,7 @@ function main
         if [ ${rosver} -eq 1 ]; then
             info "    catkin build"
         else
-            info "    colcon build"
+            info "    colcon build --symlink-install"
         fi
         info ""
         exit 0
