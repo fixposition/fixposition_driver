@@ -210,7 +210,7 @@ void PublishFpaOdomenuVector3Stamped(const fpa::FpaOdomenuPayload& payload, ros:
         geometry_msgs::Vector3Stamped msg;
 
         msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
-        msg.header.frame_id = ENU_FRAME_ID;
+        msg.header.frame_id = ODOMENU_FRAME_ID;
 
         const Eigen::Quaterniond quat = {payload.orientation.values[0], payload.orientation.values[1],
                                          payload.orientation.values[2], payload.orientation.values[3]};
