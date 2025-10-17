@@ -221,7 +221,7 @@ class FixpositionDriver : private boost::noncopyable {
     // Worker thread
     fpsdk::common::parser::Parser parser_;  //!< Protocol parser for incoming messages
     fpsdk::common::thread::Thread worker_;  //!< Worker thread handle
-    void Worker(void* arg);                 //!< Worker thread
+    bool Worker(fpsdk::common::thread::Thread& thread, void* arg);  //!< Worker thread
 
     // Observers for received messages
     std::unordered_map<std::string, std::vector<FpaObserver>> fpa_observers_;    //!< FP_A message observers

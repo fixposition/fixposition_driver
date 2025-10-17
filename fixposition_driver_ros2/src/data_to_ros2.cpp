@@ -665,8 +665,8 @@ void PublishNmeaRmc(const fpsdk::common::parser::nmea::NmeaRmcPayload& payload,
         msg.status = NmeaStatusGllRmcToMsg(msg, payload.status);
         msg.mode = NmeaModeRmcGnsToMsg(msg, payload.mode);
         msg.navstatus = NmeaNavStatusRmcToMsg(msg, payload.navstatus);
-        msg.latitude = (payload.llh.latlon_valid ? payload.llh.lat : NAN);
-        msg.longitude = (payload.llh.latlon_valid ? payload.llh.lon : NAN);
+        msg.latitude = (payload.ll.latlon_valid ? payload.ll.lat : NAN);
+        msg.longitude = (payload.ll.latlon_valid ? payload.ll.lon : NAN);
         msg.speed = (payload.speed.valid ? payload.speed.value : NAN);
         msg.course = (payload.course.valid ? payload.course.value : NAN);
         pub->publish(msg);

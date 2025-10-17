@@ -39,7 +39,8 @@ using namespace fpsdk::common::parser;
 FixpositionDriver::FixpositionDriver(const DriverParams& params)
     : /* clang-format off */
     params_   { params },
-    worker_   { "driver", std::bind(&FixpositionDriver::Worker, this, std::placeholders::_1) }  // clang-format on
+    worker_   { "driver", std::bind(&FixpositionDriver::Worker, this, std::placeholders::_1, std::placeholders::_2) }
+      // clang-format on
 {}
 
 FixpositionDriver::~FixpositionDriver() { StopDriver(); }
@@ -264,10 +265,10 @@ void FixpositionDriver::StopDriver() {
     Disconnect();
 }
 
-void FixpositionDriver::Worker(void* /*arg*/) {
+bool FixpositionDriver::Worker(fpsdk::common::thread::Thread& thread, void* /*arg*/) {
     INFO("Driver running...");
 
-    while (!worker_.ShouldAbort()) {
+    while (!thread.ShouldAbort()) {
         // While we're connected to the sensor...
         if (IsConnected()) {
             // Read more data from sensor and feed the parser
@@ -311,7 +312,7 @@ void FixpositionDriver::Worker(void* /*arg*/) {
         // Reconnect after some time...
         else {
             INFO("Reconnecting in %.1f seconds...", params_.reconnect_delay_);
-            if (worker_.Sleep(params_.reconnect_delay_ * 1000)) {
+            if (thread.Sleep(params_.reconnect_delay_ * 1000) == fpsdk::common::thread::WaitRes::TIMEOUT) {
                 break;
             }
             Connect();
