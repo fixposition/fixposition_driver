@@ -213,7 +213,7 @@ void PublishFpaOdomenuVector3Stamped(const fpa::FpaOdomenuPayload& payload,
         geometry_msgs::msg::Vector3Stamped msg;
 
         msg.header.stamp = ros2::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
-        msg.header.frame_id = ENU_FRAME_ID;
+        msg.header.frame_id = ODOMENU_FRAME_ID;
 
         const Eigen::Quaterniond quat = {payload.orientation.values[0], payload.orientation.values[1],
                                          payload.orientation.values[2], payload.orientation.values[3]};
@@ -403,19 +403,22 @@ static void FpaImuPayloadToRos(const SomeFpaImuPayload& payload, sensor_msgs::ms
     }
 }
 
-void PublishFpaRawimu(const fpa::FpaRawimuPayload& payload, rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr& pub) {
+void PublishFpaRawimu(const fpa::FpaRawimuPayload& payload, rclcpp::Publisher<fpmsgs::FpaImu>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
-        sensor_msgs::msg::Imu msg;
-        FpaImuPayloadToRos(payload, msg);
+        fpmsgs::FpaImu msg;
+        FpaImuPayloadToRos(payload, msg.data);
+        msg.bias_comp = payload.bias_comp;
+        msg.imu_status = FpaImuStatusToMsg(msg, payload.imu_status);
         pub->publish(msg);
     }
 }
 
-void PublishFpaCorrimu(const fpa::FpaCorrimuPayload& payload,
-                       rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr& pub) {
+void PublishFpaCorrimu(const fpa::FpaCorrimuPayload& payload, rclcpp::Publisher<fpmsgs::FpaImu>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
-        sensor_msgs::msg::Imu msg;
-        FpaImuPayloadToRos(payload, msg);
+        fpmsgs::FpaImu msg;
+        FpaImuPayloadToRos(payload, msg.data);
+        msg.bias_comp = payload.bias_comp;
+        msg.imu_status = FpaImuStatusToMsg(msg, payload.imu_status);
         pub->publish(msg);
     }
 }

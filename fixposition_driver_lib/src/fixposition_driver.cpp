@@ -35,12 +35,12 @@ namespace fixposition {
 
 using namespace fpsdk::common;
 using namespace fpsdk::common::parser;
+using namespace fpsdk::common::thread;
 
 FixpositionDriver::FixpositionDriver(const DriverParams& params)
     : /* clang-format off */
     params_   { params },
-    worker_   { "driver", std::bind(&FixpositionDriver::Worker, this, std::placeholders::_1, std::placeholders::_2) }
-      // clang-format on
+    worker_   { "driver", std::bind(&FixpositionDriver::Worker, this) }  // clang-format on
 {}
 
 FixpositionDriver::~FixpositionDriver() { StopDriver(); }
@@ -261,11 +261,13 @@ bool FixpositionDriver::Write(const uint8_t* buf, const std::size_t size) {
 bool FixpositionDriver::StartDriver() { return Connect() && worker_.Start(); }
 
 void FixpositionDriver::StopDriver() {
-    worker_.Stop();
+    if (worker_.GetStatus() == worker_.Status::RUNNING) {
+        worker_.Stop();
+    }
     Disconnect();
 }
 
-bool FixpositionDriver::Worker(fpsdk::common::thread::Thread& thread, void* /*arg*/) {
+bool FixpositionDriver::Worker() {
     INFO("Driver running...");
 
     while (!thread.ShouldAbort()) {
@@ -312,12 +314,13 @@ bool FixpositionDriver::Worker(fpsdk::common::thread::Thread& thread, void* /*ar
         // Reconnect after some time...
         else {
             INFO("Reconnecting in %.1f seconds...", params_.reconnect_delay_);
-            if (thread.Sleep(params_.reconnect_delay_ * 1000) == fpsdk::common::thread::WaitRes::TIMEOUT) {
+            if (worker_.Sleep(params_.reconnect_delay_ * 1000) == WaitRes::WOKEN) {
                 break;
             }
             Connect();
         }
     }
+    return true;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

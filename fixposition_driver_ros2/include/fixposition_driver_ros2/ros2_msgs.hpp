@@ -37,6 +37,7 @@
 #include <fixposition_driver_msgs/msg/fpa_eoe.hpp>
 #include <fixposition_driver_msgs/msg/fpa_gnssant.hpp>
 #include <fixposition_driver_msgs/msg/fpa_gnsscorr.hpp>
+#include <fixposition_driver_msgs/msg/fpa_imu.hpp>
 #include <fixposition_driver_msgs/msg/fpa_imubias.hpp>
 #include <fixposition_driver_msgs/msg/fpa_llh.hpp>
 #include <fixposition_driver_msgs/msg/fpa_odomenu.hpp>
