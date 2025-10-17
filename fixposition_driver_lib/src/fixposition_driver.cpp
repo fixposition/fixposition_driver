@@ -270,7 +270,7 @@ void FixpositionDriver::StopDriver() {
 bool FixpositionDriver::Worker() {
     INFO("Driver running...");
 
-    while (!thread.ShouldAbort()) {
+    while (!worker_.ShouldAbort()) {
         // While we're connected to the sensor...
         if (IsConnected()) {
             // Read more data from sensor and feed the parser

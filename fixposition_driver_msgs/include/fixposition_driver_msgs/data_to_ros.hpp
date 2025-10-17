@@ -630,6 +630,7 @@ inline int NmeaSignalIdToMsg(const RosMsgT& msg, const fpsdk::common::parser::nm
         case fpsdk::common::parser::nmea::NmeaSignalId::GLO_L1OF:    return msg.consts.SIGNAL_ID_GLO_L1OF;
         case fpsdk::common::parser::nmea::NmeaSignalId::GLO_L2OF:    return msg.consts.SIGNAL_ID_GLO_L2OF;
         case fpsdk::common::parser::nmea::NmeaSignalId::NAVIC_L5A:   return msg.consts.SIGNAL_ID_NAVIC_L5A;
+        default:                                                     return msg.consts.SIGNAL_ID_UNSPECIFIED;
     }
     // clang-format on
     return msg.consts.SIGNAL_ID_UNSPECIFIED;
