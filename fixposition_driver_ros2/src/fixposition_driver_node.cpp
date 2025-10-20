@@ -625,7 +625,7 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
 
             // Output jump warning
             if (params_.cov_warning_ && odometry_data.valid && jump_detector_.Check(odometry_data)) {
-                RCLCPP_WARN(logger_, jump_detector_.warning_.c_str());
+                RCLCPP_WARN(logger_, "%s", jump_detector_.warning_.c_str());
                 PublishJumpWarning(jump_detector_, jump_pub_);
             }
 
