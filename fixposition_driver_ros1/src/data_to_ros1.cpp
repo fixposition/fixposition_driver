@@ -509,7 +509,7 @@ bool PublishNovbInspvax(const novb::NovbHeader* header, const novb::NovbInspvax*
 void PublishNmeaGga(const fpsdk::common::parser::nmea::NmeaGgaPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::NmeaGga msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         if (payload.time.valid) {
             msg.time_valid = true;
             msg.time_h = payload.time.hours;
@@ -533,7 +533,7 @@ void PublishNmeaGga(const fpsdk::common::parser::nmea::NmeaGgaPayload& payload, 
 void PublishNmeaGll(const fpsdk::common::parser::nmea::NmeaGllPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::NmeaGll msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         if (payload.time.valid) {
             msg.time_valid = true;
             msg.time_h = payload.time.hours;
@@ -553,7 +553,7 @@ void PublishNmeaGll(const fpsdk::common::parser::nmea::NmeaGllPayload& payload, 
 void PublishNmeaGsa(const fpsdk::common::parser::nmea::NmeaGsaPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::NmeaGsa msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         msg.system = NmeaSystemIdToMsg(msg, payload.system);
         msg.opmode = NmeaOpModeGsaToMsg(msg, payload.opmode);
         msg.navmode = NmeaNavModeGsaToMsg(msg, payload.navmode);
@@ -574,7 +574,7 @@ void PublishNmeaGsa(const fpsdk::common::parser::nmea::NmeaGsaPayload& payload, 
 void PublishNmeaGst(const fpsdk::common::parser::nmea::NmeaGstPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::NmeaGst msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         if (payload.time.valid) {
             msg.time_valid = true;
             msg.time_h = payload.time.hours;
@@ -596,8 +596,8 @@ void PublishNmeaGst(const fpsdk::common::parser::nmea::NmeaGstPayload& payload, 
 void PublishNmeaGsv(const fpsdk::common::parser::nmea::NmeaGsvPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::NmeaGsv msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         msg.system = NmeaSystemIdToMsg(msg, payload.system);
         msg.signal = NmeaSignalIdToMsg(msg, payload.signal);
         msg.num_msgs = payload.num_msgs.value;
@@ -624,7 +624,7 @@ void PublishNmeaGsv(const fpsdk::common::parser::nmea::NmeaGsvPayload& payload, 
 void PublishNmeaHdt(const fpsdk::common::parser::nmea::NmeaHdtPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::NmeaHdt msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         msg.heading = (payload.heading.valid ? payload.heading.value : NAN);
         pub.publish(msg);
     }
@@ -635,7 +635,7 @@ void PublishNmeaHdt(const fpsdk::common::parser::nmea::NmeaHdtPayload& payload, 
 void PublishNmeaRmc(const fpsdk::common::parser::nmea::NmeaRmcPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::NmeaRmc msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         if (payload.date.valid) {
             msg.date_valid = true;
             msg.date_y = payload.date.years;
@@ -651,8 +651,8 @@ void PublishNmeaRmc(const fpsdk::common::parser::nmea::NmeaRmcPayload& payload, 
         msg.status = NmeaStatusGllRmcToMsg(msg, payload.status);
         msg.mode = NmeaModeRmcGnsToMsg(msg, payload.mode);
         msg.navstatus = NmeaNavStatusRmcToMsg(msg, payload.navstatus);
-        msg.latitude = (payload.llh.latlon_valid ? payload.llh.lat : NAN);
-        msg.longitude = (payload.llh.latlon_valid ? payload.llh.lon : NAN);
+        msg.latitude = (payload.ll.latlon_valid ? payload.ll.lat : NAN);
+        msg.longitude = (payload.ll.latlon_valid ? payload.ll.lon : NAN);
         msg.speed = (payload.speed.valid ? payload.speed.value : NAN);
         msg.course = (payload.course.valid ? payload.course.value : NAN);
         pub.publish(msg);
@@ -664,7 +664,7 @@ void PublishNmeaRmc(const fpsdk::common::parser::nmea::NmeaRmcPayload& payload, 
 void PublishNmeaVtg(const fpsdk::common::parser::nmea::NmeaVtgPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::NmeaVtg msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         msg.cogt = (payload.cogt.valid ? payload.cogt.value : NAN);
         msg.cogm = (payload.cogm.valid ? payload.cogm.value : NAN);
         msg.sogn = (payload.sogn.valid ? payload.sogn.value : NAN);
@@ -679,7 +679,7 @@ void PublishNmeaVtg(const fpsdk::common::parser::nmea::NmeaVtgPayload& payload, 
 void PublishNmeaZda(const fpsdk::common::parser::nmea::NmeaZdaPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::NmeaZda msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         if (payload.date.valid) {
             msg.date_valid = true;
             msg.date_y = payload.date.years;

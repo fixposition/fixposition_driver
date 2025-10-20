@@ -520,7 +520,7 @@ void PublishNmeaGga(const fpsdk::common::parser::nmea::NmeaGgaPayload& payload,
                     rclcpp::Publisher<fpmsgs::NmeaGga>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::NmeaGga msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         if (payload.time.valid) {
             msg.time_valid = true;
             msg.time_h = payload.time.hours;
@@ -545,7 +545,7 @@ void PublishNmeaGll(const fpsdk::common::parser::nmea::NmeaGllPayload& payload,
                     rclcpp::Publisher<fpmsgs::NmeaGll>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::NmeaGll msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         if (payload.time.valid) {
             msg.time_valid = true;
             msg.time_h = payload.time.hours;
@@ -566,7 +566,7 @@ void PublishNmeaGsa(const fpsdk::common::parser::nmea::NmeaGsaPayload& payload,
                     rclcpp::Publisher<fpmsgs::NmeaGsa>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::NmeaGsa msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         msg.system = NmeaSystemIdToMsg(msg, payload.system);
         msg.opmode = NmeaOpModeGsaToMsg(msg, payload.opmode);
         msg.navmode = NmeaNavModeGsaToMsg(msg, payload.navmode);
@@ -588,7 +588,7 @@ void PublishNmeaGst(const fpsdk::common::parser::nmea::NmeaGstPayload& payload,
                     rclcpp::Publisher<fpmsgs::NmeaGst>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::NmeaGst msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         if (payload.time.valid) {
             msg.time_valid = true;
             msg.time_h = payload.time.hours;
@@ -611,8 +611,8 @@ void PublishNmeaGsv(const fpsdk::common::parser::nmea::NmeaGsvPayload& payload,
                     rclcpp::Publisher<fpmsgs::NmeaGsv>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::NmeaGsv msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         msg.system = NmeaSystemIdToMsg(msg, payload.system);
         msg.signal = NmeaSignalIdToMsg(msg, payload.signal);
         msg.num_msgs = payload.num_msgs.value;
@@ -640,7 +640,7 @@ void PublishNmeaHdt(const fpsdk::common::parser::nmea::NmeaHdtPayload& payload,
                     rclcpp::Publisher<fpmsgs::NmeaHdt>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::NmeaHdt msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         msg.heading = (payload.heading.valid ? payload.heading.value : NAN);
         pub->publish(msg);
     }
@@ -652,7 +652,7 @@ void PublishNmeaRmc(const fpsdk::common::parser::nmea::NmeaRmcPayload& payload,
                     rclcpp::Publisher<fpmsgs::NmeaRmc>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::NmeaRmc msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         if (payload.date.valid) {
             msg.date_valid = true;
             msg.date_y = payload.date.years;
@@ -668,8 +668,8 @@ void PublishNmeaRmc(const fpsdk::common::parser::nmea::NmeaRmcPayload& payload,
         msg.status = NmeaStatusGllRmcToMsg(msg, payload.status);
         msg.mode = NmeaModeRmcGnsToMsg(msg, payload.mode);
         msg.navstatus = NmeaNavStatusRmcToMsg(msg, payload.navstatus);
-        msg.latitude = (payload.llh.latlon_valid ? payload.llh.lat : NAN);
-        msg.longitude = (payload.llh.latlon_valid ? payload.llh.lon : NAN);
+        msg.latitude = (payload.ll.latlon_valid ? payload.ll.lat : NAN);
+        msg.longitude = (payload.ll.latlon_valid ? payload.ll.lon : NAN);
         msg.speed = (payload.speed.valid ? payload.speed.value : NAN);
         msg.course = (payload.course.valid ? payload.course.value : NAN);
         pub->publish(msg);
@@ -682,7 +682,7 @@ void PublishNmeaVtg(const fpsdk::common::parser::nmea::NmeaVtgPayload& payload,
                     rclcpp::Publisher<fpmsgs::NmeaVtg>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::NmeaVtg msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         msg.cogt = (payload.cogt.valid ? payload.cogt.value : NAN);
         msg.cogm = (payload.cogm.valid ? payload.cogm.value : NAN);
         msg.sogn = (payload.sogn.valid ? payload.sogn.value : NAN);
@@ -698,7 +698,7 @@ void PublishNmeaZda(const fpsdk::common::parser::nmea::NmeaZdaPayload& payload,
                     rclcpp::Publisher<fpmsgs::NmeaZda>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         fpmsgs::NmeaZda msg;
-        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker);
+        msg.talker = NmeaTalkerIdToMsg(msg, payload.talker_);
         if (payload.date.valid) {
             msg.date_valid = true;
             msg.date_y = payload.date.years;

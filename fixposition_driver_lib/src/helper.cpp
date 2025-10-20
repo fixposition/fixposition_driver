@@ -304,8 +304,8 @@ NmeaEpochData NmeaEpochData::CompleteAndReset() {
     else if (rmc_.time.valid) { time_ = rmc_.time; }
     else if (zda_.time.valid) { time_ = zda_.time; }
     if      (gga_.llh.latlon_valid) { llh_ = gga_.llh; }
-    else if (rmc_.llh.latlon_valid) { llh_ = rmc_.llh; }
-    else if (gll_.ll.latlon_valid)  { llh_ = gll_.ll; } // last as it does not have height
+    else if (rmc_.ll.latlon_valid)  { llh_ = rmc_.ll;  }
+    else if (gll_.ll.latlon_valid)  { llh_ = gll_.ll;  } // last as it does not have height
     // clang-format on
 
     status_ = (gll_.status > rmc_.status ? gll_.status : rmc_.status);
