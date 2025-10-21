@@ -58,6 +58,8 @@ bool PublishNovbBestgnsspos(const fpsdk::common::parser::novb::NovbHeader* heade
                             ros::Publisher& pub2);
 bool PublishNovbInspvax(const fpsdk::common::parser::novb::NovbHeader* header,
                         const fpsdk::common::parser::novb::NovbInspvax* payload, ros::Publisher& pub);
+bool PublishNovbHeading2(const fpsdk::common::parser::novb::NovbHeader* header,
+                         const fpsdk::common::parser::novb::NovbHeading2* payload, ros::Publisher& pub);
 
 void PublishNmeaGga(const fpsdk::common::parser::nmea::NmeaGgaPayload& payload, ros::Publisher& pub);
 void PublishNmeaGll(const fpsdk::common::parser::nmea::NmeaGllPayload& payload, ros::Publisher& pub);

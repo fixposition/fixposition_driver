@@ -506,6 +506,47 @@ bool PublishNovbInspvax(const novb::NovbHeader* header, const novb::NovbInspvax*
 
 // ---------------------------------------------------------------------------------------------------------------------
 
+static void NovbHeading2ToMsg(const novb::NovbHeader* header, const novb::NovbHeading2* payload,
+                              fixposition_driver_msgs::NovbHeading2& msg) {
+    if ((header != NULL) && (payload != NULL) && header->IsLongHeader()) {
+        time::Time stamp;
+        if (stamp.SetWnoTow({header->long_header.gps_week, (double)header->long_header.gps_milliseconds * 1e-3,
+                             time::WnoTow::Sys::GPS})) {
+            msg.header.stamp = ros1::utils::ConvTime(stamp);
+        }
+
+        msg.sol_status = payload->sol_status;
+        msg.pos_type = payload->pos_type;
+        msg.length = payload->length;
+        msg.heading = payload->heading;
+        msg.pitch = payload->pitch;
+        msg.reserved = payload->reserved;
+        msg.heading_stdev = payload->heading_stdev;
+        msg.pitch_stdev = payload->pitch_stdev;
+        std::copy(std::begin(payload->rover_stn_id), std::end(payload->rover_stn_id), std::begin(msg.rover_stn_id));
+        std::copy(std::begin(payload->master_stn_id), std::end(payload->master_stn_id), std::begin(msg.master_stn_id));
+        msg.num_sv_tracked = payload->num_sv_tracked;
+        msg.num_sv_in_sol = payload->num_sv_in_sol;
+        msg.num_sv_obs = payload->num_sv_obs;
+        msg.num_sv_multi = payload->num_sv_multi;
+        msg.sol_source = payload->sol_source;
+        msg.ext_sol_status = payload->ext_sol_status;
+        msg.galileo_beidou_sig_mask = payload->galileo_beidou_sig_mask;
+        msg.gps_glonass_sig_mask = payload->gps_glonass_sig_mask;
+    }
+}
+
+bool PublishNovbHeading2(const novb::NovbHeader* header, const novb::NovbHeading2* payload, ros::Publisher& pub) {
+    if (pub.getNumSubscribers() > 0) {
+        fixposition_driver_msgs::NovbHeading2 msg;
+        NovbHeading2ToMsg(header, payload, msg);
+        pub.publish(msg);
+    }
+    return true;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+
 void PublishNmeaGga(const fpsdk::common::parser::nmea::NmeaGgaPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::NmeaGga msg;

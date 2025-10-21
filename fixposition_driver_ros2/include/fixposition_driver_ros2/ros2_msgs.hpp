@@ -58,6 +58,7 @@
 #include <fixposition_driver_msgs/msg/nmea_zda.hpp>
 // - NOV-B
 #include <fixposition_driver_msgs/msg/novb_inspvax.hpp>
+#include <fixposition_driver_msgs/msg/novb_heading2.hpp>
 
 // Shortcut
 namespace fpmsgs = fixposition_driver_msgs::msg;
