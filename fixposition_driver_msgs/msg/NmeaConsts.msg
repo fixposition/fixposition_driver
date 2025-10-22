@@ -96,6 +96,7 @@ int8   SIGNAL_ID_BDS_B1ID                          =  41  # BeiDou B1I D
 int8   SIGNAL_ID_BDS_B2ID                          =  42  # BeiDou B2I D
 int8   SIGNAL_ID_BDS_B1C                           =  43  # BeiDou B1 C
 int8   SIGNAL_ID_BDS_B2A                           =  44  # BeiDou B2 a
+int8   SIGNAL_ID_BDS_B2B                           =  45  # BeiDou B2 b
 int8   SIGNAL_ID_QZSS_L1CA                         =  51  # QZSS L1 C/A
 int8   SIGNAL_ID_QZSS_L1S                          =  52  # QZSS L1S
 int8   SIGNAL_ID_QZSS_L2CM                         =  53  # QZSS L2 CM
