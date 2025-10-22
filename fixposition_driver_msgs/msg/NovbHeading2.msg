@@ -12,8 +12,8 @@ float32 pitch                      # Pitch (degrees)
 float32 reserved                   # Reserved
 float32 heading_stdev              # Heading standard deviation (degrees)
 float32 pitch_stdev                # Pitch standard deviation (degrees)
-uint8[4] rover_stn_id              # Rover station ID
-uint8[4] master_stn_id             # Master station ID
+string rover_stn_id                # Rover station ID
+string master_stn_id               # Master station ID
 uint8 num_sv_tracked               # Number of satellites tracked
 uint8 num_sv_in_sol                # Number of satellites in solution
 uint8 num_sv_obs                   # Number of satellites with observations
