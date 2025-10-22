@@ -524,11 +524,10 @@ static void NovbHeading2ToMsg(const novb::NovbHeader* header, const novb::NovbHe
         msg.heading_stdev = payload->heading_stdev;
         msg.pitch_stdev = payload->pitch_stdev;
         msg.rover_stn_id = fpsdk::common::string::BufToStr(
-                               {payload->rover_stn_id, payload->rover_stn_id + sizeof(payload->rover_stn_id)})
-                               msg.master_stn_id =
-            fpsdk::common::string::BufToStr(
-                {payload->master_stn_id, payload->master_stn_id + sizeof(payload->master_stn_id)}) msg.num_sv_tracked =
-                payload->num_sv_tracked;
+            {payload->rover_stn_id, payload->rover_stn_id + sizeof(payload->rover_stn_id)});
+        msg.master_stn_id = fpsdk::common::string::BufToStr(
+                                {payload->master_stn_id, payload->master_stn_id + sizeof(payload->master_stn_id)})
+                                msg.num_sv_tracked = payload->num_sv_tracked;
         msg.num_sv_in_sol = payload->num_sv_in_sol;
         msg.num_sv_obs = payload->num_sv_obs;
         msg.num_sv_multi = payload->num_sv_multi;
