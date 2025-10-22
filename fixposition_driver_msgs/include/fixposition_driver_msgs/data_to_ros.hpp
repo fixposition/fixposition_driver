@@ -623,6 +623,7 @@ inline int NmeaSignalIdToMsg(const RosMsgT& msg, const fpsdk::common::parser::nm
         case fpsdk::common::parser::nmea::NmeaSignalId::BDS_B2ID:    return msg.consts.SIGNAL_ID_BDS_B2ID;
         case fpsdk::common::parser::nmea::NmeaSignalId::BDS_B1C:     return msg.consts.SIGNAL_ID_BDS_B1C;
         case fpsdk::common::parser::nmea::NmeaSignalId::BDS_B2A:     return msg.consts.SIGNAL_ID_BDS_B2A;
+        case fpsdk::common::parser::nmea::NmeaSignalId::BDS_B2B:     return msg.consts.SIGNAL_ID_BDS_B2B;
         case fpsdk::common::parser::nmea::NmeaSignalId::QZSS_L1CA:   return msg.consts.SIGNAL_ID_QZSS_L1CA;
         case fpsdk::common::parser::nmea::NmeaSignalId::QZSS_L1S:    return msg.consts.SIGNAL_ID_QZSS_L1S;
         case fpsdk::common::parser::nmea::NmeaSignalId::QZSS_L2CM:   return msg.consts.SIGNAL_ID_QZSS_L2CM;
