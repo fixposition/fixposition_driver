@@ -86,7 +86,8 @@ class FixpositionDriverNode {
     ros::Publisher nmea_vtg_pub_;  //!< NMEA-GP-VTG message
     ros::Publisher nmea_zda_pub_;  //!< NMEA-GP-ZDA message
     // - NOV_B messages
-    ros::Publisher novb_inspvax_pub_;  //!< NOV_B-INSPVAX message
+    ros::Publisher novb_inspvax_pub_;   //!< NOV_B-INSPVAX message
+    ros::Publisher novb_heading2_pub_;  //!< NOV_B-HEADING2 message
     // - Odometry
     ros::Publisher odometry_ecef_pub_;        //!< ECEF odometry
     ros::Publisher odometry_enu_pub_;         //!< ENU odometry

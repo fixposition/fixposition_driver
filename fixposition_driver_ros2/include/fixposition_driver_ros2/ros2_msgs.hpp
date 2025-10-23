@@ -57,6 +57,7 @@
 #include <fixposition_driver_msgs/msg/nmea_vtg.hpp>
 #include <fixposition_driver_msgs/msg/nmea_zda.hpp>
 // - NOV-B
+#include <fixposition_driver_msgs/msg/novb_heading2.hpp>
 #include <fixposition_driver_msgs/msg/novb_inspvax.hpp>
 
 // Shortcut

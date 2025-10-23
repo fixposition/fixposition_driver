@@ -74,6 +74,9 @@ bool PublishNovbBestgnsspos(const fpsdk::common::parser::novb::NovbHeader* heade
 bool PublishNovbInspvax(const fpsdk::common::parser::novb::NovbHeader* header,
                         const fpsdk::common::parser::novb::NovbInspvax* payload,
                         rclcpp::Publisher<fpmsgs::NovbInspvax>::SharedPtr& pub);
+bool PublishNovbHeading2(const fpsdk::common::parser::novb::NovbHeader* header,
+                         const fpsdk::common::parser::novb::NovbHeading2* payload,
+                         rclcpp::Publisher<fpmsgs::NovbHeading2>::SharedPtr& pub);
 
 void PublishNmeaGga(const fpsdk::common::parser::nmea::NmeaGgaPayload& payload,
                     rclcpp::Publisher<fpmsgs::NmeaGga>::SharedPtr& pub);

@@ -90,7 +90,8 @@ class FixpositionDriverNode {
     rclcpp::Publisher<fpmsgs::NmeaVtg>::SharedPtr nmea_vtg_pub_;  //!< NMEA-GP-VTG message
     rclcpp::Publisher<fpmsgs::NmeaZda>::SharedPtr nmea_zda_pub_;  //!< NMEA-GP-ZDA message
     // - NOV_B messages
-    rclcpp::Publisher<fpmsgs::NovbInspvax>::SharedPtr novb_inspvax_pub_;  //!< NOV_B-INSPVAX message
+    rclcpp::Publisher<fpmsgs::NovbInspvax>::SharedPtr novb_inspvax_pub_;    //!< NOV_B-INSPVAX message
+    rclcpp::Publisher<fpmsgs::NovbHeading2>::SharedPtr novb_heading2_pub_;  //!< NOV_B-HEADING2 message
     // - Odometry
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_ecef_pub_;        //!< ECEF odometry
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_enu_pub_;         //!< ENU odometry

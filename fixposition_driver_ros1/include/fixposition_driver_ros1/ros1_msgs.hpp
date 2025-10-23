@@ -55,6 +55,7 @@
 #include <fixposition_driver_msgs/NmeaVtg.h>
 #include <fixposition_driver_msgs/NmeaZda.h>
 // - NOV-B
+#include <fixposition_driver_msgs/NovbHeading2.h>
 #include <fixposition_driver_msgs/NovbInspvax.h>
 
 #pragma GCC diagnostic pop
