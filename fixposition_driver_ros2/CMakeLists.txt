@@ -27,6 +27,7 @@ find_package(fixposition_driver_msgs REQUIRED)
 find_package(rtcm_msgs REQUIRED)
 find_package(fpsdk_common REQUIRED)
 find_package(fpsdk_ros2 REQUIRED)
+find_package(rosbag2_cpp REQUIRED)
 
 include_directories(
   include
@@ -53,6 +54,7 @@ target_link_libraries(
   ${Boost_LIBRARIES}
   ${EIGEN3_LIBRARIES}
   ${fpsdk_common_LIBRARIES} ${fpsdk_ros2_LIBRARIES}
+  ${rosbag2_cpp_TARGETS}
   pthread
 )
 

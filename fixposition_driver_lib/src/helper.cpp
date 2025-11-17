@@ -104,23 +104,23 @@ bool TwistWithCovData::SetFromFpaOdomPayload(const fpa::FpaOdomPayload& payload)
 
 bool OdometryData::SetFromFpaOdomPayload(const fpa::FpaOdomPayload& payload) {
     bool ok = true;
-    switch (payload.which) {
-        case fpa::FpaOdomPayload::Which::ODOMETRY:
+    switch (payload.msg_type_) {
+        case fpa::FpaMessageType::ODOMETRY:
             frame_id = ODOMETRY_FRAME_ID;
             child_frame_id = ODOMETRY_CHILD_FRAME_ID;
             type = Type::ODOMETRY;
             break;
-        case fpa::FpaOdomPayload::Which::ODOMSH:
+        case fpa::FpaMessageType::ODOMSH:
             frame_id = ODOMSH_FRAME_ID;
             child_frame_id = ODOMSH_CHILD_FRAME_ID;
             type = Type::ODOMSH;
             break;
-        case fpa::FpaOdomPayload::Which::ODOMENU:
+        case fpa::FpaMessageType::ODOMENU:
             frame_id = ODOMENU_FRAME_ID;
             child_frame_id = ODOMENU_CHILD_FRAME_ID;
             type = Type::ODOMENU;
             break;
-        case fpa::FpaOdomPayload::Which::UNSPECIFIED:
+        default:
             ok = false;
             type = Type::UNSPECIFIED;
             break;
