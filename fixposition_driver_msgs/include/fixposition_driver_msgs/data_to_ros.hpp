@@ -652,6 +652,7 @@ inline int ParserProtocolToMsg(const RosMsgT& msg, const fpsdk::common::parser::
         case fpsdk::common::parser::Protocol::RTCM3:  return msg.PROTOCOL_RTCM3;
         case fpsdk::common::parser::Protocol::UNI_B:  return msg.PROTOCOL_UNI_B;
         case fpsdk::common::parser::Protocol::NOV_B:  return msg.PROTOCOL_NOV_B;
+        case fpsdk::common::parser::Protocol::SBF:    return msg.PROTOCOL_SBF;
         case fpsdk::common::parser::Protocol::SPARTN: return msg.PROTOCOL_SPARTN;
         case fpsdk::common::parser::Protocol::OTHER:  return msg.PROTOCOL_OTHER;
     }
