@@ -17,6 +17,7 @@ int8    PROTOCOL_NOV_B       =  7
 int8    PROTOCOL_SPARTN      =  8
 int8    PROTOCOL_OTHER       =  9
 int8    PROTOCOL_SBF         = 10
+int8    PROTOCOL_QGC         = 11
 uint8[] data                      # Message data
 string  name                      # Message name
 uint64  seq                       # Message counter
