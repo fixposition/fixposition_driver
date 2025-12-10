@@ -300,13 +300,7 @@ bool FixpositionDriver::Worker() {
                     case parser::Protocol::NOV_B:
                         NotifyNovbObservers(msg);
                         break;
-                    case parser::Protocol::FP_B:
-                    case parser::Protocol::UBX:
-                    case parser::Protocol::RTCM3:
-                    case parser::Protocol::UNI_B:
-                    case parser::Protocol::SBF:
-                    case parser::Protocol::SPARTN:
-                    case parser::Protocol::OTHER:
+                    default:
                         break;
                 }
                 NotifyRawObservers(msg);
