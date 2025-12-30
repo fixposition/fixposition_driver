@@ -16,6 +16,7 @@
 
 /* EXTERNAL */
 #include <fpsdk_ros2/ext/rclcpp.hpp>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
 
 /* PACKAGE */
 #include "fixposition_driver_ros2/params.hpp"
@@ -23,7 +24,8 @@
 namespace fixposition {
 /* ****************************************************************************************************************** */
 
-bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params) {
+template <typename NodeT>
+bool LoadParamsFromRos2(const std::shared_ptr<NodeT>& nh, DriverParams& params) {
     auto logger = nh->get_logger();
     bool ok = true;
 
@@ -193,7 +195,8 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params)
     return ok;
 }
 
-bool LoadDiagnosticsParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DiagnosticsParams& params) {
+template <typename NodeT>
+bool LoadDiagnosticsParamsFromRos2(const std::shared_ptr<NodeT>& nh, DiagnosticsParams& params) {
     auto logger = nh->get_logger();
     bool ok = true;
 
@@ -243,6 +246,14 @@ bool LoadDiagnosticsParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, Diagnostic
 
     return ok;
 }
+
+template bool LoadParamsFromRos2<rclcpp::Node>(const std::shared_ptr<rclcpp::Node>& nh, DriverParams& params);
+template bool LoadParamsFromRos2<rclcpp_lifecycle::LifecycleNode>(
+    const std::shared_ptr<rclcpp_lifecycle::LifecycleNode>& nh, DriverParams& params);
+template bool LoadDiagnosticsParamsFromRos2<rclcpp::Node>(const std::shared_ptr<rclcpp::Node>& nh,
+                                                          DiagnosticsParams& params);
+template bool LoadDiagnosticsParamsFromRos2<rclcpp_lifecycle::LifecycleNode>(
+    const std::shared_ptr<rclcpp_lifecycle::LifecycleNode>& nh, DiagnosticsParams& params);
 
 /* ****************************************************************************************************************** */
 }  // namespace fixposition

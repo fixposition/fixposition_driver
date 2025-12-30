@@ -18,7 +18,9 @@
 #include <cstring>
 #include <functional>
 #include <future>
+#include <limits>
 #include <memory>
+#include <utility>
 #include <vector>
 
 /* EXTERNAL */
@@ -30,6 +32,9 @@
 #include <fpsdk_common/trafo.hpp>
 #include <fpsdk_common/types.hpp>
 #include <fpsdk_ros2/utils.hpp>
+#include <rclcpp/create_publisher.hpp>
+#include <rclcpp/create_subscription.hpp>
+#include <rclcpp/create_timer.hpp>
 
 /* PACKAGE */
 #include "fixposition_driver_ros2/fixposition_driver_node.hpp"
@@ -40,16 +45,30 @@ namespace fixposition {
 using namespace fpsdk::common;
 using namespace fpsdk::common::parser;
 
-FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> nh, const DriverParams& params,
+namespace {
+void AddFpaInt(diagnostic_updater::DiagnosticStatusWrapper& status, const std::string& key,
+               const fpa::FpaInt& value) {
+    status.add(key + "_valid", value.valid);
+    status.add(key, value.valid ? value.value : -1);
+}
+
+void AddFpaFloat(diagnostic_updater::DiagnosticStatusWrapper& status, const std::string& key,
+                 const fpa::FpaFloat& value) {
+    status.add(key + "_valid", value.valid);
+    status.add(key, value.valid ? value.value : std::numeric_limits<double>::quiet_NaN());
+}
+}  // namespace
+
+FixpositionDriverNode::FixpositionDriverNode(NodeInterfaces node_interfaces, const DriverParams& params,
                                              const DiagnosticsParams& diagnostics_params) /* clang-format off */ :
-    nh_                { nh },
+    node_interfaces_   { std::move(node_interfaces) },
     params_            { params },
-    logger_            { nh_->get_logger() },
+    logger_            { node_interfaces_.logging_->get_logger() },
     driver_            { params },
     qos_settings_      { rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default) },
     diagnostics_params_ { diagnostics_params },
+    clock_             { node_interfaces_.clock_->get_clock() },
     nmea_epoch_data_   { params_.nmea_epoch_ }  // clang-format on
-
 {
     // Override default QoS settings
     // - Short-queue sensor-type QoS
@@ -86,7 +105,7 @@ void FixpositionDriverNode::ResetDiagnosticsState() {
 
 void FixpositionDriverNode::RecordRxTime() {
     std::lock_guard<std::mutex> lock(diagnostics_mutex_);
-    last_rx_time_ = nh_->get_clock()->now();
+    last_rx_time_ = clock_->now();
     have_rx_time_ = true;
 }
 
@@ -116,7 +135,7 @@ void FixpositionDriverNode::StoreText(const fpa::FpaTextPayload& payload) {
 }
 
 void FixpositionDriverNode::DiagnosticsDriver(diagnostic_updater::DiagnosticStatusWrapper& status) {
-    rclcpp::Time now = nh_->get_clock()->now();
+    rclcpp::Time now = clock_->now();
     bool running = false;
     bool have_rx = false;
     rclcpp::Time last_rx;
@@ -236,16 +255,16 @@ void FixpositionDriverNode::DiagnosticsGnss(diagnostic_updater::DiagnosticStatus
 
     status.add("gnss1_fix", gnss1_fix);
     status.add("gnss2_fix", gnss2_fix);
-    status.add("gnss1_nsig_l1", payload.gnss1_nsig_l1);
-    status.add("gnss1_nsig_l2", payload.gnss1_nsig_l2);
-    status.add("gnss2_nsig_l1", payload.gnss2_nsig_l1);
-    status.add("gnss2_nsig_l2", payload.gnss2_nsig_l2);
-    status.add("corr_latency_s", payload.corr_latency);
-    status.add("corr_update_rate_hz", payload.corr_update_rate);
-    status.add("corr_data_rate_kbps", payload.corr_data_rate);
-    status.add("corr_msg_rate_hz", payload.corr_msg_rate);
-    status.add("sta_id", payload.sta_id);
-    status.add("sta_dist_m", payload.sta_dist);
+    AddFpaInt(status, "gnss1_nsig_l1", payload.gnss1_nsig_l1);
+    AddFpaInt(status, "gnss1_nsig_l2", payload.gnss1_nsig_l2);
+    AddFpaInt(status, "gnss2_nsig_l1", payload.gnss2_nsig_l1);
+    AddFpaInt(status, "gnss2_nsig_l2", payload.gnss2_nsig_l2);
+    AddFpaFloat(status, "corr_latency_s", payload.corr_latency);
+    AddFpaFloat(status, "corr_update_rate_hz", payload.corr_update_rate);
+    AddFpaFloat(status, "corr_data_rate_kbps", payload.corr_data_rate);
+    AddFpaFloat(status, "corr_msg_rate_hz", payload.corr_msg_rate);
+    AddFpaInt(status, "sta_id", payload.sta_id);
+    AddFpaInt(status, "sta_dist_m", payload.sta_dist);
 }
 
 void FixpositionDriverNode::DiagnosticsAntenna(diagnostic_updater::DiagnosticStatusWrapper& status) {
@@ -288,10 +307,10 @@ void FixpositionDriverNode::DiagnosticsAntenna(diagnostic_updater::DiagnosticSta
     status.summary(level, msg);
     status.add("gnss1_state", static_cast<int>(payload.gnss1_state));
     status.add("gnss1_power", static_cast<int>(payload.gnss1_power));
-    status.add("gnss1_age_s", payload.gnss1_age);
+    AddFpaInt(status, "gnss1_age_s", payload.gnss1_age);
     status.add("gnss2_state", static_cast<int>(payload.gnss2_state));
     status.add("gnss2_power", static_cast<int>(payload.gnss2_power));
-    status.add("gnss2_age_s", payload.gnss2_age);
+    AddFpaInt(status, "gnss2_age_s", payload.gnss2_age);
 }
 
 void FixpositionDriverNode::DiagnosticsText(diagnostic_updater::DiagnosticStatusWrapper& status) {
@@ -331,14 +350,16 @@ void FixpositionDriverNode::DiagnosticsText(diagnostic_updater::DiagnosticStatus
 #define _PUB(_pub_, _type_, _topic_, ...)                                      \
     do {                                                                       \
         RCLCPP_INFO(logger_, "Advertise %s (" #_type_ ")", (_topic_).c_str()); \
-        _pub_ = nh_->create_publisher<_type_>(_topic_, __VA_ARGS__);           \
+        _pub_ = rclcpp::create_publisher<_type_>(node_interfaces_.parameters_, \
+                                                 node_interfaces_.topics_, _topic_, __VA_ARGS__); \
     } while (0)
 
 // Helper for subscribing to input topics
 #define _SUB(_sub_, _type_, _topic_, ...)                                      \
     do {                                                                       \
         RCLCPP_INFO(logger_, "Subscribe %s (" #_type_ ")", (_topic_).c_str()); \
-        _sub_ = nh_->create_subscription<_type_>(_topic_, __VA_ARGS__);        \
+        _sub_ = rclcpp::create_subscription<_type_>(node_interfaces_.parameters_, \
+                                                    node_interfaces_.topics_, _topic_, __VA_ARGS__); \
     } while (0)
 
 bool FixpositionDriverNode::StartNode() {
@@ -348,7 +369,9 @@ bool FixpositionDriverNode::StartNode() {
     ResetDiagnosticsState();
 
     if (diagnostics_params_.enabled_) {
-        diagnostics_updater_ = std::make_unique<diagnostic_updater::Updater>(nh_);
+        diagnostics_updater_ = std::make_unique<diagnostic_updater::Updater>(
+            node_interfaces_.base_, node_interfaces_.clock_, node_interfaces_.logging_,
+            node_interfaces_.parameters_, node_interfaces_.timers_, node_interfaces_.topics_);
         diagnostics_updater_->setHardwareID(diagnostics_params_.hardware_id_);
         diagnostics_updater_->add("Driver", this, &FixpositionDriverNode::DiagnosticsDriver);
         diagnostics_updater_->add("Fusion", this, &FixpositionDriverNode::DiagnosticsFusion);
@@ -357,11 +380,14 @@ bool FixpositionDriverNode::StartNode() {
         diagnostics_updater_->add("FP Text", this, &FixpositionDriverNode::DiagnosticsText);
 
         auto period = std::chrono::duration<double>(1.0 / diagnostics_params_.rate_hz_);
-        diagnostics_timer_ = nh_->create_wall_timer(period, [this]() {
-            if (diagnostics_updater_) {
-                diagnostics_updater_->force_update();
-            }
-        });
+        diagnostics_timer_ = rclcpp::create_wall_timer(
+            period,
+            [this]() {
+                if (diagnostics_updater_) {
+                    diagnostics_updater_->force_update();
+                }
+            },
+            nullptr, node_interfaces_.base_.get(), node_interfaces_.timers_.get());
 
         driver_.AddRawObserver([this](const parser::ParserMsg& msg) {
             (void)msg;
@@ -370,11 +396,13 @@ bool FixpositionDriverNode::StartNode() {
     }
 
     // TF
-    tf_br_ = std::make_unique<tf2_ros::TransformBroadcaster>(nh_);
-    static_br_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(nh_);
+    tf_br_ = std::make_unique<tf2_ros::TransformBroadcaster>(node_interfaces_.parameters_, node_interfaces_.topics_);
+    static_br_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(node_interfaces_.parameters_,
+                                                                       node_interfaces_.topics_);
 
     // Add observers and advertise output topics, depending on configuration
-    const std::string output_ns = (params_.output_ns_.empty() ? nh_->get_namespace() : params_.output_ns_);
+    const std::string output_ns = (params_.output_ns_.empty() ? node_interfaces_.base_->get_namespace()
+                                                              : params_.output_ns_);
 
     // FP_A-ODOMETRY
     if (params_.MessageEnabled(fpa::FpaOdometryPayload::MSG_NAME)) {
@@ -575,7 +603,7 @@ bool FixpositionDriverNode::StartNode() {
             novb::NOV_B_BESTGNSSPOS_STRID, [this](const novb::NovbHeader* header, const uint8_t* payload) {
                 if (!PublishNovbBestgnsspos(header, (novb::NovbBestgnsspos*)payload, navsatfix_gnss1_pub_,
                                             navsatfix_gnss2_pub_)) {
-                    RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e3, "Bad NOV_B-BESTGNSSPOS");
+                    RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e3, "Bad NOV_B-BESTGNSSPOS");
                 }
             });
     }
@@ -586,7 +614,7 @@ bool FixpositionDriverNode::StartNode() {
         driver_.AddNovbObserver(  //
             novb::NOV_B_INSPVAX_STRID, [this](const novb::NovbHeader* header, const uint8_t* payload) {
                 if (!PublishNovbInspvax(header, (novb::NovbInspvax*)payload, novb_inspvax_pub_)) {
-                    RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e3, "Bad NOV_B-INSPVAX");
+                    RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e3, "Bad NOV_B-INSPVAX");
                 }
                 fusion_epoch_data_.CollectNovbInspvax(header, (novb::NovbInspvax*)payload);
             });
@@ -598,7 +626,7 @@ bool FixpositionDriverNode::StartNode() {
         driver_.AddNovbObserver(  //
             novb::NOV_B_HEADING2_STRID, [this](const novb::NovbHeader* header, const uint8_t* payload) {
                 if (!PublishNovbHeading2(header, (novb::NovbHeading2*)payload, novb_heading2_pub_)) {
-                    RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e3, "Bad NOV_B-HEADING2");
+                    RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e3, "Bad NOV_B-HEADING2");
                 }
             });
     }
@@ -758,7 +786,7 @@ bool FixpositionDriverNode::StartNode() {
                          });
                     break;
                 default:
-                    RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e3,
+                    RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e3,
                                          "The selected wheelspeed input type is not supported!");
                     break;
             }
@@ -854,7 +882,7 @@ void FixpositionDriverNode::StopNode() {
 void FixpositionDriverNode::ProcessTfData(const TfData& tf_data) {
     // Check if TF is valid
     if (tf_data.rotation.w() == 0 && tf_data.rotation.vec().isZero()) {
-        RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e4,
+        RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e4,
                              "Invalid TF was found! Is the fusion engine initialized? Source: %s, target: %s",
                              tf_data.frame_id.c_str(), tf_data.child_frame_id.c_str());
         return;
@@ -913,9 +941,9 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
     // This message computes the difference between the message time and the local system time.
     // Thus, if the local time is off, the message might be triggered or not triggered when it should.
     if (params_.delay_warning_ > 0.0) {
-        const double delay = (nh_->now() - fpsdk::ros2::utils::ConvTime(odometry_data.stamp)).seconds();
+        const double delay = (clock_->now() - fpsdk::ros2::utils::ConvTime(odometry_data.stamp)).seconds();
         if (delay > params_.delay_warning_) {
-            RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e3,
+            RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e3,
                                  "The system is experiencing significant delays! (estimated delay: %.3f seconds)",
                                  delay);
         }

@@ -19,8 +19,16 @@
 #include <mutex>
 
 /* EXTERNAL */
+#include <diagnostic_updater/diagnostic_updater.hpp>
 #include <fixposition_driver_lib/helper.hpp>
+#include <fpsdk_common/parser/fpa.hpp>
 #include <fpsdk_ros2/ext/rclcpp.hpp>
+#include <rclcpp/node_interfaces/node_base_interface.hpp>
+#include <rclcpp/node_interfaces/node_clock_interface.hpp>
+#include <rclcpp/node_interfaces/node_logging_interface.hpp>
+#include <rclcpp/node_interfaces/node_parameters_interface.hpp>
+#include <rclcpp/node_interfaces/node_timers_interface.hpp>
+#include <rclcpp/node_interfaces/node_topics_interface.hpp>
 
 /* PACKAGE */
 #include "data_to_ros2.hpp"
@@ -31,11 +39,25 @@ namespace fixposition {
 /* ****************************************************************************************************************** */
 
 using namespace fpsdk::common;
+namespace fpa = fpsdk::common::parser::fpa;
 
-namespace diagnostic_updater {
-    class DiagnosticStatusWrapper;
-    class Updater;
-    }  // namespace diagnostic_updater
+struct NodeInterfaces {
+    rclcpp::node_interfaces::NodeBaseInterface::SharedPtr base_;
+    rclcpp::node_interfaces::NodeClockInterface::SharedPtr clock_;
+    rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_;
+    rclcpp::node_interfaces::NodeParametersInterface::SharedPtr parameters_;
+    rclcpp::node_interfaces::NodeTimersInterface::SharedPtr timers_;
+    rclcpp::node_interfaces::NodeTopicsInterface::SharedPtr topics_;
+
+    template <typename NodeT>
+    explicit NodeInterfaces(const std::shared_ptr<NodeT>& node)
+        : base_(node->get_node_base_interface()),
+          clock_(node->get_node_clock_interface()),
+          logging_(node->get_node_logging_interface()),
+          parameters_(node->get_node_parameters_interface()),
+          timers_(node->get_node_timers_interface()),
+          topics_(node->get_node_topics_interface()) {}
+};
 
 class FixpositionDriverNode {
    public:
@@ -45,8 +67,10 @@ class FixpositionDriverNode {
      * @param[in]  nh      Node handle
      * @param[in]  params  Parameters
      */
-    FixpositionDriverNode(std::shared_ptr<rclcpp::Node> nh, const DriverParams& params,
-                          const DiagnosticsParams& diagnostics_params);
+    template <typename NodeT>
+    FixpositionDriverNode(const std::shared_ptr<NodeT>& nh, const DriverParams& params,
+                          const DiagnosticsParams& diagnostics_params)
+        : FixpositionDriverNode(NodeInterfaces(nh), params, diagnostics_params) {}
 
     /**
      * @brief Destructor
@@ -66,12 +90,16 @@ class FixpositionDriverNode {
     void StopNode();
 
    private:
-    std::shared_ptr<rclcpp::Node> nh_;  //!< Node handle
-    DriverParams params_;               //!< Sensor/driver parameters
-    rclcpp::Logger logger_;             //!< Logger
-    FixpositionDriver driver_;          //!< Sensor driver
-    rclcpp::QoS qos_settings_;          //!< QoS settings
+    FixpositionDriverNode(NodeInterfaces node_interfaces, const DriverParams& params,
+                          const DiagnosticsParams& diagnostics_params);
+
+    NodeInterfaces node_interfaces_;  //!< Node interfaces
+    DriverParams params_;             //!< Sensor/driver parameters
+    rclcpp::Logger logger_;           //!< Logger
+    FixpositionDriver driver_;        //!< Sensor driver
+    rclcpp::QoS qos_settings_;        //!< QoS settings
     DiagnosticsParams diagnostics_params_;
+    rclcpp::Clock::SharedPtr clock_;
 
     // ROS publishers
     // - FP_A messages

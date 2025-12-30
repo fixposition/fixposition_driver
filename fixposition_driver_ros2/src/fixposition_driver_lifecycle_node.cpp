@@ -37,7 +37,7 @@ class FixpositionDriverLifecycleNode : public rclcpp_lifecycle::LifecycleNode {
     rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_configure(
         const rclcpp_lifecycle::State&) override {
         RCLCPP_INFO(get_logger(), "Configuring...");
-        auto node = std::static_pointer_cast<rclcpp::Node>(shared_from_this());
+        auto node = shared_from_this();
 
         if (!LoadParamsFromRos2(node, driver_params_)) {
             RCLCPP_ERROR(get_logger(), "Failed loading sensor params");
