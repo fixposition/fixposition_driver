@@ -35,6 +35,26 @@ namespace fixposition {
  */
 bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params);
 
+/**
+ * @brief Diagnostics configuration for ROS2 node
+ */
+ struct DiagnosticsParams {
+    bool enabled_ = false;
+    double rate_hz_ = 1.0;
+    int timeout_ms_ = 1000;
+    std::string hardware_id_;
+};
+
+/**
+ * @brief Load diagnostics parameters from rosparam server
+ *
+ * @param[in]  nh      Node handle
+ * @param[out] params  The diagnostics parameters
+ *
+ * @returns true on success, false otherwise
+ */
+bool LoadDiagnosticsParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DiagnosticsParams& params);
+
 /* ****************************************************************************************************************** */
 }  // namespace fixposition
 #endif  // __FIXPOSITION_DRIVER_ROS2_PARAMS_HPP__

@@ -193,5 +193,56 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params)
     return ok;
 }
 
+bool LoadDiagnosticsParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DiagnosticsParams& params) {
+    auto logger = nh->get_logger();
+    bool ok = true;
+
+    const std::string DIAG_ENABLED = "diagnostics.enabled";
+    const std::string DIAG_RATE = "diagnostics.rate_hz";
+    const std::string DIAG_TIMEOUT = "diagnostics.timeout_ms";
+    const std::string DIAG_HW_ID = "diagnostics.hardware_id";
+
+    nh->declare_parameter(DIAG_ENABLED, params.enabled_);
+    nh->declare_parameter(DIAG_RATE, params.rate_hz_);
+    nh->declare_parameter(DIAG_TIMEOUT, params.timeout_ms_);
+    nh->declare_parameter(DIAG_HW_ID, params.hardware_id_);
+
+    if (!nh->get_parameter(DIAG_ENABLED, params.enabled_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", DIAG_ENABLED.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(DIAG_RATE, params.rate_hz_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", DIAG_RATE.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(DIAG_TIMEOUT, params.timeout_ms_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", DIAG_TIMEOUT.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(DIAG_HW_ID, params.hardware_id_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", DIAG_HW_ID.c_str());
+        ok = false;
+    }
+
+    if (params.rate_hz_ <= 0.0) {
+        RCLCPP_WARN(logger, "Diagnostics rate_hz must be > 0, using 1.0");
+        params.rate_hz_ = 1.0;
+    }
+    if (params.timeout_ms_ <= 0) {
+        RCLCPP_WARN(logger, "Diagnostics timeout_ms must be > 0, using 1000");
+        params.timeout_ms_ = 1000;
+    }
+    if (params.hardware_id_.empty()) {
+        params.hardware_id_ = nh->get_name();
+    }
+
+    RCLCPP_INFO(logger, "Diagnostics: enabled=%s", params.enabled_ ? "true" : "false");
+    RCLCPP_INFO(logger, "Diagnostics: rate_hz=%.2f", params.rate_hz_);
+    RCLCPP_INFO(logger, "Diagnostics: timeout_ms=%d", params.timeout_ms_);
+    RCLCPP_INFO(logger, "Diagnostics: hardware_id=%s", params.hardware_id_.c_str());
+
+    return ok;
+}
+
 /* ****************************************************************************************************************** */
 }  // namespace fixposition

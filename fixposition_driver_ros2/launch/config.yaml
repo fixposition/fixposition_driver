@@ -70,3 +70,9 @@
         speed_topic: "/fixposition/speed"        # Wheelspeed input, empty to disable
         corr_topic:  "/rtcm"                     # Correction data input, empty to disable
         qos_type:    "sensor_short"              # "sensor_short", "sensor_long", "default_short", "default_long"
+
+        diagnostics:
+            enabled: false
+            rate_hz: 1.0
+            timeout_ms: 1000
+            hardware_id: "fixposition_driver"

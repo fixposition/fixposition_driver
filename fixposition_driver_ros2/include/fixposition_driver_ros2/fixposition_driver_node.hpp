@@ -32,6 +32,11 @@ namespace fixposition {
 
 using namespace fpsdk::common;
 
+namespace diagnostic_updater {
+    class DiagnosticStatusWrapper;
+    class Updater;
+    }  // namespace diagnostic_updater
+
 class FixpositionDriverNode {
    public:
     /**
@@ -40,7 +45,8 @@ class FixpositionDriverNode {
      * @param[in]  nh      Node handle
      * @param[in]  params  Parameters
      */
-    FixpositionDriverNode(std::shared_ptr<rclcpp::Node> nh, const DriverParams& params);
+    FixpositionDriverNode(std::shared_ptr<rclcpp::Node> nh, const DriverParams& params,
+                          const DiagnosticsParams& diagnostics_params);
 
     /**
      * @brief Destructor
@@ -65,6 +71,7 @@ class FixpositionDriverNode {
     rclcpp::Logger logger_;             //!< Logger
     FixpositionDriver driver_;          //!< Sensor driver
     rclcpp::QoS qos_settings_;          //!< QoS settings
+    DiagnosticsParams diagnostics_params_;
 
     // ROS publishers
     // - FP_A messages
@@ -148,9 +155,39 @@ class FixpositionDriverNode {
     Tfs tfs_;
     std::unique_ptr<TfData> ecef_enu0_tf_;
 
+    // Diagnostics
+    std::unique_ptr<diagnostic_updater::Updater> diagnostics_updater_;
+    rclcpp::TimerBase::SharedPtr diagnostics_timer_;
+    std::mutex diagnostics_mutex_;
+    bool driver_running_ = false;
+    bool have_rx_time_ = false;
+    rclcpp::Time last_rx_time_;
+    bool have_odomstatus_ = false;
+    fpa::FpaOdomstatusPayload last_odomstatus_;
+    bool have_gnssant_ = false;
+    fpa::FpaGnssantPayload last_gnssant_;
+    bool have_gnsscorr_ = false;
+    fpa::FpaGnsscorrPayload last_gnsscorr_;
+    bool have_text_ = false;
+    fpa::FpaTextPayload last_text_;
+    std::string last_text_string_;
+
     void ProcessTfData(const TfData& tf_data);
     void ProcessOdometryData(const OdometryData& odometry_data);
     void PublishNav2Tf();
+
+    void ResetDiagnosticsState();
+    void RecordRxTime();
+    void StoreOdomstatus(const fpa::FpaOdomstatusPayload& payload);
+    void StoreGnssant(const fpa::FpaGnssantPayload& payload);
+    void StoreGnsscorr(const fpa::FpaGnsscorrPayload& payload);
+    void StoreText(const fpa::FpaTextPayload& payload);
+
+    void DiagnosticsDriver(diagnostic_updater::DiagnosticStatusWrapper& status);
+    void DiagnosticsFusion(diagnostic_updater::DiagnosticStatusWrapper& status);
+    void DiagnosticsGnss(diagnostic_updater::DiagnosticStatusWrapper& status);
+    void DiagnosticsAntenna(diagnostic_updater::DiagnosticStatusWrapper& status);
+    void DiagnosticsText(diagnostic_updater::DiagnosticStatusWrapper& status);
 };
 
 /* ****************************************************************************************************************** */

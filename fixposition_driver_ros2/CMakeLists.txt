@@ -18,10 +18,13 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
+find_package(diagnostic_updater REQUIRED)
 find_package(fixposition_driver_lib REQUIRED)
 find_package(fixposition_driver_msgs REQUIRED)
 find_package(rtcm_msgs REQUIRED)
@@ -42,6 +45,7 @@ include_directories(
 
 add_executable(
   ${PROJECT_NAME}_exec
+  src/fixposition_driver_main.cpp
   src/fixposition_driver_node.cpp
   src/params.cpp
   src/data_to_ros2.cpp
@@ -58,11 +62,29 @@ target_link_libraries(
   pthread
 )
 
+add_executable(
+  ${PROJECT_NAME}_lifecycle_exec
+  src/fixposition_driver_lifecycle_node.cpp
+  src/fixposition_driver_node.cpp
+  src/params.cpp
+  src/data_to_ros2.cpp
+)
+target_link_libraries(
+  ${PROJECT_NAME}_lifecycle_exec
+  ${fixposition_driver_lib_LIBRARIES}
+  ${rtcm_msgs_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${EIGEN3_LIBRARIES}
+  ${fpsdk_common_LIBRARIES} ${fpsdk_ros2_LIBRARIES}
+  ${rosbag2_cpp_TARGETS}
+  pthread
+)
+
 install(DIRECTORY include/
   DESTINATION .
 )
 
-install(TARGETS ${PROJECT_NAME}_exec
+install(TARGETS ${PROJECT_NAME}_exec ${PROJECT_NAME}_lifecycle_exec
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -74,8 +96,11 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}/
 )
 ament_target_dependencies(${PROJECT_NAME}_exec
-    rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs tf2_ros tf2_eigen
-    fixposition_driver_lib fixposition_driver_msgs rtcm_msgs tf2_geometry_msgs)
+    rclcpp rclcpp_lifecycle std_msgs nav_msgs geometry_msgs sensor_msgs tf2_ros tf2_eigen
+    diagnostic_msgs diagnostic_updater fixposition_driver_lib fixposition_driver_msgs rtcm_msgs tf2_geometry_msgs)
+ament_target_dependencies(${PROJECT_NAME}_lifecycle_exec
+    rclcpp rclcpp_lifecycle std_msgs nav_msgs geometry_msgs sensor_msgs tf2_ros tf2_eigen
+    diagnostic_msgs diagnostic_updater fixposition_driver_lib fixposition_driver_msgs rtcm_msgs tf2_geometry_msgs)
 
 # define ament package for this project
 ament_package()
