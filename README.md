@@ -1,6 +1,6 @@
-# Fixposition ROS Driver
+# Fixposition ROS Driver for Linux
 
-[ROS](https://www.ros.org/) (both ROS1 and ROS2) driver for [Fixposition Vision-RTK 2](https://www.fixposition.com/product).
+[ROS](https://www.ros.org/) (both ROS1 and ROS2) driver for [Fixposition Vision-RTK 2](https://www.fixposition.com/product) for **Linux**.
 
 > [!IMPORTANT]
 > Tags 8.0.0 onward break compatibility with previous versions. For more details on how to migrate to the new version, please refer to [Migration Guide](https://docs.fixposition.com/fd/migration-guide).
