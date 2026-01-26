@@ -66,6 +66,21 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> nh,
     else if (params_.qos_type_ == "default_long") {
         qos_settings_ = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default);
     }
+
+    const bool proj_ok =
+        llh_transformer_.Init(params_.proj_enabled_, params_.proj_ecef_crs_, params_.proj_llh_crs_);
+    if (params_.proj_enabled_) {
+#if FPSDK_USE_PROJ
+        if (!proj_ok) {
+            RCLCPP_WARN(logger_, "PROJ enabled but failed to initialize, falling back to WGS84 conversions");
+        } else {
+            RCLCPP_INFO(logger_, "PROJ enabled for ECEF/LLH conversions");
+        }
+#else
+        (void)proj_ok;
+        RCLCPP_WARN(logger_, "PROJ requested but FPSDK_USE_PROJ is disabled, falling back to WGS84 conversions");
+#endif
+    }
 }
 
 FixpositionDriverNode::~FixpositionDriverNode() {}
@@ -106,7 +121,8 @@ bool FixpositionDriverNode::StartNode() {
             auto odometry_payload = dynamic_cast<const fpa::FpaOdometryPayload&>(payload);
             PublishFpaOdometry(odometry_payload, fpa_odometry_pub_);
             PublishFpaOdometryDataImu(odometry_payload, params_.nav2_mode_, poiimu_pub_);
-            PublishFpaOdometryDataNavSatFix(odometry_payload, params_.nav2_mode_, odometry_llh_pub_);
+            PublishFpaOdometryDataNavSatFix(odometry_payload, params_.nav2_mode_, &llh_transformer_,
+                                            odometry_llh_pub_);
             OdometryData odometry_data;
             odometry_data.SetFromFpaOdomPayload(odometry_payload);
             PublishOdometryData(odometry_data, odometry_ecef_pub_);
@@ -138,7 +154,11 @@ bool FixpositionDriverNode::StartNode() {
 
             // Convert message to ENU
             if (ecef_enu0_tf_) {
-                bool enu_valid = odometry_data.ConvertToEnu(*ecef_enu0_tf_);
+                Eigen::Vector3d llh_ref;
+                if (!llh_transformer_.EcefToLlhRad(ecef_enu0_tf_->translation, llh_ref)) {
+                    llh_ref = trafo::TfWgs84LlhEcef(ecef_enu0_tf_->translation);
+                }
+                bool enu_valid = odometry_data.ConvertToEnu(*ecef_enu0_tf_, llh_ref);
                 if (enu_valid) {
                     PublishOdometryData(odometry_data, odometry_enu_smooth_pub_);
                 }
@@ -705,7 +725,11 @@ void FixpositionDriverNode::PublishNav2Tf() {
     Eigen::Quaterniond q_ecef_poish(rot_ecef_poish.w, rot_ecef_poish.x, rot_ecef_poish.y, rot_ecef_poish.z);
 
     // Compute the ENU transformation
-    const Eigen::Vector3d t_enu0_poish = trafo::TfEnuEcef(t_ecef_poish, trafo::TfWgs84LlhEcef(t_ecef_enu0_));
+    Eigen::Vector3d llh_enu0;
+    if (!llh_transformer_.EcefToLlhRad(t_ecef_enu0_, llh_enu0)) {
+        llh_enu0 = trafo::TfWgs84LlhEcef(t_ecef_enu0_);
+    }
+    const Eigen::Vector3d t_enu0_poish = trafo::TfEnuEcef(t_ecef_poish, llh_enu0);
     const Eigen::Quaterniond q_enu0_poish = q_ecef_enu0_.inverse() * q_ecef_poish;
 
     // Create tf2::Transform tf_ENU0POISH
@@ -737,7 +761,7 @@ void FixpositionDriverNode::PublishNav2Tf() {
     tf_br_->sendTransform(tf_odom_base);
 
     // Publish WGS84 datum
-    PublishDatum(trans_ecef_enu0, tfs_.enu0_poi_->header.stamp, datum_pub_);
+    PublishDatum(trans_ecef_enu0, tfs_.enu0_poi_->header.stamp, &llh_transformer_, datum_pub_);
 }
 
 /* ****************************************************************************************************************** */

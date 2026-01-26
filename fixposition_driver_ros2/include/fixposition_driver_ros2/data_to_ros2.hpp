@@ -16,6 +16,7 @@
 
 /* LIBC/STL */
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 /* EXTERNAL */
@@ -23,6 +24,7 @@
 #include <fixposition_driver_lib/helper.hpp>
 #include <fpsdk_common/parser/fpa.hpp>
 #include <fpsdk_common/parser/novb.hpp>
+#include <fpsdk_common/trafo.hpp>
 #include <fpsdk_ros2/ext/rclcpp.hpp>
 
 /* PACKAGE */
@@ -30,6 +32,20 @@
 
 namespace fixposition {
 /* ****************************************************************************************************************** */
+
+class LlhTransformer {
+   public:
+    bool Init(bool enabled, const std::string& ecef_crs, const std::string& llh_crs);
+    bool EcefToLlhRad(const Eigen::Vector3d& ecef, Eigen::Vector3d& llh_rad) const;
+    bool LlhRadToEcef(const Eigen::Vector3d& llh_rad, Eigen::Vector3d& ecef) const;
+    bool enabled() const { return proj_enabled_; }
+
+   private:
+    bool proj_enabled_ = false;
+#if FPSDK_USE_PROJ
+    std::unique_ptr<fpsdk::common::trafo::Transformer> transformer_;
+#endif
+};
 
 void TfDataToTransformStamped(const TfData& data, geometry_msgs::msg::TransformStamped& msg);
 void OdometryDataToTransformStamped(const OdometryData& data, geometry_msgs::msg::TransformStamped& msg);
@@ -39,6 +55,7 @@ void PublishFpaOdometry(const fpsdk::common::parser::fpa::FpaOdometryPayload& pa
 void PublishFpaOdometryDataImu(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_,
                                rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr& pub);
 void PublishFpaOdometryDataNavSatFix(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_,
+                                     const LlhTransformer* llh_transformer,
                                      rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr& pub);
 void PublishFpaOdomenu(const fpsdk::common::parser::fpa::FpaOdomenuPayload& payload,
                        rclcpp::Publisher<fpmsgs::FpaOdomenu>::SharedPtr& pub);
@@ -104,7 +121,7 @@ void PublishNmeaEpochData(const NmeaEpochData& data, rclcpp::Publisher<fpmsgs::N
 void PublishOdometryData(const OdometryData& data, rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr& pub);
 void PublishJumpWarning(const JumpDetector& jump_detector, rclcpp::Publisher<fpmsgs::CovWarn>::SharedPtr& pub);
 void PublishDatum(const geometry_msgs::msg::Vector3& payload, const builtin_interfaces::msg::Time& stamp,
-                  rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr& pub);
+                  const LlhTransformer* llh_transformer, rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr& pub);
 void PublishFusionEpochData(const FusionEpochData& data, rclcpp::Publisher<fpmsgs::FusionEpoch>::SharedPtr& pub);
 
 /* ****************************************************************************************************************** */

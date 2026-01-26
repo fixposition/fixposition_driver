@@ -36,6 +36,9 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params)
     const std::string RAW_OUTPUT = "raw_output";
     const std::string COV_WARNING = "cov_warning";
     const std::string NAV2_MODE = "nav2_mode";
+    const std::string PROJ_ENABLED = "proj.enabled";
+    const std::string PROJ_ECEF_CRS = "proj.ecef_crs";
+    const std::string PROJ_LLH_CRS = "proj.llh_crs";
     const std::string CONVERTER_ENABLED = "converter.enabled";
     const std::string CONVERTER_INPUT_TOPIC = "converter.input_topic";
     const std::string CONVERTER_SCALE_FACTOR = "converter.scale_factor";
@@ -58,6 +61,9 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params)
     nh->declare_parameter(RAW_OUTPUT, params.raw_output_);
     nh->declare_parameter(COV_WARNING, params.cov_warning_);
     nh->declare_parameter(NAV2_MODE, params.nav2_mode_);
+    nh->declare_parameter(PROJ_ENABLED, params.proj_enabled_);
+    nh->declare_parameter(PROJ_ECEF_CRS, params.proj_ecef_crs_);
+    nh->declare_parameter(PROJ_LLH_CRS, params.proj_llh_crs_);
     nh->declare_parameter(CONVERTER_ENABLED, params.converter_enabled_);
     nh->declare_parameter(CONVERTER_INPUT_TOPIC, params.converter_input_topic_);
     nh->declare_parameter(CONVERTER_SCALE_FACTOR, params.converter_scale_factor_);
@@ -109,6 +115,18 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params)
     }
     if (!nh->get_parameter(NAV2_MODE, params.nav2_mode_)) {
         RCLCPP_WARN(logger, "Failed loading %s param", NAV2_MODE.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(PROJ_ENABLED, params.proj_enabled_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", PROJ_ENABLED.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(PROJ_ECEF_CRS, params.proj_ecef_crs_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", PROJ_ECEF_CRS.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(PROJ_LLH_CRS, params.proj_llh_crs_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", PROJ_LLH_CRS.c_str());
         ok = false;
     }
     if (!nh->get_parameter(CONVERTER_ENABLED, params.converter_enabled_)) {
@@ -178,6 +196,9 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params)
     RCLCPP_INFO(logger, "DriverParams: raw_output=%s", params.raw_output_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: cov_warning=%s", params.cov_warning_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: nav2_mode=%s", params.nav2_mode_ ? "true" : "false");
+    RCLCPP_INFO(logger, "DriverParams: proj_enabled=%s", params.proj_enabled_ ? "true" : "false");
+    RCLCPP_INFO(logger, "DriverParams: proj_ecef_crs=%s", params.proj_ecef_crs_.c_str());
+    RCLCPP_INFO(logger, "DriverParams: proj_llh_crs=%s", params.proj_llh_crs_.c_str());
     RCLCPP_INFO(logger, "DriverParams: converter_enabled=%s", params.converter_enabled_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: converter_topic_type=%s", topic_type_string_.c_str());
     RCLCPP_INFO(logger, "DriverParams: converter_input_topic=%s", params.converter_input_topic_.c_str());

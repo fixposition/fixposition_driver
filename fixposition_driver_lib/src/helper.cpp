@@ -150,6 +150,13 @@ bool OdometryData::SetFromFpaOdomPayload(const fpa::FpaOdomPayload& payload) {
 // ---------------------------------------------------------------------------------------------------------------------
 
 bool OdometryData::ConvertToEnu(const TfData& tf_ecef_enu0) {
+    const Eigen::Vector3d wgs84llh_ref = fpsdk::common::trafo::TfWgs84LlhEcef(tf_ecef_enu0.translation);
+    return ConvertToEnu(tf_ecef_enu0, wgs84llh_ref);
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+
+bool OdometryData::ConvertToEnu(const TfData& tf_ecef_enu0, const Eigen::Vector3d& wgs84llh_ref) {
     // Check that TF data is valid
     if (!tf_ecef_enu0.valid) {
         return false;
@@ -161,13 +168,11 @@ bool OdometryData::ConvertToEnu(const TfData& tf_ecef_enu0) {
     const Eigen::Matrix<double, 6, 6> cov_ecef = pose.cov;
 
     // Extract data from the TF message (using the arrow operator)
-    const Eigen::Vector3d t_ecef_enu0 = tf_ecef_enu0.translation;
     const Eigen::Quaterniond q_ecef_enu0 = tf_ecef_enu0.rotation;
     const Eigen::Matrix3d rot_ecef_enu0 = q_ecef_enu0.toRotationMatrix();
 
     // Convert position in ECEF into position in ENU
-    const Eigen::Vector3d t_enu_body =
-        fpsdk::common::trafo::TfEnuEcef(t_ecef_body, fpsdk::common::trafo::TfWgs84LlhEcef(t_ecef_enu0));
+    const Eigen::Vector3d t_enu_body = fpsdk::common::trafo::TfEnuEcef(t_ecef_body, wgs84llh_ref);
     const Eigen::Quaterniond q_enu_body = q_ecef_enu0.inverse() * q_ecef_body;
 
     // Convert covariance matrix to ENU
