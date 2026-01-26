@@ -34,6 +34,66 @@ using namespace fpsdk::common::parser;
 
 // ---------------------------------------------------------------------------------------------------------------------
 
+bool LlhTransformer::Init(bool enabled, const std::string& ecef_crs, const std::string& llh_crs) {
+    proj_enabled_ = false;
+#if FPSDK_USE_PROJ
+    transformer_.reset();
+#endif
+    if (!enabled) {
+        return true;
+    }
+#if FPSDK_USE_PROJ
+    auto transformer = std::make_unique<trafo::Transformer>("fixposition_driver_llh");
+    if (!transformer->Init(ecef_crs, llh_crs)) {
+        return false;
+    }
+    transformer_ = std::move(transformer);
+    proj_enabled_ = true;
+    return true;
+#else
+    (void)ecef_crs;
+    (void)llh_crs;
+    return false;
+#endif
+}
+
+bool LlhTransformer::EcefToLlhRad(const Eigen::Vector3d& ecef, Eigen::Vector3d& llh_rad) const {
+    if (proj_enabled_) {
+#if FPSDK_USE_PROJ
+        if (!transformer_) {
+            return false;
+        }
+        Eigen::Vector3d llh_deg;
+        if (!transformer_->Transform(ecef, llh_deg)) {
+            return false;
+        }
+        llh_rad = trafo::LlhDegToRad(llh_deg);
+        return true;
+#endif
+    }
+    llh_rad = trafo::TfWgs84LlhEcef(ecef);
+    return true;
+}
+
+bool LlhTransformer::LlhRadToEcef(const Eigen::Vector3d& llh_rad, Eigen::Vector3d& ecef) const {
+    if (proj_enabled_) {
+#if FPSDK_USE_PROJ
+        if (!transformer_) {
+            return false;
+        }
+        const Eigen::Vector3d llh_deg = trafo::LlhRadToDeg(llh_rad);
+        if (!transformer_->Transform(llh_deg, ecef, true)) {
+            return false;
+        }
+        return true;
+#endif
+    }
+    ecef = trafo::TfEcefWgs84Llh(llh_rad);
+    return true;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+
 static void PoseWithCovDataToMsg(const PoseWithCovData& data, geometry_msgs::PoseWithCovariance& msg) {
     tf::pointEigenToMsg(data.position, msg.pose.position);
     tf::quaternionEigenToMsg(data.orientation, msg.pose.orientation);
@@ -152,7 +212,8 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, bool nav2_mode_, ros::Publisher& pub) {
+void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, bool nav2_mode_,
+                                     const LlhTransformer* llh_transformer, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         sensor_msgs::NavSatFix msg;
         msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
@@ -172,14 +233,17 @@ void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, boo
             msg.position_covariance_type = msg.COVARIANCE_TYPE_UNKNOWN;
             cov_map = Eigen::Matrix3d::Zero();  // FIXME: necessary?
         } else {
-            const Eigen::Vector3d llh_pos = trafo::TfWgs84LlhEcef(pose.position);
+            Eigen::Vector3d llh_pos;
+            if (!llh_transformer || !llh_transformer->EcefToLlhRad(pose.position, llh_pos)) {
+                llh_pos = trafo::TfWgs84LlhEcef(pose.position);
+            }
             msg.latitude = math::RadToDeg(llh_pos(0));
             msg.longitude = math::RadToDeg(llh_pos(1));
             msg.altitude = llh_pos(2);
 
             // Populate LLH covariance
             const Eigen::Matrix3d p_cov_e = pose.cov.topLeftCorner(3, 3);
-            const Eigen::Matrix3d C_l_e = trafo::RotEnuEcef(pose.position);
+            const Eigen::Matrix3d C_l_e = trafo::RotEnuEcef(llh_pos.x(), llh_pos.y());
             const Eigen::Matrix3d p_cov_l = C_l_e * p_cov_e * C_l_e.transpose();
             cov_map = p_cov_l;
             msg.position_covariance_type = msg.COVARIANCE_TYPE_KNOWN;
@@ -862,7 +926,8 @@ void PublishJumpWarning(const JumpDetector& jump_detector, ros::Publisher& pub) 
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp, ros::Publisher& pub) {
+void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp,
+                  const LlhTransformer* llh_transformer, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         sensor_msgs::NavSatFix msg;
         msg.header.stamp = stamp;
@@ -870,7 +935,10 @@ void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp,
 
         // Populate LLH position
         const Eigen::Vector3d position = {payload.x, payload.y, payload.z};
-        const Eigen::Vector3d llh_pos = trafo::TfWgs84LlhEcef(position);
+        Eigen::Vector3d llh_pos;
+        if (!llh_transformer || !llh_transformer->EcefToLlhRad(position, llh_pos)) {
+            llh_pos = trafo::TfWgs84LlhEcef(position);
+        }
         msg.latitude = math::RadToDeg(llh_pos(0));
         msg.longitude = math::RadToDeg(llh_pos(1));
         msg.altitude = llh_pos(2);

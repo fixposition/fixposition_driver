@@ -16,6 +16,7 @@
 
 /* LIBC/STL */
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 /* EXTERNAL */
@@ -23,6 +24,7 @@
 #include <fixposition_driver_lib/helper.hpp>
 #include <fpsdk_common/parser/fpa.hpp>
 #include <fpsdk_common/parser/novb.hpp>
+#include <fpsdk_common/trafo.hpp>
 #include <fpsdk_ros1/ext/ros.hpp>
 
 /* PACKAGE */
@@ -31,6 +33,20 @@
 namespace fixposition {
 /* ****************************************************************************************************************** */
 
+class LlhTransformer {
+   public:
+    bool Init(bool enabled, const std::string& ecef_crs, const std::string& llh_crs);
+    bool EcefToLlhRad(const Eigen::Vector3d& ecef, Eigen::Vector3d& llh_rad) const;
+    bool LlhRadToEcef(const Eigen::Vector3d& llh_rad, Eigen::Vector3d& ecef) const;
+    bool enabled() const { return proj_enabled_; }
+
+   private:
+    bool proj_enabled_ = false;
+#if FPSDK_USE_PROJ
+    std::unique_ptr<fpsdk::common::trafo::Transformer> transformer_;
+#endif
+};
+
 void TfDataToTransformStamped(const TfData& data, geometry_msgs::TransformStamped& msg);
 void OdometryDataToTransformStamped(const OdometryData& data, geometry_msgs::TransformStamped& msg);
 
@@ -38,7 +54,7 @@ void PublishFpaOdometry(const fpsdk::common::parser::fpa::FpaOdometryPayload& pa
 void PublishFpaOdometryDataImu(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_,
                                ros::Publisher& pub);
 void PublishFpaOdometryDataNavSatFix(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_,
-                                     ros::Publisher& pub);
+                                     const LlhTransformer* llh_transformer, ros::Publisher& pub);
 void PublishFpaOdomenu(const fpsdk::common::parser::fpa::FpaOdomenuPayload& payload, ros::Publisher& pub);
 void PublishFpaOdomenuVector3Stamped(const fpsdk::common::parser::fpa::FpaOdomenuPayload& payload, ros::Publisher& pub);
 void PublishFpaOdomsh(const fpsdk::common::parser::fpa::FpaOdomshPayload& payload, ros::Publisher& pub);
@@ -76,7 +92,8 @@ void PublishParserMsg(const fpsdk::common::parser::ParserMsg& msg, ros::Publishe
 void PublishNmeaEpochData(const NmeaEpochData& data, ros::Publisher& pub);
 void PublishOdometryData(const OdometryData& data, ros::Publisher& pub);
 void PublishJumpWarning(const JumpDetector& jump_detector, ros::Publisher& pub);
-void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp, ros::Publisher& pub);
+void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp,
+                  const LlhTransformer* llh_transformer, ros::Publisher& pub);
 void PublishFusionEpochData(const FusionEpochData& data, ros::Publisher& pub);
 
 /* ****************************************************************************************************************** */

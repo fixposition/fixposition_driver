@@ -72,6 +72,18 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
         ROS_WARN("Failed loading %s/nav2_mode param", ns.c_str());
         ok = false;
     }
+    if (!utils::LoadRosParam(ns + "/proj/enabled", params.proj_enabled_)) {
+        ROS_WARN("Failed loading %s/proj/enabled param", ns.c_str());
+        ok = false;
+    }
+    if (!utils::LoadRosParam(ns + "/proj/ecef_crs", params.proj_ecef_crs_)) {
+        ROS_WARN("Failed loading %s/proj/ecef_crs param", ns.c_str());
+        ok = false;
+    }
+    if (!utils::LoadRosParam(ns + "/proj/llh_crs", params.proj_llh_crs_)) {
+        ROS_WARN("Failed loading %s/proj/llh_crs param", ns.c_str());
+        ok = false;
+    }
     if (!utils::LoadRosParam(ns + "/converter/enabled", params.converter_enabled_)) {
         ROS_WARN("Failed loading %s/converter/enabled param", ns.c_str());
         ok = false;
@@ -136,6 +148,9 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
     ROS_INFO("DriverParams: raw_output=%s", params.raw_output_ ? "true" : "false");
     ROS_INFO("DriverParams: cov_warning=%s", params.cov_warning_ ? "true" : "false");
     ROS_INFO("DriverParams: nav2_mode=%s", params.nav2_mode_ ? "true" : "false");
+    ROS_INFO("DriverParams: proj_enabled=%s", params.proj_enabled_ ? "true" : "false");
+    ROS_INFO("DriverParams: proj_ecef_crs=%s", params.proj_ecef_crs_.c_str());
+    ROS_INFO("DriverParams: proj_llh_crs=%s", params.proj_llh_crs_.c_str());
     ROS_INFO("DriverParams: converter_enabled=%s", params.converter_enabled_ ? "true" : "false");
     ROS_INFO("DriverParams: converter_topic_type=%s", topic_type_string_.c_str());
     ROS_INFO("DriverParams: converter_input_topic=%s", params.converter_input_topic_.c_str());
