@@ -56,6 +56,11 @@
         cov_warning:  false    # Enable covariance warnings
         nav2_mode:    false    # Enable nav2 mode
 
+        proj:
+            enabled: false               # Use PROJ for ECEF/LLH conversions
+            ecef_crs: "EPSG:4936"       # Source CRS for ECEF coordinates
+            llh_crs: "EPSG:4326"        # Target CRS for LLH coordinates
+
         converter:
             enabled: false
             topic_type: "Twist"        # Supported types: nav_msgs/{Twist, TwistWithCov, Odometry}
