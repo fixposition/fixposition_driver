@@ -44,7 +44,7 @@ bool LoadParamsFromRos2(const std::shared_ptr<NodeT>& nh, DriverParams& params);
 /**
  * @brief Diagnostics configuration for ROS2 node
  */
- struct DiagnosticsParams {
+struct DiagnosticsParams {
     bool enabled_ = false;
     double rate_hz_ = 1.0;
     int timeout_ms_ = 1000;

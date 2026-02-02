@@ -46,8 +46,7 @@ using namespace fpsdk::common;
 using namespace fpsdk::common::parser;
 
 namespace {
-void AddFpaInt(diagnostic_updater::DiagnosticStatusWrapper& status, const std::string& key,
-               const fpa::FpaInt& value) {
+void AddFpaInt(diagnostic_updater::DiagnosticStatusWrapper& status, const std::string& key, const fpa::FpaInt& value) {
     status.add(key + "_valid", value.valid);
     status.add(key, value.valid ? value.value : -1);
 }
@@ -347,19 +346,19 @@ void FixpositionDriverNode::DiagnosticsText(diagnostic_updater::DiagnosticStatus
 }
 
 // Helper for advertising output topics
-#define _PUB(_pub_, _type_, _topic_, ...)                                      \
-    do {                                                                       \
-        RCLCPP_INFO(logger_, "Advertise %s (" #_type_ ")", (_topic_).c_str()); \
-        _pub_ = rclcpp::create_publisher<_type_>(node_interfaces_.parameters_, \
-                                                 node_interfaces_.topics_, _topic_, __VA_ARGS__); \
+#define _PUB(_pub_, _type_, _topic_, ...)                                                                         \
+    do {                                                                                                          \
+        RCLCPP_INFO(logger_, "Advertise %s (" #_type_ ")", (_topic_).c_str());                                    \
+        _pub_ = rclcpp::create_publisher<_type_>(node_interfaces_.parameters_, node_interfaces_.topics_, _topic_, \
+                                                 __VA_ARGS__);                                                    \
     } while (0)
 
 // Helper for subscribing to input topics
-#define _SUB(_sub_, _type_, _topic_, ...)                                      \
-    do {                                                                       \
-        RCLCPP_INFO(logger_, "Subscribe %s (" #_type_ ")", (_topic_).c_str()); \
-        _sub_ = rclcpp::create_subscription<_type_>(node_interfaces_.parameters_, \
-                                                    node_interfaces_.topics_, _topic_, __VA_ARGS__); \
+#define _SUB(_sub_, _type_, _topic_, ...)                                                                            \
+    do {                                                                                                             \
+        RCLCPP_INFO(logger_, "Subscribe %s (" #_type_ ")", (_topic_).c_str());                                       \
+        _sub_ = rclcpp::create_subscription<_type_>(node_interfaces_.parameters_, node_interfaces_.topics_, _topic_, \
+                                                    __VA_ARGS__);                                                    \
     } while (0)
 
 bool FixpositionDriverNode::StartNode() {
@@ -370,8 +369,8 @@ bool FixpositionDriverNode::StartNode() {
 
     if (diagnostics_params_.enabled_) {
         diagnostics_updater_ = std::make_unique<diagnostic_updater::Updater>(
-            node_interfaces_.base_, node_interfaces_.clock_, node_interfaces_.logging_,
-            node_interfaces_.parameters_, node_interfaces_.timers_, node_interfaces_.topics_);
+            node_interfaces_.base_, node_interfaces_.clock_, node_interfaces_.logging_, node_interfaces_.parameters_,
+            node_interfaces_.timers_, node_interfaces_.topics_);
         diagnostics_updater_->setHardwareID(diagnostics_params_.hardware_id_);
         diagnostics_updater_->add("Driver", this, &FixpositionDriverNode::DiagnosticsDriver);
         diagnostics_updater_->add("Fusion", this, &FixpositionDriverNode::DiagnosticsFusion);
@@ -397,12 +396,12 @@ bool FixpositionDriverNode::StartNode() {
 
     // TF
     tf_br_ = std::make_unique<tf2_ros::TransformBroadcaster>(node_interfaces_.parameters_, node_interfaces_.topics_);
-    static_br_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(node_interfaces_.parameters_,
-                                                                       node_interfaces_.topics_);
+    static_br_ =
+        std::make_unique<tf2_ros::StaticTransformBroadcaster>(node_interfaces_.parameters_, node_interfaces_.topics_);
 
     // Add observers and advertise output topics, depending on configuration
-    const std::string output_ns = (params_.output_ns_.empty() ? node_interfaces_.base_->get_namespace()
-                                                              : params_.output_ns_);
+    const std::string output_ns =
+        (params_.output_ns_.empty() ? node_interfaces_.base_->get_namespace() : params_.output_ns_);
 
     // FP_A-ODOMETRY
     if (params_.MessageEnabled(fpa::FpaOdometryPayload::MSG_NAME)) {
@@ -786,8 +785,7 @@ bool FixpositionDriverNode::StartNode() {
                          });
                     break;
                 default:
-                    RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e3,
-                                         "The selected wheelspeed input type is not supported!");
+                    RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e3, "The selected wheelspeed input type is not supported!");
                     break;
             }
         }
