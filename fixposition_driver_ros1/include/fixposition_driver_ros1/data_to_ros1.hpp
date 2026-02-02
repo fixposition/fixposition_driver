@@ -92,8 +92,8 @@ void PublishParserMsg(const fpsdk::common::parser::ParserMsg& msg, ros::Publishe
 void PublishNmeaEpochData(const NmeaEpochData& data, ros::Publisher& pub);
 void PublishOdometryData(const OdometryData& data, ros::Publisher& pub);
 void PublishJumpWarning(const JumpDetector& jump_detector, ros::Publisher& pub);
-void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp,
-                  const LlhTransformer* llh_transformer, ros::Publisher& pub);
+void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp, const LlhTransformer* llh_transformer,
+                  ros::Publisher& pub);
 void PublishFusionEpochData(const FusionEpochData& data, ros::Publisher& pub);
 
 /* ****************************************************************************************************************** */

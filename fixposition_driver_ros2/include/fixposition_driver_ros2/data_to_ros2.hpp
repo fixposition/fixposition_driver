@@ -121,7 +121,8 @@ void PublishNmeaEpochData(const NmeaEpochData& data, rclcpp::Publisher<fpmsgs::N
 void PublishOdometryData(const OdometryData& data, rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr& pub);
 void PublishJumpWarning(const JumpDetector& jump_detector, rclcpp::Publisher<fpmsgs::CovWarn>::SharedPtr& pub);
 void PublishDatum(const geometry_msgs::msg::Vector3& payload, const builtin_interfaces::msg::Time& stamp,
-                  const LlhTransformer* llh_transformer, rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr& pub);
+                  const LlhTransformer* llh_transformer,
+                  rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr& pub);
 void PublishFusionEpochData(const FusionEpochData& data, rclcpp::Publisher<fpmsgs::FusionEpoch>::SharedPtr& pub);
 
 /* ****************************************************************************************************************** */

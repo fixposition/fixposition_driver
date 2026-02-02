@@ -67,8 +67,7 @@ FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> nh,
         qos_settings_ = rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default);
     }
 
-    const bool proj_ok =
-        llh_transformer_.Init(params_.proj_enabled_, params_.proj_ecef_crs_, params_.proj_llh_crs_);
+    const bool proj_ok = llh_transformer_.Init(params_.proj_enabled_, params_.proj_ecef_crs_, params_.proj_llh_crs_);
     if (params_.proj_enabled_) {
 #if FPSDK_USE_PROJ
         if (!proj_ok) {
@@ -121,8 +120,7 @@ bool FixpositionDriverNode::StartNode() {
             auto odometry_payload = dynamic_cast<const fpa::FpaOdometryPayload&>(payload);
             PublishFpaOdometry(odometry_payload, fpa_odometry_pub_);
             PublishFpaOdometryDataImu(odometry_payload, params_.nav2_mode_, poiimu_pub_);
-            PublishFpaOdometryDataNavSatFix(odometry_payload, params_.nav2_mode_, &llh_transformer_,
-                                            odometry_llh_pub_);
+            PublishFpaOdometryDataNavSatFix(odometry_payload, params_.nav2_mode_, &llh_transformer_, odometry_llh_pub_);
             OdometryData odometry_data;
             odometry_data.SetFromFpaOdomPayload(odometry_payload);
             PublishOdometryData(odometry_data, odometry_ecef_pub_);

@@ -58,9 +58,9 @@ class FixpositionDriverNode {
     void StopNode();
 
    private:
-    ros::NodeHandle nh_;        //!< ROS node handle
-    DriverParams params_;       //!< Sensor/driver parameters
-    FixpositionDriver driver_;  //!< Sensor driver
+    ros::NodeHandle nh_;              //!< ROS node handle
+    DriverParams params_;             //!< Sensor/driver parameters
+    FixpositionDriver driver_;        //!< Sensor driver
     LlhTransformer llh_transformer_;  //!< Optional PROJ-backed LLH/ECEF conversions
 
     // ROS publishers

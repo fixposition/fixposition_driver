@@ -926,8 +926,8 @@ void PublishJumpWarning(const JumpDetector& jump_detector, ros::Publisher& pub) 
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp,
-                  const LlhTransformer* llh_transformer, ros::Publisher& pub) {
+void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp, const LlhTransformer* llh_transformer,
+                  ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         sensor_msgs::NavSatFix msg;
         msg.header.stamp = stamp;
