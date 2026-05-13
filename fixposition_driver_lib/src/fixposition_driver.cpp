@@ -84,7 +84,6 @@ void FixpositionDriver::Disconnect() {
             DisconnectTcp();
         }
         sensor_fd_ = -1;
-        params_.stream_.clear();
     }
 }
 
