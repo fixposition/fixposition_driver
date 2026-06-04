@@ -236,6 +236,7 @@ static void FpaOdomstatusToMsg(const fpa::FpaOdomstatusPayload& payload, fixposi
     msg.fusion_gnss2    = FpaMeasStatusToMsg(msg, payload.fusion_gnss2);
     msg.fusion_corr     = FpaMeasStatusToMsg(msg, payload.fusion_corr);
     msg.fusion_cam1     = FpaMeasStatusToMsg(msg, payload.fusion_cam1);
+    msg.fusion_cam2     = FpaMeasStatusToMsg(msg, payload.fusion_cam2);
     msg.fusion_ws       = FpaMeasStatusToMsg(msg, payload.fusion_ws);
     msg.fusion_markers  = FpaMeasStatusToMsg(msg, payload.fusion_markers);
     msg.imu_status      = FpaImuStatusToMsg(msg, payload.imu_status);
@@ -246,6 +247,7 @@ static void FpaOdomstatusToMsg(const fpa::FpaOdomstatusPayload& payload, fixposi
     msg.baseline_status = FpaBaselineStatusToMsg(msg, payload.baseline_status);
     msg.corr_status     = FpaCorrStatusToMsg(msg, payload.corr_status);
     msg.cam1_status     = FpaCamStatusToMsg(msg, payload.cam1_status);
+    msg.cam2_status     = FpaCamStatusToMsg(msg, payload.cam2_status);
     msg.ws_status       = FpaWsStatusToMsg(msg, payload.ws_status);
     msg.ws_conv         = FpaWsConvToMsg(msg, payload.ws_conv);
     msg.markers_status  = FpaMarkersStatusToMsg(msg, payload.markers_status);

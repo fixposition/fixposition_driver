@@ -99,8 +99,8 @@ int8   CORR_STATUS_RESERVED9                       =   9  # Reserved
 int8   CAM_STATUS_UNSPECIFIED                      =  -1  # Unspecified
 int8   CAM_STATUS_CAM_UNAVL                        =   0  # Camera not available
 int8   CAM_STATUS_BAD_FEAT                         =   1  # Camera available, but not usable  (e.g. too dark)
-int8   CAM_STATUS_RESERVED2                        =   2  # Reserved
-int8   CAM_STATUS_RESERVED3                        =   3  # Reserved
+int8   CAM_STATUS_NOT_CONVERGED                    =   2  # Camera not converged
+int8   CAM_STATUS_WARMSTARTED                      =   3  # Camera warmstarted (previously converged)
 int8   CAM_STATUS_RESERVED4                        =   4  # Reserved
 int8   CAM_STATUS_GOOD                             =   5  # Camera working and available
 

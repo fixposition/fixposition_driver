@@ -269,13 +269,13 @@ template <typename RosMsgT>
 inline int FpaCamStatusToMsg(const RosMsgT& msg, const fpsdk::common::parser::fpa::FpaCamStatus cam_status) {
     // clang-format off
     switch (cam_status) {
-        case fpsdk::common::parser::fpa::FpaCamStatus::UNSPECIFIED: return msg.consts.CAM_STATUS_UNSPECIFIED;
-        case fpsdk::common::parser::fpa::FpaCamStatus::CAM_UNAVL:   return msg.consts.CAM_STATUS_CAM_UNAVL;
-        case fpsdk::common::parser::fpa::FpaCamStatus::BAD_FEAT:    return msg.consts.CAM_STATUS_BAD_FEAT;
-        case fpsdk::common::parser::fpa::FpaCamStatus::RESERVED2:   return msg.consts.CAM_STATUS_RESERVED2;
-        case fpsdk::common::parser::fpa::FpaCamStatus::RESERVED3:   return msg.consts.CAM_STATUS_RESERVED3;
-        case fpsdk::common::parser::fpa::FpaCamStatus::RESERVED4:   return msg.consts.CAM_STATUS_RESERVED4;
-        case fpsdk::common::parser::fpa::FpaCamStatus::GOOD:        return msg.consts.CAM_STATUS_GOOD;
+        case fpsdk::common::parser::fpa::FpaCamStatus::UNSPECIFIED:    return msg.consts.CAM_STATUS_UNSPECIFIED;
+        case fpsdk::common::parser::fpa::FpaCamStatus::CAM_UNAVL:      return msg.consts.CAM_STATUS_CAM_UNAVL;
+        case fpsdk::common::parser::fpa::FpaCamStatus::BAD_FEAT:       return msg.consts.CAM_STATUS_BAD_FEAT;
+        case fpsdk::common::parser::fpa::FpaCamStatus::NOT_CONVERGED:  return msg.consts.CAM_STATUS_NOT_CONVERGED;
+        case fpsdk::common::parser::fpa::FpaCamStatus::WARMSTARTED:    return msg.consts.CAM_STATUS_WARMSTARTED;
+        case fpsdk::common::parser::fpa::FpaCamStatus::RESERVED4:      return msg.consts.CAM_STATUS_RESERVED4;
+        case fpsdk::common::parser::fpa::FpaCamStatus::GOOD:           return msg.consts.CAM_STATUS_GOOD;
     }
     // clang-format on
     return msg.consts.CAM_STATUS_UNSPECIFIED;
