@@ -1,12 +1,14 @@
 <!-- https://design.ros2.org/articles/roslaunch_xml.html -->
 <launch>
-    <arg name="node_name"   default="fixposition_driver_ros2" description="Node name"/> <!--  -->
-    <arg name="config"      default="config.yaml"             description="Configuration file to use"/>
-    <arg name="launcher"    default=""                        description="Launch node via this (node launch-prefix)"/>
+    <arg name="node_name"   default="fixposition_driver_ros2"                          description="Node name"/>
+    <arg name="config"      default="config.yaml"                                      description="Configuration YAML filename"/>
+    <arg name="config_dir"  default="$(find-pkg-share fixposition_driver_ros2)/launch" description="Directory containing the configuration file"/>
+    <arg name="launcher"    default=""                                                 description="Launch node via this (node launch-prefix)"/>
+
     <node name="$(var node_name)" pkg="fixposition_driver_ros2" exec="fixposition_driver_ros2_exec"
         output="screen" respawn="true" respawn_delay="5" launch-prefix="$(var launcher)"
         ros_args="--log-level $(var node_name):=debug">
-        <param from="$(find-pkg-share fixposition_driver_ros2)/launch/$(var config)"/>
+        <param from="$(var config_dir)/$(var config)"/>
         <param name="some_numeric_param" value="100.2"/>
     </node>
 </launch>

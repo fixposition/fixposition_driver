@@ -1,9 +1,18 @@
 <launch>
-    <arg name="node_name"   default="fixposition_driver_ros1" doc="Node name"/>
-    <arg name="config"      default="config.yaml"             doc="Configuration file to use"/>
-    <arg name="launcher"    default=""                        doc="Launch node via this (node launch-prefix)"/>
+    <arg name="node_name"  default="fixposition_driver_ros1"                 doc="Node name"/>
+    <arg name="config"     default="config.yaml"                             doc="Configuration YAML filename"/>
+    <arg name="config_dir" default="$(find fixposition_driver_ros1)/launch"  doc="Directory containing the configuration file"/>
+    <arg name="launcher"   default=""                                        doc="Launch node via this (node launch-prefix)"/>
+
     <env name="ROSCONSOLE_CONFIG_FILE" value="$(find fixposition_driver_ros1)/launch/rosconsole.conf"/>
-    <node name="$(arg node_name)" pkg="fixposition_driver_ros1" type="fixposition_driver_ros1" output="screen" respawn="true" respawn_delay="5" launch-prefix="$(arg launcher)">
-        <rosparam command="load" file="$(find fixposition_driver_ros1)/launch/$(arg config)"/>
+    
+    <node name="$(arg node_name)"
+          pkg="fixposition_driver_ros1"
+          type="fixposition_driver_ros1"
+          output="screen"
+          respawn="true"
+          respawn_delay="5"
+          launch-prefix="$(arg launcher)">
+        <rosparam command="load" file="$(arg config_dir)/$(arg config)"/>
     </node>
 </launch>
