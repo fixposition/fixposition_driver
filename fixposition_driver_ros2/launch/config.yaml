@@ -54,7 +54,20 @@
         nmea_epoch:   "GNSS"   # Choice for NMEA collection, must match NMEA message configuration type (<epoch> above), "" to disable
         raw_output:   false    # Enable raw messages output
         cov_warning:  false    # Enable covariance warnings
-        nav2_mode:    false    # Enable nav2 mode
+        nav2_mode: false
+        odom_frame: "odom"
+        planar_mode:
+            enabled: false
+            latch_origin: true
+            planar_topic: "odometry_planar"
+            planar_odom_frame: "odom_nav"
+            base_frame: "base_footprint"
+            sensor_to_base_x: 0.0
+            sensor_to_base_y: 0.0
+            sensor_to_base_z: 0.0
+            sensor_to_base_yaw: 0.0
+            zero_initial_yaw: false
+            publish_tf: true
 
         converter:
             enabled: false

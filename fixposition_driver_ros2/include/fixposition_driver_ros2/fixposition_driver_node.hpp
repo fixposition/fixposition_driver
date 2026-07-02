@@ -98,6 +98,7 @@ class FixpositionDriverNode {
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_enu_pub_;         //!< ENU odometry
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_smooth_pub_;      //!< Smooth odometry (ECEF)
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_enu_smooth_pub_;  //!< Smooth odometry (ENU)
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_planar_pub_;      //!< Planar odometry for Nav2
     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr odometry_llh_pub_;     //!< LLH odometry
     // - Fusion
     rclcpp::Publisher<fpmsgs::FusionEpoch>::SharedPtr fusion_epoch_pub_;  //!< Fusion epoch data
@@ -149,8 +150,21 @@ class FixpositionDriverNode {
     Tfs tfs_;
     std::unique_ptr<TfData> ecef_enu0_tf_;
 
+    struct PlanarOrigin {
+        std::mutex mutex_;
+        bool latched_ = false;
+        double x_ = 0.0;
+        double y_ = 0.0;
+        double yaw_ = 0.0;
+        bool odom_base_valid_ = false;
+        tf2::Transform odom_base_;
+    };
+    PlanarOrigin planar_origin_;
+
     void ProcessTfData(const TfData& tf_data);
     void ProcessOdometryData(const OdometryData& odometry_data);
+    void PublishPlanarOdometry(const OdometryData& odometry_data);
+    void PublishPlanarMapToOdomCorrection(const OdometryData& odometry_data);
     void PublishNav2Tf();
 };
 

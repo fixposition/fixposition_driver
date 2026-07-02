@@ -41,6 +41,18 @@ struct DriverParams {
     bool raw_output_ = false;
     bool cov_warning_ = false;
     bool nav2_mode_ = false;
+    std::string nav2_odom_frame_ = "odom";
+    bool nav2_planar_enabled_ = false;
+    bool nav2_planar_latch_origin_ = true;
+    std::string nav2_planar_topic_ = "odometry_planar";
+    std::string nav2_planar_odom_frame_ = "odom_nav";
+    std::string nav2_planar_base_frame_ = "base_footprint";
+    double nav2_planar_sensor_to_base_x_ = 0.0;
+    double nav2_planar_sensor_to_base_y_ = 0.0;
+    double nav2_planar_sensor_to_base_z_ = 0.0;
+    double nav2_planar_sensor_to_base_yaw_ = 0.0;
+    bool nav2_planar_zero_initial_yaw_ = false;
+    bool nav2_planar_publish_tf_ = true;
 
     enum class VelTopicType { UNSPECIFIED, TWIST, TWISTWITHCOV, ODOMETRY };
     bool converter_enabled_ = false;

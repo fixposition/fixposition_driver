@@ -13,6 +13,7 @@
 
 /* LIBC/STL */
 #include <chrono>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -38,6 +39,42 @@ namespace fixposition {
 
 using namespace fpsdk::common;
 using namespace fpsdk::common::parser;
+
+namespace {
+
+constexpr double kPi = 3.14159265358979323846;
+
+double NormalizeAngle(double angle) {
+    while (angle > kPi) {
+        angle -= 2.0 * kPi;
+    }
+    while (angle < -kPi) {
+        angle += 2.0 * kPi;
+    }
+    return angle;
+}
+
+double YawFromQuaternion(const Eigen::Quaterniond& quaternion) {
+    const double siny_cosp = 2.0 * (quaternion.w() * quaternion.z() + quaternion.x() * quaternion.y());
+    const double cosy_cosp = 1.0 - 2.0 * (quaternion.y() * quaternion.y() + quaternion.z() * quaternion.z());
+    return std::atan2(siny_cosp, cosy_cosp);
+}
+
+Eigen::Quaterniond QuaternionFromYaw(double yaw) {
+    return Eigen::Quaterniond(Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()));
+}
+
+std::string ResolveOutputTopic(const std::string& output_ns, const std::string& topic) {
+    if (!topic.empty() && topic.front() == '/') {
+        return topic;
+    }
+    if (output_ns.empty() || output_ns == "/") {
+        return "/" + topic;
+    }
+    return output_ns + "/" + topic;
+}
+
+}  // namespace
 
 FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> nh,
                                              const DriverParams& params) /* clang-format off */ :
@@ -95,6 +132,10 @@ bool FixpositionDriverNode::StartNode() {
 
     // Add observers and advertise output topics, depending on configuration
     const std::string output_ns = (params_.output_ns_.empty() ? nh_->get_namespace() : params_.output_ns_);
+    if (params_.nav2_mode_ && params_.nav2_planar_enabled_) {
+        const std::string planar_topic = ResolveOutputTopic(output_ns, params_.nav2_planar_topic_);
+        _PUB(odometry_planar_pub_, nav_msgs::msg::Odometry, planar_topic, qos_settings_);
+    }
 
     // FP_A-ODOMETRY
     if (params_.MessageEnabled(fpa::FpaOdometryPayload::MSG_NAME)) {
@@ -127,8 +168,8 @@ bool FixpositionDriverNode::StartNode() {
             odometry_data.SetFromFpaOdomPayload(odomsh_payload);
 
             // Update frames for Nav2
-            if (params_.nav2_mode_) {
-                odometry_data.frame_id = "odom";
+            if (params_.nav2_mode_ && !params_.nav2_planar_enabled_) {
+                odometry_data.frame_id = params_.nav2_odom_frame_;
                 odometry_data.child_frame_id = "vrtk_link";
             }
 
@@ -140,7 +181,12 @@ bool FixpositionDriverNode::StartNode() {
             if (ecef_enu0_tf_) {
                 bool enu_valid = odometry_data.ConvertToEnu(*ecef_enu0_tf_);
                 if (enu_valid) {
+                    odometry_data.frame_id = ODOMENU_FRAME_ID;
+                    odometry_data.child_frame_id = ODOMSH_CHILD_FRAME_ID;
                     PublishOdometryData(odometry_data, odometry_enu_smooth_pub_);
+                    if (params_.nav2_mode_ && params_.nav2_planar_enabled_) {
+                        PublishPlanarOdometry(odometry_data);
+                    }
                 }
             }
         });
@@ -159,12 +205,15 @@ bool FixpositionDriverNode::StartNode() {
             odometry_data.SetFromFpaOdomPayload(odomenu_payload);
 
             // Update frames for Nav2
-            if (params_.nav2_mode_) {
+            if (params_.nav2_mode_ && !params_.nav2_planar_enabled_) {
                 odometry_data.frame_id = "map";
                 odometry_data.child_frame_id = "vrtk_link";
             }
 
             PublishOdometryData(odometry_data, odometry_enu_pub_);
+            if (params_.nav2_mode_ && params_.nav2_planar_enabled_) {
+                PublishPlanarMapToOdomCorrection(odometry_data);
+            }
             ProcessOdometryData(odometry_data);
             fusion_epoch_data_.CollectFpaOdomenu(odomenu_payload);
         });
@@ -525,6 +574,7 @@ void FixpositionDriverNode::StopNode() {
     odometry_llh_pub_.reset();
     odometry_smooth_pub_.reset();
     odometry_enu_smooth_pub_.reset();
+    odometry_planar_pub_.reset();
     // - Orientation
     eul_pub_.reset();
     eul_imu_pub_.reset();
@@ -590,7 +640,7 @@ void FixpositionDriverNode::ProcessTfData(const TfData& tf_data) {
     else if ((tf.child_frame_id == "FP_POISH") && (tf.header.frame_id == "FP_POI")) {
         tf_br_->sendTransform(tf);
         // Store  TF if Nav2 mode is enabled
-        if (params_.nav2_mode_) {
+        if (params_.nav2_mode_ && !params_.nav2_planar_enabled_) {
             std::unique_lock<std::mutex> lock(tfs_.mutex_);
             tfs_.poi_poish_ = std::make_unique<geometry_msgs::msg::TransformStamped>(tf);
         }
@@ -645,7 +695,7 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
 
         case OdometryData::Type::ODOMENU:
             // Store FP_ENU0 -> FP_POI TF if Nav2 mode is selected
-            if (params_.nav2_mode_ && odometry_data.valid) {
+            if (params_.nav2_mode_ && !params_.nav2_planar_enabled_ && odometry_data.valid) {
                 std::unique_lock<std::mutex> lock(tfs_.mutex_);
                 tfs_.enu0_poi_ = std::make_unique<geometry_msgs::msg::TransformStamped>();
                 OdometryDataToTransformStamped(odometry_data, *tfs_.enu0_poi_);
@@ -654,7 +704,7 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
 
         case OdometryData::Type::ODOMSH:
             // Store TF if Nav2 mode is selected
-            if (params_.nav2_mode_ && odometry_data.valid) {
+            if (params_.nav2_mode_ && !params_.nav2_planar_enabled_ && odometry_data.valid) {
                 std::unique_lock<std::mutex> lock(tfs_.mutex_);
                 tfs_.ecef_poish_ = std::make_unique<geometry_msgs::msg::TransformStamped>();
                 OdometryDataToTransformStamped(odometry_data, *tfs_.ecef_poish_);
@@ -668,10 +718,113 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
 
 // ---------------------------------------------------------------------------------------------------------------------
 
+void FixpositionDriverNode::PublishPlanarOdometry(const OdometryData& odometry_data) {
+    if (!odometry_data.valid) {
+        return;
+    }
+
+    const double sensor_yaw = YawFromQuaternion(odometry_data.pose.orientation);
+    const double base_yaw = NormalizeAngle(sensor_yaw + params_.nav2_planar_sensor_to_base_yaw_);
+    const double cos_sensor_yaw = std::cos(sensor_yaw);
+    const double sin_sensor_yaw = std::sin(sensor_yaw);
+    const double base_x = odometry_data.pose.position.x() + cos_sensor_yaw * params_.nav2_planar_sensor_to_base_x_ -
+                          sin_sensor_yaw * params_.nav2_planar_sensor_to_base_y_;
+    const double base_y = odometry_data.pose.position.y() + sin_sensor_yaw * params_.nav2_planar_sensor_to_base_x_ +
+                          cos_sensor_yaw * params_.nav2_planar_sensor_to_base_y_;
+
+    std::unique_lock<std::mutex> lock(planar_origin_.mutex_);
+    if (!planar_origin_.latched_) {
+        planar_origin_.x_ = params_.nav2_planar_latch_origin_ ? base_x : 0.0;
+        planar_origin_.y_ = params_.nav2_planar_latch_origin_ ? base_y : 0.0;
+        planar_origin_.yaw_ = params_.nav2_planar_zero_initial_yaw_ ? base_yaw : 0.0;
+        planar_origin_.latched_ = true;
+        RCLCPP_INFO(logger_, "Latched planar Nav2 origin at ENU x=%.3f y=%.3f yaw=%.3f rad", planar_origin_.x_,
+                    planar_origin_.y_, planar_origin_.yaw_);
+    }
+
+    const double dx = base_x - planar_origin_.x_;
+    const double dy = base_y - planar_origin_.y_;
+    const double cos_origin = std::cos(planar_origin_.yaw_);
+    const double sin_origin = std::sin(planar_origin_.yaw_);
+
+    OdometryData planar = odometry_data;
+    planar.frame_id = params_.nav2_planar_odom_frame_;
+    planar.child_frame_id = params_.nav2_planar_base_frame_;
+    planar.pose.position.x() = cos_origin * dx + sin_origin * dy;
+    planar.pose.position.y() = -sin_origin * dx + cos_origin * dy;
+    planar.pose.position.z() = 0.0;
+    planar.pose.orientation = QuaternionFromYaw(NormalizeAngle(base_yaw - planar_origin_.yaw_));
+
+    tf2::Transform odom_base;
+    odom_base.setOrigin(tf2::Vector3(planar.pose.position.x(), planar.pose.position.y(), 0.0));
+    const Eigen::Quaterniond odom_base_q = QuaternionFromYaw(NormalizeAngle(base_yaw - planar_origin_.yaw_));
+    odom_base.setRotation(tf2::Quaternion(odom_base_q.x(), odom_base_q.y(), odom_base_q.z(), odom_base_q.w()));
+    planar_origin_.odom_base_ = odom_base;
+    planar_origin_.odom_base_valid_ = true;
+
+    const double cos_sensor_to_base = std::cos(-params_.nav2_planar_sensor_to_base_yaw_);
+    const double sin_sensor_to_base = std::sin(-params_.nav2_planar_sensor_to_base_yaw_);
+    const double input_linear_x = odometry_data.twist.linear.x();
+    const double input_linear_y = odometry_data.twist.linear.y();
+    planar.twist.linear.x() = cos_sensor_to_base * input_linear_x - sin_sensor_to_base * input_linear_y;
+    planar.twist.linear.y() = sin_sensor_to_base * input_linear_x + cos_sensor_to_base * input_linear_y;
+    planar.twist.linear.z() = 0.0;
+    planar.twist.angular.x() = 0.0;
+    planar.twist.angular.y() = 0.0;
+
+    PublishOdometryData(planar, odometry_planar_pub_);
+
+    if (params_.nav2_planar_publish_tf_) {
+        geometry_msgs::msg::TransformStamped tf;
+        OdometryDataToTransformStamped(planar, tf);
+        tf_br_->sendTransform(tf);
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+
+void FixpositionDriverNode::PublishPlanarMapToOdomCorrection(const OdometryData& odometry_data) {
+    if (!odometry_data.valid || !params_.nav2_planar_publish_tf_) {
+        return;
+    }
+
+    const double sensor_yaw = YawFromQuaternion(odometry_data.pose.orientation);
+    const double base_yaw = NormalizeAngle(sensor_yaw + params_.nav2_planar_sensor_to_base_yaw_);
+    const double cos_sensor_yaw = std::cos(sensor_yaw);
+    const double sin_sensor_yaw = std::sin(sensor_yaw);
+    const double base_x = odometry_data.pose.position.x() + cos_sensor_yaw * params_.nav2_planar_sensor_to_base_x_ -
+                          sin_sensor_yaw * params_.nav2_planar_sensor_to_base_y_;
+    const double base_y = odometry_data.pose.position.y() + sin_sensor_yaw * params_.nav2_planar_sensor_to_base_x_ +
+                          cos_sensor_yaw * params_.nav2_planar_sensor_to_base_y_;
+    const double base_z = odometry_data.pose.position.z() + params_.nav2_planar_sensor_to_base_z_;
+
+    tf2::Transform map_base;
+    map_base.setOrigin(tf2::Vector3(base_x, base_y, base_z));
+    const Eigen::Quaterniond map_base_q = QuaternionFromYaw(base_yaw);
+    map_base.setRotation(tf2::Quaternion(map_base_q.x(), map_base_q.y(), map_base_q.z(), map_base_q.w()));
+
+    tf2::Transform map_odom;
+    {
+        std::unique_lock<std::mutex> lock(planar_origin_.mutex_);
+        if (!planar_origin_.latched_ || !planar_origin_.odom_base_valid_) {
+            return;
+        }
+        map_odom = map_base * planar_origin_.odom_base_.inverse();
+    }
+
+    geometry_msgs::msg::TransformStamped tf;
+    tf.header.stamp = fpsdk::ros2::utils::ConvTime(odometry_data.stamp);
+    tf.header.frame_id = "map";
+    tf.child_frame_id = params_.nav2_planar_odom_frame_;
+    tf.transform = tf2::toMsg(map_odom);
+    tf_br_->sendTransform(tf);
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+
 void FixpositionDriverNode::PublishNav2Tf() {
     std::unique_lock<std::mutex> lock(tfs_.mutex_);
-    // We'll need all before we can start publishing the Nav2 TFs
-    if (!tfs_.ecef_enu0_ || !tfs_.poi_poish_ || !tfs_.ecef_poish_ || !tfs_.enu0_poi_) {
+    if (!tfs_.ecef_enu0_) {
         return;
     }
 
@@ -688,6 +841,15 @@ void FixpositionDriverNode::PublishNav2Tf() {
     static_transform.transform.rotation.y = 0.0;
     static_transform.transform.rotation.z = 0.0;
     static_br_->sendTransform(static_transform);
+
+    if (params_.nav2_planar_enabled_ || !params_.nav2_mode_) {
+        return;
+    }
+
+    // Legacy Nav2 mode needs all transforms before publishing map -> odom -> vrtk_link.
+    if (!tfs_.poi_poish_ || !tfs_.ecef_poish_ || !tfs_.enu0_poi_) {
+        return;
+    }
 
     // Compute FP_ENU0 -> FP_POISH
     // Extract translation and rotation from ECEFENU0
@@ -724,14 +886,14 @@ void FixpositionDriverNode::PublishNav2Tf() {
     geometry_msgs::msg::TransformStamped tfs_odom;
     tfs_odom.header.stamp = tfs_.enu0_poi_->header.stamp;
     tfs_odom.header.frame_id = "map";
-    tfs_odom.child_frame_id = "odom";
+    tfs_odom.child_frame_id = params_.nav2_odom_frame_;
     tfs_odom.transform = tf2::toMsg(tf_combined);
     tf_br_->sendTransform(tfs_odom);
 
     // Publish odom -> vrtk_link
     geometry_msgs::msg::TransformStamped tf_odom_base;
     tf_odom_base.header.stamp = tfs_.enu0_poi_->header.stamp;
-    tf_odom_base.header.frame_id = "odom";
+    tf_odom_base.header.frame_id = params_.nav2_odom_frame_;
     tf_odom_base.child_frame_id = "vrtk_link";
     tf_odom_base.transform = tf2::toMsg(tf_ENU0POISH);
     tf_br_->sendTransform(tf_odom_base);

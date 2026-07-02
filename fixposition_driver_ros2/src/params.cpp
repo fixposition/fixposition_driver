@@ -36,6 +36,18 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params)
     const std::string RAW_OUTPUT = "raw_output";
     const std::string COV_WARNING = "cov_warning";
     const std::string NAV2_MODE = "nav2_mode";
+    const std::string NAV2_ODOM_FRAME = "odom_frame";
+    const std::string NAV2_PLANAR_ENABLED = "planar_mode.enabled";
+    const std::string NAV2_PLANAR_LATCH_ORIGIN = "planar_mode.latch_origin";
+    const std::string NAV2_PLANAR_TOPIC = "planar_mode.planar_topic";
+    const std::string NAV2_PLANAR_ODOM_FRAME = "planar_mode.planar_odom_frame";
+    const std::string NAV2_PLANAR_BASE_FRAME = "planar_mode.base_frame";
+    const std::string NAV2_PLANAR_SENSOR_TO_BASE_X = "planar_mode.sensor_to_base_x";
+    const std::string NAV2_PLANAR_SENSOR_TO_BASE_Y = "planar_mode.sensor_to_base_y";
+    const std::string NAV2_PLANAR_SENSOR_TO_BASE_Z = "planar_mode.sensor_to_base_z";
+    const std::string NAV2_PLANAR_SENSOR_TO_BASE_YAW = "planar_mode.sensor_to_base_yaw";
+    const std::string NAV2_PLANAR_ZERO_INITIAL_YAW = "planar_mode.zero_initial_yaw";
+    const std::string NAV2_PLANAR_PUBLISH_TF = "planar_mode.publish_tf";
     const std::string CONVERTER_ENABLED = "converter.enabled";
     const std::string CONVERTER_INPUT_TOPIC = "converter.input_topic";
     const std::string CONVERTER_SCALE_FACTOR = "converter.scale_factor";
@@ -58,6 +70,18 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params)
     nh->declare_parameter(RAW_OUTPUT, params.raw_output_);
     nh->declare_parameter(COV_WARNING, params.cov_warning_);
     nh->declare_parameter(NAV2_MODE, params.nav2_mode_);
+    nh->declare_parameter(NAV2_ODOM_FRAME, params.nav2_odom_frame_);
+    nh->declare_parameter(NAV2_PLANAR_ENABLED, params.nav2_planar_enabled_);
+    nh->declare_parameter(NAV2_PLANAR_LATCH_ORIGIN, params.nav2_planar_latch_origin_);
+    nh->declare_parameter(NAV2_PLANAR_TOPIC, params.nav2_planar_topic_);
+    nh->declare_parameter(NAV2_PLANAR_ODOM_FRAME, params.nav2_planar_odom_frame_);
+    nh->declare_parameter(NAV2_PLANAR_BASE_FRAME, params.nav2_planar_base_frame_);
+    nh->declare_parameter(NAV2_PLANAR_SENSOR_TO_BASE_X, params.nav2_planar_sensor_to_base_x_);
+    nh->declare_parameter(NAV2_PLANAR_SENSOR_TO_BASE_Y, params.nav2_planar_sensor_to_base_y_);
+    nh->declare_parameter(NAV2_PLANAR_SENSOR_TO_BASE_Z, params.nav2_planar_sensor_to_base_z_);
+    nh->declare_parameter(NAV2_PLANAR_SENSOR_TO_BASE_YAW, params.nav2_planar_sensor_to_base_yaw_);
+    nh->declare_parameter(NAV2_PLANAR_ZERO_INITIAL_YAW, params.nav2_planar_zero_initial_yaw_);
+    nh->declare_parameter(NAV2_PLANAR_PUBLISH_TF, params.nav2_planar_publish_tf_);
     nh->declare_parameter(CONVERTER_ENABLED, params.converter_enabled_);
     nh->declare_parameter(CONVERTER_INPUT_TOPIC, params.converter_input_topic_);
     nh->declare_parameter(CONVERTER_SCALE_FACTOR, params.converter_scale_factor_);
@@ -109,6 +133,78 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params)
     }
     if (!nh->get_parameter(NAV2_MODE, params.nav2_mode_)) {
         RCLCPP_WARN(logger, "Failed loading %s param", NAV2_MODE.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(NAV2_ODOM_FRAME, params.nav2_odom_frame_) || params.nav2_odom_frame_.empty()) {
+        RCLCPP_WARN(logger, "Failed loading %s param", NAV2_ODOM_FRAME.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(NAV2_PLANAR_ENABLED, params.nav2_planar_enabled_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", NAV2_PLANAR_ENABLED.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(NAV2_PLANAR_LATCH_ORIGIN, params.nav2_planar_latch_origin_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", NAV2_PLANAR_LATCH_ORIGIN.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(NAV2_PLANAR_TOPIC, params.nav2_planar_topic_) || params.nav2_planar_topic_.empty()) {
+        RCLCPP_WARN(logger, "Failed loading %s param", NAV2_PLANAR_TOPIC.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(NAV2_PLANAR_ODOM_FRAME, params.nav2_planar_odom_frame_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", NAV2_PLANAR_ODOM_FRAME.c_str());
+        ok = false;
+    }
+    if (params.nav2_planar_odom_frame_.empty()) {
+        params.nav2_planar_odom_frame_ = params.nav2_odom_frame_;
+    }
+    if (!nh->get_parameter(NAV2_PLANAR_BASE_FRAME, params.nav2_planar_base_frame_) ||
+        params.nav2_planar_base_frame_.empty()) {
+        RCLCPP_WARN(logger, "Failed loading %s param", NAV2_PLANAR_BASE_FRAME.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(NAV2_PLANAR_SENSOR_TO_BASE_X, params.nav2_planar_sensor_to_base_x_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", NAV2_PLANAR_SENSOR_TO_BASE_X.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(NAV2_PLANAR_SENSOR_TO_BASE_Y, params.nav2_planar_sensor_to_base_y_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", NAV2_PLANAR_SENSOR_TO_BASE_Y.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(NAV2_PLANAR_SENSOR_TO_BASE_Z, params.nav2_planar_sensor_to_base_z_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", NAV2_PLANAR_SENSOR_TO_BASE_Z.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(NAV2_PLANAR_SENSOR_TO_BASE_YAW, params.nav2_planar_sensor_to_base_yaw_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", NAV2_PLANAR_SENSOR_TO_BASE_YAW.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(NAV2_PLANAR_ZERO_INITIAL_YAW, params.nav2_planar_zero_initial_yaw_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", NAV2_PLANAR_ZERO_INITIAL_YAW.c_str());
+        ok = false;
+    }
+    if (!nh->get_parameter(NAV2_PLANAR_PUBLISH_TF, params.nav2_planar_publish_tf_)) {
+        RCLCPP_WARN(logger, "Failed loading %s param", NAV2_PLANAR_PUBLISH_TF.c_str());
+        ok = false;
+    }
+    if (params.nav2_planar_enabled_ && params.nav2_planar_odom_frame_ == "map") {
+        RCLCPP_WARN(logger, "%s must differ from map", NAV2_PLANAR_ODOM_FRAME.c_str());
+        ok = false;
+    }
+    if (params.nav2_planar_enabled_ && !params.nav2_mode_) {
+        RCLCPP_WARN(logger, "%s requires %s=true", NAV2_PLANAR_ENABLED.c_str(), NAV2_MODE.c_str());
+        ok = false;
+    }
+    if (params.nav2_planar_enabled_ && !params.MessageEnabled("FP_A-ODOMENU")) {
+        RCLCPP_WARN(logger, "%s requires FP_A-ODOMENU in messages", NAV2_PLANAR_ENABLED.c_str());
+        ok = false;
+    }
+    if (params.nav2_planar_enabled_ && !params.MessageEnabled("FP_A-ODOMSH")) {
+        RCLCPP_WARN(logger, "%s requires FP_A-ODOMSH in messages", NAV2_PLANAR_ENABLED.c_str());
+        ok = false;
+    }
+    if (params.nav2_planar_enabled_ && !params.MessageEnabled("FP_A-TF")) {
+        RCLCPP_WARN(logger, "%s requires FP_A-TF in messages", NAV2_PLANAR_ENABLED.c_str());
         ok = false;
     }
     if (!nh->get_parameter(CONVERTER_ENABLED, params.converter_enabled_)) {
@@ -178,6 +274,20 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params)
     RCLCPP_INFO(logger, "DriverParams: raw_output=%s", params.raw_output_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: cov_warning=%s", params.cov_warning_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: nav2_mode=%s", params.nav2_mode_ ? "true" : "false");
+    RCLCPP_INFO(logger, "DriverParams: odom_frame=%s", params.nav2_odom_frame_.c_str());
+    RCLCPP_INFO(logger, "DriverParams: planar_mode.enabled=%s", params.nav2_planar_enabled_ ? "true" : "false");
+    RCLCPP_INFO(logger, "DriverParams: planar_mode.latch_origin=%s",
+                params.nav2_planar_latch_origin_ ? "true" : "false");
+    RCLCPP_INFO(logger, "DriverParams: planar_mode.planar_topic=%s", params.nav2_planar_topic_.c_str());
+    RCLCPP_INFO(logger, "DriverParams: planar_mode.planar_odom_frame=%s", params.nav2_planar_odom_frame_.c_str());
+    RCLCPP_INFO(logger, "DriverParams: planar_mode.base_frame=%s", params.nav2_planar_base_frame_.c_str());
+    RCLCPP_INFO(logger, "DriverParams: planar_mode.sensor_to_base_x=%.6f", params.nav2_planar_sensor_to_base_x_);
+    RCLCPP_INFO(logger, "DriverParams: planar_mode.sensor_to_base_y=%.6f", params.nav2_planar_sensor_to_base_y_);
+    RCLCPP_INFO(logger, "DriverParams: planar_mode.sensor_to_base_z=%.6f", params.nav2_planar_sensor_to_base_z_);
+    RCLCPP_INFO(logger, "DriverParams: planar_mode.sensor_to_base_yaw=%.6f", params.nav2_planar_sensor_to_base_yaw_);
+    RCLCPP_INFO(logger, "DriverParams: planar_mode.zero_initial_yaw=%s",
+                params.nav2_planar_zero_initial_yaw_ ? "true" : "false");
+    RCLCPP_INFO(logger, "DriverParams: planar_mode.publish_tf=%s", params.nav2_planar_publish_tf_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: converter_enabled=%s", params.converter_enabled_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: converter_topic_type=%s", topic_type_string_.c_str());
     RCLCPP_INFO(logger, "DriverParams: converter_input_topic=%s", params.converter_input_topic_.c_str());
