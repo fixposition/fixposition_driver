@@ -3,7 +3,6 @@
 #
 # Similar to a fpsdk::common::parser::ParserMsg
 #
-# !!! fpsdk_{ros1,ros2}/msg/ParserMsg.msg should be kept in sync !!!
 
 int8    protocol                  # Protocol
 int8    PROTOCOL_UNSPECIFIED =  0

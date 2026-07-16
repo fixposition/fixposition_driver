@@ -61,11 +61,13 @@ function do_step
     echo "----- $func: ${TITLES[$func]} -----"
     ((NSTEPS=${NSTEPS} + 1))
 
+    set -x
     if ! ${func}; then
         res=1
         ((ERROR_COUNT=${ERROR_COUNT} + 1))
         ERROR_NAMES="${ERROR_NAMES} ${func}"
     fi
+    set +x
 
     echo "::endgroup::"
     if [ ${res} -ne 0 ]; then
