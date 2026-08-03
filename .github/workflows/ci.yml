@@ -61,4 +61,21 @@ jobs:
                   git config --global --add safe.directory ${GITHUB_WORKSPACE}
                   ./.github/ci.sh
 
+    ci-lyrical:
+        runs-on: ubuntu-latest
+        container:
+            image: ghcr.io/fixposition/fixposition-sdk:lyrical-ci
+        defaults:
+            run:
+                shell: bash
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                    submodules: 'recursive'
+            - name: Build
+              run: |
+                  git config --global --add safe.directory ${GITHUB_WORKSPACE}
+                  ./.github/ci.sh
+
 # eof

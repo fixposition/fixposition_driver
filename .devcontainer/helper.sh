@@ -15,7 +15,7 @@ case ${command} in
                     ${containerWorkspaceFolder}/create_ros_ws.sh -d ros1_ws
                 fi
                 ;;
-            humble|jazzy)
+            humble|jazzy|lyrical|rolling)
                 if [ ! -d ${containerWorkspaceFolder}/ros2_ws ]; then
                     ${containerWorkspaceFolder}/create_ros_ws.sh -d ros2_ws
                 fi
