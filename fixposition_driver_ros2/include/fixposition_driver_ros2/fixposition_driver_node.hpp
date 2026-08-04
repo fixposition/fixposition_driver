@@ -19,8 +19,16 @@
 #include <mutex>
 
 /* EXTERNAL */
+#include <diagnostic_updater/diagnostic_updater.hpp>
 #include <fixposition_driver_lib/helper.hpp>
+#include <fpsdk_common/parser/fpa.hpp>
 #include <fpsdk_ros2/ext/rclcpp.hpp>
+#include <rclcpp/node_interfaces/node_base_interface.hpp>
+#include <rclcpp/node_interfaces/node_clock_interface.hpp>
+#include <rclcpp/node_interfaces/node_logging_interface.hpp>
+#include <rclcpp/node_interfaces/node_parameters_interface.hpp>
+#include <rclcpp/node_interfaces/node_timers_interface.hpp>
+#include <rclcpp/node_interfaces/node_topics_interface.hpp>
 
 /* PACKAGE */
 #include "data_to_ros2.hpp"
@@ -31,6 +39,25 @@ namespace fixposition {
 /* ****************************************************************************************************************** */
 
 using namespace fpsdk::common;
+namespace fpa = fpsdk::common::parser::fpa;
+
+struct NodeInterfaces {
+    rclcpp::node_interfaces::NodeBaseInterface::SharedPtr base_;
+    rclcpp::node_interfaces::NodeClockInterface::SharedPtr clock_;
+    rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_;
+    rclcpp::node_interfaces::NodeParametersInterface::SharedPtr parameters_;
+    rclcpp::node_interfaces::NodeTimersInterface::SharedPtr timers_;
+    rclcpp::node_interfaces::NodeTopicsInterface::SharedPtr topics_;
+
+    template <typename NodeT>
+    explicit NodeInterfaces(const std::shared_ptr<NodeT>& node)
+        : base_(node->get_node_base_interface()),
+          clock_(node->get_node_clock_interface()),
+          logging_(node->get_node_logging_interface()),
+          parameters_(node->get_node_parameters_interface()),
+          timers_(node->get_node_timers_interface()),
+          topics_(node->get_node_topics_interface()) {}
+};
 
 class FixpositionDriverNode {
    public:
@@ -40,7 +67,10 @@ class FixpositionDriverNode {
      * @param[in]  nh      Node handle
      * @param[in]  params  Parameters
      */
-    FixpositionDriverNode(std::shared_ptr<rclcpp::Node> nh, const DriverParams& params);
+    template <typename NodeT>
+    FixpositionDriverNode(const std::shared_ptr<NodeT>& nh, const DriverParams& params,
+                          const DiagnosticsParams& diagnostics_params)
+        : FixpositionDriverNode(NodeInterfaces(nh), params, diagnostics_params) {}
 
     /**
      * @brief Destructor
@@ -60,11 +90,16 @@ class FixpositionDriverNode {
     void StopNode();
 
    private:
-    std::shared_ptr<rclcpp::Node> nh_;  //!< Node handle
-    DriverParams params_;               //!< Sensor/driver parameters
-    rclcpp::Logger logger_;             //!< Logger
-    FixpositionDriver driver_;          //!< Sensor driver
-    rclcpp::QoS qos_settings_;          //!< QoS settings
+    FixpositionDriverNode(NodeInterfaces node_interfaces, const DriverParams& params,
+                          const DiagnosticsParams& diagnostics_params);
+
+    NodeInterfaces node_interfaces_;  //!< Node interfaces
+    DriverParams params_;             //!< Sensor/driver parameters
+    rclcpp::Logger logger_;           //!< Logger
+    FixpositionDriver driver_;        //!< Sensor driver
+    rclcpp::QoS qos_settings_;        //!< QoS settings
+    DiagnosticsParams diagnostics_params_;
+    rclcpp::Clock::SharedPtr clock_;
 
     // ROS publishers
     // - FP_A messages
@@ -148,9 +183,39 @@ class FixpositionDriverNode {
     Tfs tfs_;
     std::unique_ptr<TfData> ecef_enu0_tf_;
 
+    // Diagnostics
+    std::unique_ptr<diagnostic_updater::Updater> diagnostics_updater_;
+    rclcpp::TimerBase::SharedPtr diagnostics_timer_;
+    std::mutex diagnostics_mutex_;
+    bool driver_running_ = false;
+    bool have_rx_time_ = false;
+    rclcpp::Time last_rx_time_;
+    bool have_odomstatus_ = false;
+    fpa::FpaOdomstatusPayload last_odomstatus_;
+    bool have_gnssant_ = false;
+    fpa::FpaGnssantPayload last_gnssant_;
+    bool have_gnsscorr_ = false;
+    fpa::FpaGnsscorrPayload last_gnsscorr_;
+    bool have_text_ = false;
+    fpa::FpaTextPayload last_text_;
+    std::string last_text_string_;
+
     void ProcessTfData(const TfData& tf_data);
     void ProcessOdometryData(const OdometryData& odometry_data);
     void PublishNav2Tf();
+
+    void ResetDiagnosticsState();
+    void RecordRxTime();
+    void StoreOdomstatus(const fpa::FpaOdomstatusPayload& payload);
+    void StoreGnssant(const fpa::FpaGnssantPayload& payload);
+    void StoreGnsscorr(const fpa::FpaGnsscorrPayload& payload);
+    void StoreText(const fpa::FpaTextPayload& payload);
+
+    void DiagnosticsDriver(diagnostic_updater::DiagnosticStatusWrapper& status);
+    void DiagnosticsFusion(diagnostic_updater::DiagnosticStatusWrapper& status);
+    void DiagnosticsGnss(diagnostic_updater::DiagnosticStatusWrapper& status);
+    void DiagnosticsAntenna(diagnostic_updater::DiagnosticStatusWrapper& status);
+    void DiagnosticsText(diagnostic_updater::DiagnosticStatusWrapper& status);
 };
 
 /* ****************************************************************************************************************** */

@@ -26,6 +26,9 @@
     <depend>rtcm_msgs</depend>
     <depend>fpsdk_common</depend>
     <depend>fpsdk_ros2</depend>
+    <depend>rclcpp_lifecycle</depend>
+    <depend>diagnostic_msgs</depend>
+    <depend>diagnostic_updater</depend>
 
     <exec_depend>rclcpp</exec_depend>
     <exec_depend>rosidl_default_runtime</exec_depend>

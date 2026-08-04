@@ -12,23 +12,29 @@
  */
 
 /* LIBC/STL */
+#include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <future>
+#include <limits>
 #include <memory>
+#include <utility>
 #include <vector>
 
 /* EXTERNAL */
-#include <fpsdk_common/app.hpp>
-#include <fpsdk_common/logging.hpp>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <diagnostic_updater/diagnostic_updater.hpp>
 #include <fpsdk_common/parser/fpa.hpp>
 #include <fpsdk_common/parser/nmea.hpp>
 #include <fpsdk_common/parser/novb.hpp>
 #include <fpsdk_common/trafo.hpp>
 #include <fpsdk_common/types.hpp>
 #include <fpsdk_ros2/utils.hpp>
+#include <rclcpp/create_publisher.hpp>
+#include <rclcpp/create_subscription.hpp>
+#include <rclcpp/create_timer.hpp>
 
 /* PACKAGE */
 #include "fixposition_driver_ros2/fixposition_driver_node.hpp"
@@ -39,15 +45,29 @@ namespace fixposition {
 using namespace fpsdk::common;
 using namespace fpsdk::common::parser;
 
-FixpositionDriverNode::FixpositionDriverNode(std::shared_ptr<rclcpp::Node> nh,
-                                             const DriverParams& params) /* clang-format off */ :
-    nh_                { nh },
+namespace {
+void AddFpaInt(diagnostic_updater::DiagnosticStatusWrapper& status, const std::string& key, const fpa::FpaInt& value) {
+    status.add(key + "_valid", value.valid);
+    status.add(key, value.valid ? value.value : -1);
+}
+
+void AddFpaFloat(diagnostic_updater::DiagnosticStatusWrapper& status, const std::string& key,
+                 const fpa::FpaFloat& value) {
+    status.add(key + "_valid", value.valid);
+    status.add(key, value.valid ? value.value : std::numeric_limits<double>::quiet_NaN());
+}
+}  // namespace
+
+FixpositionDriverNode::FixpositionDriverNode(NodeInterfaces node_interfaces, const DriverParams& params,
+                                             const DiagnosticsParams& diagnostics_params) /* clang-format off */ :
+    node_interfaces_   { std::move(node_interfaces) },
     params_            { params },
-    logger_            { nh_->get_logger() },
+    logger_            { node_interfaces_.logging_->get_logger() },
     driver_            { params },
     qos_settings_      { rclcpp::QoS(rclcpp::KeepLast(10), rmw_qos_profile_default) },
+    diagnostics_params_ { diagnostics_params },
+    clock_             { node_interfaces_.clock_->get_clock() },
     nmea_epoch_data_   { params_.nmea_epoch_ }  // clang-format on
-
 {
     // Override default QoS settings
     // - Short-queue sensor-type QoS
@@ -72,29 +92,316 @@ FixpositionDriverNode::~FixpositionDriverNode() {}
 
 // ---------------------------------------------------------------------------------------------------------------------
 
+void FixpositionDriverNode::ResetDiagnosticsState() {
+    std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+    have_rx_time_ = false;
+    have_odomstatus_ = false;
+    have_gnssant_ = false;
+    have_gnsscorr_ = false;
+    have_text_ = false;
+    last_text_string_.clear();
+}
+
+void FixpositionDriverNode::RecordRxTime() {
+    std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+    last_rx_time_ = clock_->now();
+    have_rx_time_ = true;
+}
+
+void FixpositionDriverNode::StoreOdomstatus(const fpa::FpaOdomstatusPayload& payload) {
+    std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+    last_odomstatus_ = payload;
+    have_odomstatus_ = true;
+}
+
+void FixpositionDriverNode::StoreGnssant(const fpa::FpaGnssantPayload& payload) {
+    std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+    last_gnssant_ = payload;
+    have_gnssant_ = true;
+}
+
+void FixpositionDriverNode::StoreGnsscorr(const fpa::FpaGnsscorrPayload& payload) {
+    std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+    last_gnsscorr_ = payload;
+    have_gnsscorr_ = true;
+}
+
+void FixpositionDriverNode::StoreText(const fpa::FpaTextPayload& payload) {
+    std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+    last_text_ = payload;
+    last_text_string_ = payload.text;
+    have_text_ = true;
+}
+
+void FixpositionDriverNode::DiagnosticsDriver(diagnostic_updater::DiagnosticStatusWrapper& status) {
+    rclcpp::Time now = clock_->now();
+    bool running = false;
+    bool have_rx = false;
+    rclcpp::Time last_rx;
+
+    {
+        std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+        running = driver_running_;
+        have_rx = have_rx_time_;
+        last_rx = last_rx_time_;
+    }
+
+    if (!running) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Driver stopped");
+    } else if (!have_rx) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "No data received yet");
+    } else {
+        double age_ms = (now - last_rx).seconds() * 1e3;
+        if (age_ms > diagnostics_params_.timeout_ms_) {
+            status.summary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Data timeout");
+        } else {
+            status.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "Driver running");
+        }
+        status.add("last_msg_age_ms", age_ms);
+    }
+
+    status.add("driver_running", running ? "true" : "false");
+    status.add("timeout_ms", diagnostics_params_.timeout_ms_);
+}
+
+void FixpositionDriverNode::DiagnosticsFusion(diagnostic_updater::DiagnosticStatusWrapper& status) {
+    if (!params_.MessageEnabled(fpa::FpaOdomstatusPayload::MSG_NAME)) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "Fusion status disabled");
+        return;
+    }
+
+    bool have = false;
+    fpa::FpaOdomstatusPayload payload;
+    {
+        std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+        have = have_odomstatus_;
+        payload = last_odomstatus_;
+    }
+
+    if (!have) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "No fusion status yet");
+        return;
+    }
+
+    bool degraded = (payload.fusion_imu == fpa::FpaMeasStatus::DEGRADED) ||
+                    (payload.fusion_gnss1 == fpa::FpaMeasStatus::DEGRADED) ||
+                    (payload.fusion_gnss2 == fpa::FpaMeasStatus::DEGRADED) ||
+                    (payload.fusion_corr == fpa::FpaMeasStatus::DEGRADED) ||
+                    (payload.fusion_cam1 == fpa::FpaMeasStatus::DEGRADED) ||
+                    (payload.fusion_ws == fpa::FpaMeasStatus::DEGRADED) ||
+                    (payload.fusion_markers == fpa::FpaMeasStatus::DEGRADED);
+
+    if (degraded) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "Fusion degraded");
+    } else if (payload.init_status != fpa::FpaInitStatus::GLOBAL_INIT) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "Fusion not globally initialized");
+    } else {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "Fusion initialized");
+    }
+
+    status.add("init_status", static_cast<int>(payload.init_status));
+    status.add("fusion_imu", static_cast<int>(payload.fusion_imu));
+    status.add("fusion_gnss1", static_cast<int>(payload.fusion_gnss1));
+    status.add("fusion_gnss2", static_cast<int>(payload.fusion_gnss2));
+    status.add("fusion_corr", static_cast<int>(payload.fusion_corr));
+    status.add("fusion_cam1", static_cast<int>(payload.fusion_cam1));
+    status.add("fusion_ws", static_cast<int>(payload.fusion_ws));
+    status.add("fusion_markers", static_cast<int>(payload.fusion_markers));
+    status.add("imu_status", static_cast<int>(payload.imu_status));
+    status.add("imu_noise", static_cast<int>(payload.imu_noise));
+    status.add("imu_conv", static_cast<int>(payload.imu_conv));
+    status.add("gnss1_status", static_cast<int>(payload.gnss1_status));
+    status.add("gnss2_status", static_cast<int>(payload.gnss2_status));
+    status.add("baseline_status", static_cast<int>(payload.baseline_status));
+    status.add("corr_status", static_cast<int>(payload.corr_status));
+    status.add("cam1_status", static_cast<int>(payload.cam1_status));
+    status.add("ws_status", static_cast<int>(payload.ws_status));
+    status.add("ws_conv", static_cast<int>(payload.ws_conv));
+    status.add("markers_status", static_cast<int>(payload.markers_status));
+    status.add("markers_conv", static_cast<int>(payload.markers_conv));
+}
+
+void FixpositionDriverNode::DiagnosticsGnss(diagnostic_updater::DiagnosticStatusWrapper& status) {
+    if (!params_.MessageEnabled(fpa::FpaGnsscorrPayload::MSG_NAME)) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "GNSS corrections disabled");
+        return;
+    }
+
+    bool have = false;
+    fpa::FpaGnsscorrPayload payload;
+    {
+        std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+        have = have_gnsscorr_;
+        payload = last_gnsscorr_;
+    }
+
+    if (!have) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "No GNSS correction status yet");
+        return;
+    }
+
+    int gnss1_fix = static_cast<int>(payload.gnss1_fix);
+    int gnss2_fix = static_cast<int>(payload.gnss2_fix);
+    int best_fix = std::max(gnss1_fix, gnss2_fix);
+
+    if (best_fix >= static_cast<int>(fpa::FpaGnssFix::RTK_FLOAT)) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "GNSS RTK fix");
+    } else if (best_fix >= static_cast<int>(fpa::FpaGnssFix::S3D)) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "GNSS fix (non-RTK)");
+    } else {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "GNSS no fix");
+    }
+
+    status.add("gnss1_fix", gnss1_fix);
+    status.add("gnss2_fix", gnss2_fix);
+    AddFpaInt(status, "gnss1_nsig_l1", payload.gnss1_nsig_l1);
+    AddFpaInt(status, "gnss1_nsig_l2", payload.gnss1_nsig_l2);
+    AddFpaInt(status, "gnss2_nsig_l1", payload.gnss2_nsig_l1);
+    AddFpaInt(status, "gnss2_nsig_l2", payload.gnss2_nsig_l2);
+    AddFpaFloat(status, "corr_latency_s", payload.corr_latency);
+    AddFpaFloat(status, "corr_update_rate_hz", payload.corr_update_rate);
+    AddFpaFloat(status, "corr_data_rate_kbps", payload.corr_data_rate);
+    AddFpaFloat(status, "corr_msg_rate_hz", payload.corr_msg_rate);
+    AddFpaInt(status, "sta_id", payload.sta_id);
+    AddFpaInt(status, "sta_dist_m", payload.sta_dist);
+}
+
+void FixpositionDriverNode::DiagnosticsAntenna(diagnostic_updater::DiagnosticStatusWrapper& status) {
+    if (!params_.MessageEnabled(fpa::FpaGnssantPayload::MSG_NAME)) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "GNSS antenna diagnostics disabled");
+        return;
+    }
+
+    bool have = false;
+    fpa::FpaGnssantPayload payload;
+    {
+        std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+        have = have_gnssant_;
+        payload = last_gnssant_;
+    }
+
+    if (!have) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "No GNSS antenna status yet");
+        return;
+    }
+
+    int level = diagnostic_msgs::msg::DiagnosticStatus::OK;
+    std::string msg = "Antenna OK";
+
+    if ((payload.gnss1_state == fpa::FpaAntState::SHORT) || (payload.gnss2_state == fpa::FpaAntState::SHORT)) {
+        level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
+        msg = "Antenna short";
+    } else if ((payload.gnss1_state != fpa::FpaAntState::OK) || (payload.gnss2_state != fpa::FpaAntState::OK)) {
+        level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
+        msg = "Antenna not OK";
+    }
+
+    if ((payload.gnss1_power != fpa::FpaAntPower::ON) || (payload.gnss2_power != fpa::FpaAntPower::ON)) {
+        if (level == diagnostic_msgs::msg::DiagnosticStatus::OK) {
+            level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
+            msg = "Antenna power off";
+        }
+    }
+
+    status.summary(level, msg);
+    status.add("gnss1_state", static_cast<int>(payload.gnss1_state));
+    status.add("gnss1_power", static_cast<int>(payload.gnss1_power));
+    AddFpaInt(status, "gnss1_age_s", payload.gnss1_age);
+    status.add("gnss2_state", static_cast<int>(payload.gnss2_state));
+    status.add("gnss2_power", static_cast<int>(payload.gnss2_power));
+    AddFpaInt(status, "gnss2_age_s", payload.gnss2_age);
+}
+
+void FixpositionDriverNode::DiagnosticsText(diagnostic_updater::DiagnosticStatusWrapper& status) {
+    if (!params_.MessageEnabled(fpa::FpaTextPayload::MSG_NAME)) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "Text diagnostics disabled");
+        return;
+    }
+
+    bool have = false;
+    fpa::FpaTextPayload payload;
+    std::string text;
+    {
+        std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+        have = have_text_;
+        payload = last_text_;
+        text = last_text_string_;
+    }
+
+    if (!have) {
+        status.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "No text messages");
+        return;
+    }
+
+    int level = diagnostic_msgs::msg::DiagnosticStatus::OK;
+    if (payload.level == fpa::FpaTextLevel::ERROR) {
+        level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
+    } else if (payload.level == fpa::FpaTextLevel::WARNING) {
+        level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
+    }
+
+    status.summary(level, text.empty() ? "Text message received" : text);
+    status.add("text_level", static_cast<int>(payload.level));
+    status.add("text", text);
+}
+
 // Helper for advertising output topics
-#define _PUB(_pub_, _type_, _topic_, ...)                                      \
-    do {                                                                       \
-        RCLCPP_INFO(logger_, "Advertise %s (" #_type_ ")", (_topic_).c_str()); \
-        _pub_ = nh_->create_publisher<_type_>(_topic_, __VA_ARGS__);           \
+#define _PUB(_pub_, _type_, _topic_, ...)                                                                         \
+    do {                                                                                                          \
+        RCLCPP_INFO(logger_, "Advertise %s (" #_type_ ")", (_topic_).c_str());                                    \
+        _pub_ = rclcpp::create_publisher<_type_>(node_interfaces_.parameters_, node_interfaces_.topics_, _topic_, \
+                                                 __VA_ARGS__);                                                    \
     } while (0)
 
 // Helper for subscribing to input topics
-#define _SUB(_sub_, _type_, _topic_, ...)                                      \
-    do {                                                                       \
-        RCLCPP_INFO(logger_, "Subscribe %s (" #_type_ ")", (_topic_).c_str()); \
-        _sub_ = nh_->create_subscription<_type_>(_topic_, __VA_ARGS__);        \
+#define _SUB(_sub_, _type_, _topic_, ...)                                                                            \
+    do {                                                                                                             \
+        RCLCPP_INFO(logger_, "Subscribe %s (" #_type_ ")", (_topic_).c_str());                                       \
+        _sub_ = rclcpp::create_subscription<_type_>(node_interfaces_.parameters_, node_interfaces_.topics_, _topic_, \
+                                                    __VA_ARGS__);                                                    \
     } while (0)
 
 bool FixpositionDriverNode::StartNode() {
     RCLCPP_INFO(logger_, "Starting...");
 
+    driver_running_ = false;
+    ResetDiagnosticsState();
+
+    if (diagnostics_params_.enabled_) {
+        diagnostics_updater_ = std::make_unique<diagnostic_updater::Updater>(
+            node_interfaces_.base_, node_interfaces_.clock_, node_interfaces_.logging_, node_interfaces_.parameters_,
+            node_interfaces_.timers_, node_interfaces_.topics_);
+        diagnostics_updater_->setHardwareID(diagnostics_params_.hardware_id_);
+        diagnostics_updater_->add("Driver", this, &FixpositionDriverNode::DiagnosticsDriver);
+        diagnostics_updater_->add("Fusion", this, &FixpositionDriverNode::DiagnosticsFusion);
+        diagnostics_updater_->add("GNSS Fix", this, &FixpositionDriverNode::DiagnosticsGnss);
+        diagnostics_updater_->add("GNSS Antenna", this, &FixpositionDriverNode::DiagnosticsAntenna);
+        diagnostics_updater_->add("FP Text", this, &FixpositionDriverNode::DiagnosticsText);
+
+        auto period = std::chrono::duration<double>(1.0 / diagnostics_params_.rate_hz_);
+        diagnostics_timer_ = rclcpp::create_wall_timer(
+            period,
+            [this]() {
+                if (diagnostics_updater_) {
+                    diagnostics_updater_->force_update();
+                }
+            },
+            nullptr, node_interfaces_.base_.get(), node_interfaces_.timers_.get());
+
+        driver_.AddRawObserver([this](const parser::ParserMsg& msg) {
+            (void)msg;
+            RecordRxTime();
+        });
+    }
+
     // TF
-    tf_br_ = std::make_unique<tf2_ros::TransformBroadcaster>(nh_);
-    static_br_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(nh_);
+    tf_br_ = std::make_unique<tf2_ros::TransformBroadcaster>(node_interfaces_.parameters_, node_interfaces_.topics_);
+    static_br_ =
+        std::make_unique<tf2_ros::StaticTransformBroadcaster>(node_interfaces_.parameters_, node_interfaces_.topics_);
 
     // Add observers and advertise output topics, depending on configuration
-    const std::string output_ns = (params_.output_ns_.empty() ? nh_->get_namespace() : params_.output_ns_);
+    const std::string output_ns =
+        (params_.output_ns_.empty() ? node_interfaces_.base_->get_namespace() : params_.output_ns_);
 
     // FP_A-ODOMETRY
     if (params_.MessageEnabled(fpa::FpaOdometryPayload::MSG_NAME)) {
@@ -175,6 +482,7 @@ bool FixpositionDriverNode::StartNode() {
         _PUB(fpa_odomstatus_pub_, fpmsgs::FpaOdomstatus, output_ns + "/fpa/odomstatus", qos_settings_);
         driver_.AddFpaObserver(fpa::FpaOdomstatusPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
             auto odomstatus_payload = dynamic_cast<const fpa::FpaOdomstatusPayload&>(payload);
+            StoreOdomstatus(odomstatus_payload);
             PublishFpaOdomstatus(odomstatus_payload, fpa_odomstatus_pub_);
             fusion_epoch_data_.CollectFpaOdomstatus(odomstatus_payload);
         });
@@ -226,7 +534,9 @@ bool FixpositionDriverNode::StartNode() {
     if (params_.MessageEnabled(fpa::FpaGnssantPayload::MSG_NAME)) {
         _PUB(fpa_gnssant_pub_, fpmsgs::FpaGnssant, output_ns + "/fpa/gnssant", qos_settings_);
         driver_.AddFpaObserver(fpa::FpaGnssantPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
-            PublishFpaGnssant(dynamic_cast<const fpa::FpaGnssantPayload&>(payload), fpa_gnssant_pub_);
+            auto gnssant_payload = dynamic_cast<const fpa::FpaGnssantPayload&>(payload);
+            StoreGnssant(gnssant_payload);
+            PublishFpaGnssant(gnssant_payload, fpa_gnssant_pub_);
         });
     }
 
@@ -234,7 +544,9 @@ bool FixpositionDriverNode::StartNode() {
     if (params_.MessageEnabled(fpa::FpaGnsscorrPayload::MSG_NAME)) {
         _PUB(fpa_gnsscorr_pub_, fpmsgs::FpaGnsscorr, output_ns + "/fpa/gnsscorr", qos_settings_);
         driver_.AddFpaObserver(fpa::FpaGnsscorrPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
-            PublishFpaGnsscorr(dynamic_cast<const fpa::FpaGnsscorrPayload&>(payload), fpa_gnsscorr_pub_);
+            auto gnsscorr_payload = dynamic_cast<const fpa::FpaGnsscorrPayload&>(payload);
+            StoreGnsscorr(gnsscorr_payload);
+            PublishFpaGnsscorr(gnsscorr_payload, fpa_gnsscorr_pub_);
         });
     }
 
@@ -268,7 +580,9 @@ bool FixpositionDriverNode::StartNode() {
     if (params_.MessageEnabled(fpa::FpaTextPayload::MSG_NAME)) {
         _PUB(fpa_text_pub_, fpmsgs::FpaText, output_ns + "/fpa/text", qos_settings_);
         driver_.AddFpaObserver(fpa::FpaTextPayload::MSG_NAME, [this](const fpa::FpaPayload& payload) {
-            PublishFpaText(dynamic_cast<const fpa::FpaTextPayload&>(payload), fpa_text_pub_);
+            auto text_payload = dynamic_cast<const fpa::FpaTextPayload&>(payload);
+            StoreText(text_payload);
+            PublishFpaText(text_payload, fpa_text_pub_);
         });
     }
 
@@ -288,7 +602,7 @@ bool FixpositionDriverNode::StartNode() {
             novb::NOV_B_BESTGNSSPOS_STRID, [this](const novb::NovbHeader* header, const uint8_t* payload) {
                 if (!PublishNovbBestgnsspos(header, (novb::NovbBestgnsspos*)payload, navsatfix_gnss1_pub_,
                                             navsatfix_gnss2_pub_)) {
-                    RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e3, "Bad NOV_B-BESTGNSSPOS");
+                    RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e3, "Bad NOV_B-BESTGNSSPOS");
                 }
             });
     }
@@ -299,7 +613,7 @@ bool FixpositionDriverNode::StartNode() {
         driver_.AddNovbObserver(  //
             novb::NOV_B_INSPVAX_STRID, [this](const novb::NovbHeader* header, const uint8_t* payload) {
                 if (!PublishNovbInspvax(header, (novb::NovbInspvax*)payload, novb_inspvax_pub_)) {
-                    RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e3, "Bad NOV_B-INSPVAX");
+                    RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e3, "Bad NOV_B-INSPVAX");
                 }
                 fusion_epoch_data_.CollectNovbInspvax(header, (novb::NovbInspvax*)payload);
             });
@@ -311,7 +625,7 @@ bool FixpositionDriverNode::StartNode() {
         driver_.AddNovbObserver(  //
             novb::NOV_B_HEADING2_STRID, [this](const novb::NovbHeader* header, const uint8_t* payload) {
                 if (!PublishNovbHeading2(header, (novb::NovbHeading2*)payload, novb_heading2_pub_)) {
-                    RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e3, "Bad NOV_B-HEADING2");
+                    RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e3, "Bad NOV_B-HEADING2");
                 }
             });
     }
@@ -471,14 +785,15 @@ bool FixpositionDriverNode::StartNode() {
                          });
                     break;
                 default:
-                    RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e3,
-                                         "The selected wheelspeed input type is not supported!");
+                    RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e3, "The selected wheelspeed input type is not supported!");
                     break;
             }
         }
     }
 
-    return driver_.StartDriver();
+    bool started = driver_.StartDriver();
+    driver_running_ = started;
+    return started;
 }
 
 #undef _PUB
@@ -490,8 +805,14 @@ void FixpositionDriverNode::StopNode() {
     driver_.RemoveFpaObservers();
     driver_.RemoveNmeaObservers();
     driver_.RemoveNovbObservers();
+    driver_.RemoveRawObservers();
 
     driver_.StopDriver();
+    driver_running_ = false;
+
+    diagnostics_timer_.reset();
+    diagnostics_updater_.reset();
+    ResetDiagnosticsState();
 
     // Stop advertising output topics
     // - FP_A messages
@@ -559,7 +880,7 @@ void FixpositionDriverNode::StopNode() {
 void FixpositionDriverNode::ProcessTfData(const TfData& tf_data) {
     // Check if TF is valid
     if (tf_data.rotation.w() == 0 && tf_data.rotation.vec().isZero()) {
-        RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e4,
+        RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e4,
                              "Invalid TF was found! Is the fusion engine initialized? Source: %s, target: %s",
                              tf_data.frame_id.c_str(), tf_data.child_frame_id.c_str());
         return;
@@ -618,9 +939,9 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
     // This message computes the difference between the message time and the local system time.
     // Thus, if the local time is off, the message might be triggered or not triggered when it should.
     if (params_.delay_warning_ > 0.0) {
-        const double delay = (nh_->now() - fpsdk::ros2::utils::ConvTime(odometry_data.stamp)).seconds();
+        const double delay = (clock_->now() - fpsdk::ros2::utils::ConvTime(odometry_data.stamp)).seconds();
         if (delay > params_.delay_warning_) {
-            RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e3,
+            RCLCPP_WARN_THROTTLE(logger_, *clock_, 1e3,
                                  "The system is experiencing significant delays! (estimated delay: %.3f seconds)",
                                  delay);
         }
@@ -742,90 +1063,3 @@ void FixpositionDriverNode::PublishNav2Tf() {
 
 /* ****************************************************************************************************************** */
 }  // namespace fixposition
-
-using namespace fixposition;
-
-int main(int argc, char** argv) {
-#ifndef NDEBUG
-    fpsdk::common::app::StacktraceHelper stacktrace;
-    WARNING("***** Running debug build *****");
-#endif
-
-    bool ok = true;
-
-    // Initialise ROS, create node handle
-    rclcpp::init(argc, argv);
-    auto nh = std::make_shared<rclcpp::Node>("fixposition_driver");
-    auto logger = nh->get_logger();
-
-    // Redirect Fixposition SDK logging to ROS console
-    fpsdk::ros2::utils::RedirectLoggingToRosConsole(logger.get_name());
-
-    // Say hello
-    HelloWorld();
-
-    // Load parameters
-    RCLCPP_INFO(logger, "Loading parameters...");
-    DriverParams driver_params;
-    if (!LoadParamsFromRos2(nh, driver_params)) {
-        RCLCPP_ERROR(logger, "Failed loading sensor params");
-        ok = false;
-    }
-
-    // Handle CTRL-C / SIGINT ourselves
-    fpsdk::common::app::SigIntHelper sigint;
-
-    // Start node
-    std::unique_ptr<FixpositionDriverNode> node;
-    if (ok) {
-        try {
-            node = std::make_unique<FixpositionDriverNode>(nh, driver_params);
-        } catch (const std::exception& ex) {
-            RCLCPP_ERROR(logger, "Failed creating node: %s", ex.what());
-            ok = false;
-        }
-    }
-    if (ok) {
-        RCLCPP_INFO(logger, "Starting node...");
-        if (node->StartNode()) {
-            RCLCPP_INFO(logger, "main() spinning...");
-
-            // Do the same as rclpp::spin(), but also handle CTRL-C / SIGINT nicely
-            // Callbacks execute in main thread
-            while (rclcpp::ok() && !sigint.ShouldAbort()) {
-                rclcpp::spin_until_future_complete(nh, std::promise<bool>().get_future(),
-                                                   std::chrono::milliseconds(337));
-            }
-
-            // TODO: we'd rather do this, but it (executing in those threads) doesn't seem to work
-            // Use multiple spinner threads. Callback execute in one of them.
-            // rclcpp::executors::MultiThreadedExecutor executor{ rclcpp::ExecutorOptions(), 4 };
-            // executor.add_node(node);
-            // while (rclcpp::ok() && !sigint.ShouldAbort()) {
-            //     executor.spin_once(std::chrono::milliseconds(345));
-            // }
-
-            RCLCPP_INFO(logger, "main() stopping");
-        } else {
-            RCLCPP_ERROR(logger, "Failed starting node");
-            ok = false;
-        }
-        node->StopNode();
-        node.reset();
-        nh.reset();
-    }
-
-    // Are we happy?
-    if (ok) {
-        RCLCPP_INFO(logger, "Done");
-    } else {
-        RCLCPP_FATAL(logger, "Ouch!");
-    }
-
-    // Shutdown ROS
-    rclcpp::shutdown();
-
-    exit(ok ? EXIT_SUCCESS : EXIT_FAILURE);
-}
-
-/* ****************************************************************************************************************** */
