@@ -162,7 +162,7 @@ if [ -n "${ROS_DISTRO}" ]; then
     # export RCUTILS_LOGGING_USE_STDOUT=1
     export RCUTILS_COLORIZED_OUTPUT=1
     case "${ROS_DISTRO}" in
-        jazzy|rolling)
+        jazzy|lyrical|rolling)
             export RCUTILS_CONSOLE_OUTPUT_FORMAT="{severity} {date_time_with_ms} {name} - {message}"
             ;;
         *)

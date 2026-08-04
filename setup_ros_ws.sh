@@ -69,7 +69,7 @@ function main
             noetic)
                 rosver=1
                 ;;
-            humble|jazzy)
+            humble|jazzy|lyrical|rolling)
                 rosver=2
                 ;;
         esac
