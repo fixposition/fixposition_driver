@@ -150,13 +150,13 @@ function build_colcon_release_clang
     local buildname=${FPSDK_IMAGE}_build_colcon_release_clang
     ${FP_SRC_DIR}/create_ros_ws.sh ${buildname} || return 1
     cd ${FP_SRC_DIR}/${buildname}
-    export CC=clang CXX=clang++
-    colcon build || return 1
+    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
+        -DFPSDK_BUILD_TESTING=OFF -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+        || return 1
     set +u
     source install/setup.bash
     set -u
     ros2 pkg executables fixposition_driver_ros2
-    unset CC CXX
 }
 
 TITLES["build_colcon_debug_clang"]="Build colcon (debug, with ROS2, clang instead of GCC)"
@@ -165,13 +165,13 @@ function build_colcon_debug_clang
     local buildname=${FPSDK_IMAGE}_build_colcon_debug_clang
     ${FP_SRC_DIR}/create_ros_ws.sh -d ${buildname} || return 1
     cd ${FP_SRC_DIR}/${buildname}
-    export CC=clang CXX=clang++
-    colcon build || return 1
+    colcon build --cmake-args -DCMAKE_BUILD_TYPE=Debug \
+        -DFPSDK_BUILD_TESTING=OFF -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+        || return 1
     set +u
     source install/setup.bash
     set -u
     ros2 pkg executables fixposition_driver_ros2
-    unset CC CXX
 }
 
 ########################################################################################################################
