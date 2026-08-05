@@ -1,5 +1,5 @@
 # GENERAL ==============================================================================================================
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 project(fixposition_driver_ros2)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE "Release")
@@ -7,6 +7,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror\
     -Wshadow -Wunused-parameter -Wformat -Wpointer-arith")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(_unused "${FPSDK_BUILD_TESTING}") # suppress warning
 
 # DEPENDENCIES =========================================================================================================
 find_package(Boost 1.65.0 REQUIRED COMPONENTS date_time)
