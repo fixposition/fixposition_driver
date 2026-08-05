@@ -1,7 +1,7 @@
 # GENERAL ==============================================================================================================
 cmake_minimum_required(VERSION 3.5)
 project(fixposition_driver_ros2)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror\
     -Wshadow -Wunused-parameter -Wformat -Wpointer-arith")
@@ -47,14 +47,24 @@ add_executable(
   src/data_to_ros2.cpp
 )
 
-target_link_libraries(
-  ${PROJECT_NAME}_exec
+target_link_libraries(${PROJECT_NAME}_exec
   ${fixposition_driver_lib_LIBRARIES}
   ${rtcm_msgs_LIBRARIES}
   ${Boost_LIBRARIES}
   ${EIGEN3_LIBRARIES}
   ${fpsdk_common_LIBRARIES} ${fpsdk_ros2_LIBRARIES}
   ${rosbag2_cpp_TARGETS}
+  ${rclcpp_TARGETS}
+  ${std_msgs_TARGETS}
+  ${nav_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  ${tf2_ros_TARGETS}
+  ${tf2_eigen_TARGETS}
+  ${fixposition_driver_lib_TARGETS}
+  ${fixposition_driver_msgs_TARGETS}
+  ${rtcm_msgs_TARGETS}
+  ${tf2_geometry_msgs_TARGETS}
   pthread
 )
 
@@ -73,9 +83,6 @@ install(DIRECTORY
   "launch"
   DESTINATION share/${PROJECT_NAME}/
 )
-ament_target_dependencies(${PROJECT_NAME}_exec
-    rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs tf2_ros tf2_eigen
-    fixposition_driver_lib fixposition_driver_msgs rtcm_msgs tf2_geometry_msgs)
 
 # define ament package for this project
 ament_package()

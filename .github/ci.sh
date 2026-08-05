@@ -189,7 +189,7 @@ if [ "${ROS_DISTRO}" = "noetic" ]; then
     do_step build_catkin_debug            || true # continue
 
 # ROS 2
-elif [ "${ROS_DISTRO}" = "humble" -o "${ROS_DISTRO}" = "jazzy" ]; then
+elif [ "${ROS_DISTRO}" = "humble" -o "${ROS_DISTRO}" = "jazzy" -o "${ROS_DISTRO}" = "lyrical" ]; then
     set +u
     source /opt/ros/${ROS_DISTRO}/setup.bash
     set -u
