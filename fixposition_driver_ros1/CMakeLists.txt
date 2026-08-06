@@ -15,6 +15,8 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_definitions(NDEBUG)
 endif()
 
+set(_unused "${FPSDK_BUILD_TESTING}") # suppress warning
+
 
 # DEPENDENCIES =========================================================================================================
 
