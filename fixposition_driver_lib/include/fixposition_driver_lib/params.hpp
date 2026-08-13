@@ -41,6 +41,9 @@ struct DriverParams {
     bool raw_output_ = false;
     bool cov_warning_ = false;
     bool nav2_mode_ = false;
+    bool proj_enabled_ = false;
+    std::string proj_ecef_crs_ = "EPSG:4936";
+    std::string proj_llh_crs_ = "EPSG:4326";
 
     enum class VelTopicType { UNSPECIFIED, TWIST, TWISTWITHCOV, ODOMETRY };
     bool converter_enabled_ = false;

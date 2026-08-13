@@ -104,6 +104,7 @@ struct OdometryData {
     TwistWithCovData twist;
     bool SetFromFpaOdomPayload(const fpsdk::common::parser::fpa::FpaOdomPayload& payload);
     bool ConvertToEnu(const TfData& tf_ecef_enu0);
+    bool ConvertToEnu(const TfData& tf_ecef_enu0, const Eigen::Vector3d& wgs84llh_ref);
 };
 
 /**
