@@ -25,10 +25,11 @@
 #include <fpsdk_common/parser/fpa.hpp>
 #include <fpsdk_common/parser/nmea.hpp>
 #include <fpsdk_common/parser/novb.hpp>
+#include <fpsdk_common/ros1.hpp>
 #include <fpsdk_common/trafo.hpp>
 #include <fpsdk_common/types.hpp>
-#include <fpsdk_ros1/ext/eigen_conversions.hpp>
-#include <fpsdk_ros1/utils.hpp>
+
+#include "fixposition_driver_ros1/ext/eigen_conversions.hpp"
 
 /* PACKAGE */
 #include "fixposition_driver_ros1/fixposition_driver_node.hpp"
@@ -581,7 +582,7 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
     // This message computes the difference between the message time and the local system time.
     // Thus, if the local time is off, the message might be triggered or not triggered when it should.
     if (params_.delay_warning_ > 0.0) {
-        const double delay = (ros::Time::now() - fpsdk::ros1::utils::ConvTime(odometry_data.stamp)).toSec();
+        const double delay = (ros::Time::now() - ros1::ConvTime(odometry_data.stamp)).toSec();
         if (delay > params_.delay_warning_) {
             ROS_WARN_THROTTLE(1.0, "The system is experiencing significant delays! (estimated delay: %.3f seconds)",
                               delay);
@@ -599,7 +600,7 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
 
             // Output jump warning
             if (params_.cov_warning_ && odometry_data.valid && jump_detector_.Check(odometry_data)) {
-                ROS_WARN(jump_detector_.warning_.c_str());
+                ROS_WARN("%s", jump_detector_.warning_.c_str());
                 PublishJumpWarning(jump_detector_, jump_pub_);
             }
 
@@ -722,7 +723,7 @@ int main(int argc, char** argv) {
     ros::NodeHandle node_handle("~");
 
     // Redirect Fixposition SDK logging to ROS console
-    fpsdk::ros1::utils::RedirectLoggingToRosConsole();
+    fpsdk::common::ros1::RedirectLoggingToRosConsole();
 
     // Say hello
     HelloWorld();

@@ -57,15 +57,29 @@
         // https://code.visualstudio.com/docs/cpp/c-cpp-properties-schema-reference)
         "C_Cpp.default.includePath":           [
             "${workspaceFolder}/fixposition-sdk/fpsdk_common/**",
-            "${workspaceFolder}/fixposition-sdk/fpsdk_ros1/**",
-            "${workspaceFolder}/fixposition-sdk/fpsdk_ros2/**",
             "${workspaceFolder}/fixposition-sdk/fpsdk_apps/**",
             "${workspaceFolder}/fixposition_driver_lib/**",
             "${workspaceFolder}/fixposition_driver_ros1/**",
             "${workspaceFolder}/fixposition_driver_ros2/**",
             "/opt/ros/noetic/include/**", "/opt/ros/humble/include/**", "/opt/ros/jazzy/include/**", "/opt/ros/lyrical/include/**" ],
-        "C_Cpp.default.defines":               [ "FP_USE_ROS1" ],
-        //"C_Cpp.default.compileCommands":       "",
+        "C_Cpp.default.defines":               [ ],
+        "C_Cpp.default.compileCommands":       [
+            // "${workspaceFolder}/ros2_ws/build/fixposition_driver_msgs/compile_commands.json",
+            // "${workspaceFolder}/ros2_ws/build/fpsdk_apps/compile_commands.json",
+            // "${workspaceFolder}/ros2_ws/build/fixposition_driver_lib/compile_commands.json",
+            // "${workspaceFolder}/ros2_ws/build/fpsdk_common/compile_commands.json",
+            // "${workspaceFolder}/ros2_ws/build/rtcm_msgs/compile_commands.json",
+            // "${workspaceFolder}/ros2_ws/build/fixposition_driver_ros2/compile_commands.json",
+            "${workspaceFolder}/ros2_ws/build/compile_commands.json",
+            //
+            "${workspaceFolder}/ros1_ws/build/fixposition_driver_msgs/compile_commands.json",
+            "${workspaceFolder}/ros1_ws/build/fpsdk_apps/compile_commands.json",
+            "${workspaceFolder}/ros1_ws/build/fixposition_driver_lib/compile_commands.json",
+            "${workspaceFolder}/ros1_ws/build/fpsdk_common/compile_commands.json",
+            "${workspaceFolder}/ros1_ws/build/rtcm_msgs/compile_commands.json",
+            "${workspaceFolder}/ros1_ws/build/fixposition_driver_ros1/compile_commands.json",
+            "${workspaceFolder}/ros1_ws/build/catkin_tools_prebuild/compile_commands.json"
+        ],
         //"C_Cpp.default.forcedIncludes":      [ ],
         "C_Cpp.default.intelliSenseMode":        "gcc-x64",
         "C_Cpp.default.compilerPath":            "/usr/bin/gcc",

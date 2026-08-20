@@ -20,7 +20,8 @@
 
 /* EXTERNAL */
 #include <fixposition_driver_lib/helper.hpp>
-#include <fpsdk_ros1/ext/ros.hpp>
+
+#include "fixposition_driver_ros1/ext/ros.hpp"
 
 /* PACKAGE */
 #include "data_to_ros1.hpp"

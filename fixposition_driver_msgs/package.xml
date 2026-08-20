@@ -20,8 +20,6 @@
     <depend>sensor_msgs</depend>
     <depend>fixposition_driver_lib</depend>
     <depend>fpsdk_common</depend>
-    <depend condition="$ROS_VERSION == 1">fpsdk_ros1</depend>
-    <depend condition="$ROS_VERSION == 2">fpsdk_ros2</depend>
 
     <exec_depend condition="$ROS_VERSION == 1">message_runtime</exec_depend>
     <exec_depend condition="$ROS_VERSION == 2">rosidl_default_runtime</exec_depend>

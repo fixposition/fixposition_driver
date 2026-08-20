@@ -15,7 +15,7 @@
 #include <cinttypes>
 
 /* EXTERNAL */
-#include <fpsdk_ros2/ext/rclcpp.hpp>
+#include "fixposition_driver_ros2/ext/rclcpp.hpp"
 
 /* PACKAGE */
 #include "fixposition_driver_ros2/params.hpp"

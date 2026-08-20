@@ -23,7 +23,8 @@
 #include <fixposition_driver_lib/helper.hpp>
 #include <fpsdk_common/parser/fpa.hpp>
 #include <fpsdk_common/parser/novb.hpp>
-#include <fpsdk_ros2/ext/rclcpp.hpp>
+
+#include "fixposition_driver_ros2/ext/rclcpp.hpp"
 
 /* PACKAGE */
 #include "ros2_msgs.hpp"
