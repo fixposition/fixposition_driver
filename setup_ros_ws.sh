@@ -85,14 +85,12 @@ function main
     notice "Setup fixposition_driver for ROS${rosver}"
 
     if [ ${rosver} -eq 1 ]; then
-        for path in fixposition_driver_ros2 \
-            fixposition-sdk/fpsdk_ros2 fixposition-sdk/examples; do
+        for path in fixposition_driver_ros2 fixposition-sdk/examples; do
             info "- ${path}/CATKIN_IGNORE";
             touch ${SCRIPTDIR}/${path}/CATKIN_IGNORE
         done
     else
-        for path in fixposition_driver_ros1 \
-            fixposition-sdk/fpsdk_ros1 fixposition-sdk/examples; do
+        for path in fixposition_driver_ros1 fixposition-sdk/examples; do
             info "- ${path}/COLCON_IGNORE";
             touch ${SCRIPTDIR}/${path}/COLCON_IGNORE
         done

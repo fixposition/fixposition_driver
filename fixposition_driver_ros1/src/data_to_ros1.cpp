@@ -17,10 +17,11 @@
 /* EXTERNAL */
 #include <fixposition_driver_msgs/data_to_ros.hpp>
 #include <fpsdk_common/math.hpp>
+#include <fpsdk_common/ros1.hpp>
 #include <fpsdk_common/time.hpp>
 #include <fpsdk_common/trafo.hpp>
-#include <fpsdk_ros1/ext/eigen_conversions.hpp>
-#include <fpsdk_ros1/utils.hpp>
+
+#include "fixposition_driver_ros1/ext/eigen_conversions.hpp"
 
 /* PACKAGE */
 #include "fixposition_driver_ros1/data_to_ros1.hpp"
@@ -49,7 +50,7 @@ static void TwistWithCovDataToMsg(const TwistWithCovData& data, geometry_msgs::T
 }
 
 void TfDataToTransformStamped(const TfData& data, geometry_msgs::TransformStamped& msg) {
-    msg.header.stamp = ros1::utils::ConvTime(data.stamp);
+    msg.header.stamp = ros1::ConvTime(data.stamp);
     msg.header.frame_id = data.frame_id;
     msg.child_frame_id = data.child_frame_id;
     tf::quaternionEigenToMsg(data.rotation, msg.transform.rotation);
@@ -57,7 +58,7 @@ void TfDataToTransformStamped(const TfData& data, geometry_msgs::TransformStampe
 }
 
 void OdometryDataToTransformStamped(const OdometryData& data, geometry_msgs::TransformStamped& msg) {
-    msg.header.stamp = ros1::utils::ConvTime(data.stamp);
+    msg.header.stamp = ros1::ConvTime(data.stamp);
     msg.header.frame_id = data.frame_id;
     msg.child_frame_id = data.child_frame_id;
     tf::quaternionEigenToMsg(data.pose.orientation, msg.transform.rotation);
@@ -68,7 +69,7 @@ void OdometryDataToTransformStamped(const OdometryData& data, geometry_msgs::Tra
 
 template <typename SomeFpaOdoPayload, typename SomeOdoMsg>
 static void FpaOdomToRos(const SomeFpaOdoPayload& payload, SomeOdoMsg& msg) {
-    msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+    msg.header.stamp = ros1::ConvTime(FpaGpsTimeToTime(payload.gps_time));
 
     msg.fusion_status = FpaFusionStatusLegacyToMsg(msg, payload.fusion_status);
     msg.imu_bias_status = FpaImuStatusLegacyToMsg(msg, payload.imu_bias_status);
@@ -138,7 +139,7 @@ void PublishFpaOdomsh(const fpa::FpaOdomshPayload& payload, ros::Publisher& pub)
 void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2_mode_, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         sensor_msgs::Imu msg;
-        msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+        msg.header.stamp = ros1::ConvTime(FpaGpsTimeToTime(payload.gps_time));
         if (nav2_mode_) {
             msg.header.frame_id = "vrtk_link";
         } else {
@@ -155,7 +156,7 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2
 void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, bool nav2_mode_, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         sensor_msgs::NavSatFix msg;
-        msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+        msg.header.stamp = ros1::ConvTime(FpaGpsTimeToTime(payload.gps_time));
         if (nav2_mode_) {
             msg.header.frame_id = "vrtk_link";
         } else {
@@ -209,7 +210,7 @@ void PublishFpaOdomenuVector3Stamped(const fpa::FpaOdomenuPayload& payload, ros:
     if (pub.getNumSubscribers() > 0) {
         geometry_msgs::Vector3Stamped msg;
 
-        msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+        msg.header.stamp = ros1::ConvTime(FpaGpsTimeToTime(payload.gps_time));
         msg.header.frame_id = ODOMENU_FRAME_ID;
 
         const Eigen::Quaterniond quat = {payload.orientation.values[0], payload.orientation.values[1],
@@ -229,7 +230,7 @@ void PublishFpaOdomenuVector3Stamped(const fpa::FpaOdomenuPayload& payload, ros:
 
 static void FpaOdomstatusToMsg(const fpa::FpaOdomstatusPayload& payload, fixposition_driver_msgs::FpaOdomstatus& msg) {
     // clang-format off
-    msg.header.stamp    = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+    msg.header.stamp    = ros1::ConvTime(FpaGpsTimeToTime(payload.gps_time));
     msg.init_status     = FpaInitStatusToMsg(msg, payload.init_status);
     msg.fusion_imu      = FpaMeasStatusToMsg(msg, payload.fusion_imu);
     msg.fusion_gnss1    = FpaMeasStatusToMsg(msg, payload.fusion_gnss1);
@@ -268,7 +269,7 @@ void PublishFpaOdomstatus(const fpa::FpaOdomstatusPayload& payload, ros::Publish
 void PublishFpaLlh(const fpa::FpaLlhPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::FpaLlh msg;
-        msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+        msg.header.stamp = ros1::ConvTime(FpaGpsTimeToTime(payload.gps_time));
         msg.header.frame_id = ODOMETRY_CHILD_FRAME_ID;
         FpaFloat3ToVector3(payload.llh, msg.position);
         if (payload.cov_enu.valid) {
@@ -285,7 +286,7 @@ void PublishFpaLlh(const fpa::FpaLlhPayload& payload, ros::Publisher& pub) {
 void PublishFpaEoe(const fpa::FpaEoePayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::FpaEoe msg;
-        msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+        msg.header.stamp = ros1::ConvTime(FpaGpsTimeToTime(payload.gps_time));
         msg.epoch = FpaEpochToMsg(msg, payload.epoch);
         pub.publish(msg);
     }
@@ -294,7 +295,7 @@ void PublishFpaEoe(const fpa::FpaEoePayload& payload, ros::Publisher& pub) {
 // ---------------------------------------------------------------------------------------------------------------------
 
 static void FpaImubiasToMsg(const fpa::FpaImubiasPayload& payload, fixposition_driver_msgs::FpaImubias& msg) {
-    msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+    msg.header.stamp = ros1::ConvTime(FpaGpsTimeToTime(payload.gps_time));
     msg.header.frame_id = IMU_FRAME_ID;
     msg.fusion_imu = FpaMeasStatusToMsg(msg, payload.fusion_imu);
     msg.imu_status = FpaImuStatusToMsg(msg, payload.imu_status);
@@ -319,7 +320,7 @@ void PublishFpaImubias(const fpa::FpaImubiasPayload& payload, ros::Publisher& pu
 void PublishFpaGnssant(const fpa::FpaGnssantPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::FpaGnssant msg;
-        msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+        msg.header.stamp = ros1::ConvTime(FpaGpsTimeToTime(payload.gps_time));
         msg.gnss1_state = FpaAntStateToMsg(msg, payload.gnss1_state);
         msg.gnss1_power = FpaAntPowerToMsg(msg, payload.gnss1_power);
         msg.gnss1_age = (payload.gnss1_age.valid ? payload.gnss1_age.value : -1);
@@ -335,7 +336,7 @@ void PublishFpaGnssant(const fpa::FpaGnssantPayload& payload, ros::Publisher& pu
 void PublishFpaGnsscorr(const fpa::FpaGnsscorrPayload& payload, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::FpaGnsscorr msg;
-        msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+        msg.header.stamp = ros1::ConvTime(FpaGpsTimeToTime(payload.gps_time));
         msg.gnss1_fix = FpaGnssFixToMsg(msg, payload.gnss1_fix);
         msg.gnss1_nsig_l1 = (payload.gnss1_nsig_l1.valid ? payload.gnss1_nsig_l1.value : -1);
         msg.gnss1_nsig_l2 = (payload.gnss1_nsig_l2.valid ? payload.gnss1_nsig_l2.value : -1);
@@ -383,7 +384,7 @@ void PublishFpaText(const fpa::FpaTextPayload& payload, ros::Publisher& pub) {
 
 template <typename SomeFpaImuPayload>
 static void FpaImuPayloadToRos(const SomeFpaImuPayload& payload, sensor_msgs::Imu& msg) {
-    msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(payload.gps_time));
+    msg.header.stamp = ros1::ConvTime(FpaGpsTimeToTime(payload.gps_time));
     msg.header.frame_id = IMU_FRAME_ID;
     if (payload.acc.valid) {
         msg.linear_acceleration.x = payload.acc.values[0];
@@ -433,7 +434,7 @@ bool PublishNovbBestgnsspos(const novb::NovbHeader* header, const novb::NovbBest
         time::Time stamp;
         if (stamp.SetWnoTow({header->long_header.gps_week, (double)header->long_header.gps_milliseconds * 1e-3,
                              time::WnoTow::Sys::GPS})) {
-            msg.header.stamp = ros1::utils::ConvTime(stamp);
+            msg.header.stamp = ros1::ConvTime(stamp);
         }
 
         msg.header.frame_id = (header->Source() == novb::NovbMsgTypeSource::PRIMARY ? GNSS1_FRAME_ID : GNSS2_FRAME_ID);
@@ -468,7 +469,7 @@ static void NovbInspvaxToMsg(const novb::NovbHeader* header, const novb::NovbIns
         time::Time stamp;
         if (stamp.SetWnoTow({header->long_header.gps_week, (double)header->long_header.gps_milliseconds * 1e-3,
                              time::WnoTow::Sys::GPS})) {
-            msg.header.stamp = ros1::utils::ConvTime(stamp);
+            msg.header.stamp = ros1::ConvTime(stamp);
         }
 
         msg.ins_status = payload->ins_status;
@@ -514,7 +515,7 @@ static void NovbHeading2ToMsg(const novb::NovbHeader* header, const novb::NovbHe
         time::Time stamp;
         if (stamp.SetWnoTow({header->long_header.gps_week, (double)header->long_header.gps_milliseconds * 1e-3,
                              time::WnoTow::Sys::GPS})) {
-            msg.header.stamp = ros1::utils::ConvTime(stamp);
+            msg.header.stamp = ros1::ConvTime(stamp);
         }
 
         msg.sol_status = payload->sol_status;
@@ -763,7 +764,7 @@ void PublishParserMsg(const fpsdk::common::parser::ParserMsg& msg, ros::Publishe
 void PublishNmeaEpochData(const NmeaEpochData& data, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::NmeaEpoch msg;
-        msg.header.stamp = ros1::utils::ConvTime(data.stamp_);
+        msg.header.stamp = ros1::ConvTime(data.stamp_);
         msg.header.frame_id = data.frame_id_;
         if (data.date_.valid) {
             msg.date_valid = true;
@@ -837,7 +838,7 @@ void PublishNmeaEpochData(const NmeaEpochData& data, ros::Publisher& pub) {
 void PublishOdometryData(const OdometryData& data, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         nav_msgs::Odometry msg;
-        msg.header.stamp = ros1::utils::ConvTime(data.stamp);
+        msg.header.stamp = ros1::ConvTime(data.stamp);
         msg.header.frame_id = data.frame_id;
         msg.child_frame_id = data.child_frame_id;
         PoseWithCovDataToMsg(data.pose, msg.pose);
@@ -851,7 +852,7 @@ void PublishOdometryData(const OdometryData& data, ros::Publisher& pub) {
 void PublishJumpWarning(const JumpDetector& jump_detector, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::CovWarn msg;
-        msg.header.stamp = ros1::utils::ConvTime(jump_detector.curr_stamp_);
+        msg.header.stamp = ros1::ConvTime(jump_detector.curr_stamp_);
         tf::vectorEigenToMsg(jump_detector.pos_diff_, msg.jump);
         msg.covariance.x = jump_detector.prev_cov_(0, 0);
         msg.covariance.y = jump_detector.prev_cov_(1, 1);
@@ -890,7 +891,7 @@ void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp,
 void PublishFusionEpochData(const FusionEpochData& data, ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         fixposition_driver_msgs::FusionEpoch msg;
-        msg.header.stamp = ros1::utils::ConvTime(FpaGpsTimeToTime(data.fpa_eoe_.gps_time));
+        msg.header.stamp = ros1::ConvTime(FpaGpsTimeToTime(data.fpa_eoe_.gps_time));
         if (data.fpa_odometry_avail_) {
             msg.fpa_odometry_avail = true;
             FpaOdometryToMsg(data.fpa_odometry_, msg.fpa_odometry);

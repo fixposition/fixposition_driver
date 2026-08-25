@@ -24,6 +24,7 @@ set(_unused "${CMAKE_C_COMPILER}") # suppress warning
 find_package(Boost 1.65.0 REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(fpsdk_common REQUIRED)
+find_package(Threads REQUIRED)
 
 include_directories(include
   ${EIGEN3_INCLUDE_DIR}

@@ -25,7 +25,7 @@ find_package(Eigen3 REQUIRED)
 find_package(fixposition_driver_lib REQUIRED)
 find_package(fixposition_driver_msgs REQUIRED)
 find_package(fpsdk_common REQUIRED)
-find_package(fpsdk_ros1 REQUIRED)
+find_package(Threads REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf
@@ -54,7 +54,7 @@ include_directories(
   ${fixposition_driver_msgs_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
-  ${fpsdk_common_INLCUDE_DIRS} ${fpsdk_ros1_INLCUDE_DIRS}
+  ${fpsdk_common_INLCUDE_DIRS}
 )
 
 
@@ -72,7 +72,7 @@ target_link_libraries(
   ${catkin_LIBRARIES}
   ${fixposition_driver_lib_LIBRARIES}
   ${Boost_LIBRARIES}
-  ${fpsdk_common_LIBRARIES} ${fpsdk_ros1_LIBRARIES}
+  ${fpsdk_common_LIBRARIES}
   pthread
 )
 

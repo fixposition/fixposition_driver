@@ -26,9 +26,9 @@
 #include <fpsdk_common/parser/fpa.hpp>
 #include <fpsdk_common/parser/nmea.hpp>
 #include <fpsdk_common/parser/novb.hpp>
+#include <fpsdk_common/ros2.hpp>
 #include <fpsdk_common/trafo.hpp>
 #include <fpsdk_common/types.hpp>
-#include <fpsdk_ros2/utils.hpp>
 
 /* PACKAGE */
 #include "fixposition_driver_ros2/fixposition_driver_node.hpp"
@@ -618,7 +618,7 @@ void FixpositionDriverNode::ProcessOdometryData(const OdometryData& odometry_dat
     // This message computes the difference between the message time and the local system time.
     // Thus, if the local time is off, the message might be triggered or not triggered when it should.
     if (params_.delay_warning_ > 0.0) {
-        const double delay = (nh_->now() - fpsdk::ros2::utils::ConvTime(odometry_data.stamp)).seconds();
+        const double delay = (nh_->now() - ros2::ConvTime(odometry_data.stamp)).seconds();
         if (delay > params_.delay_warning_) {
             RCLCPP_WARN_THROTTLE(logger_, *nh_->get_clock(), 1e3,
                                  "The system is experiencing significant delays! (estimated delay: %.3f seconds)",
@@ -759,7 +759,7 @@ int main(int argc, char** argv) {
     auto logger = nh->get_logger();
 
     // Redirect Fixposition SDK logging to ROS console
-    fpsdk::ros2::utils::RedirectLoggingToRosConsole(logger.get_name());
+    fpsdk::common::ros2::RedirectLoggingToRosConsole(logger.get_name());
 
     // Say hello
     HelloWorld();

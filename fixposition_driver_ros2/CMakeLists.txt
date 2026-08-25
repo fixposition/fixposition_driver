@@ -28,8 +28,8 @@ find_package(fixposition_driver_lib REQUIRED)
 find_package(fixposition_driver_msgs REQUIRED)
 find_package(rtcm_msgs REQUIRED)
 find_package(fpsdk_common REQUIRED)
-find_package(fpsdk_ros2 REQUIRED)
 find_package(rosbag2_cpp REQUIRED)
+find_package(Threads REQUIRED)
 
 include_directories(
   include
@@ -39,7 +39,7 @@ include_directories(
   ${rtcm_msgs_INCLUDE_DIR}
   ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
-  ${fpsdk_common_INLCUDE_DIRS} ${fpsdk_ros2_INLCUDE_DIRS}
+  ${fpsdk_common_INLCUDE_DIRS}
 )
 
 add_executable(
@@ -54,7 +54,7 @@ target_link_libraries(${PROJECT_NAME}_exec
   ${rtcm_msgs_LIBRARIES}
   ${Boost_LIBRARIES}
   ${EIGEN3_LIBRARIES}
-  ${fpsdk_common_LIBRARIES} ${fpsdk_ros2_LIBRARIES}
+  ${fpsdk_common_LIBRARIES}
   ${rosbag2_cpp_TARGETS}
   ${rclcpp_TARGETS}
   ${std_msgs_TARGETS}

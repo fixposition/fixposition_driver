@@ -121,10 +121,8 @@ function main
     ln -s ${srcpath}/fixposition_driver_msgs              ${abspath}/src
     ln -s ${srcpath}/rtcm_msgs                            ${abspath}/src
     if [ ${rosver} -eq 1 ]; then
-        ln -s ${srcpath}/fixposition-sdk/fpsdk_ros1           ${abspath}/src
         ln -s ${srcpath}/fixposition_driver_ros1              ${abspath}/src
     else
-        ln -s ${srcpath}/fixposition-sdk/fpsdk_ros2           ${abspath}/src
         ln -s ${srcpath}/fixposition_driver_ros2              ${abspath}/src
     fi
 
@@ -133,9 +131,9 @@ function main
     if [ ${rosver} -eq 1 ]; then
         catkin init
         if [ ${dev} -gt 0 ]; then
-            catkin config --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+            catkin config --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -DFPSDK_BUILD_TESTING=OFF
         else
-            catkin config --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
+            catkin config --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release -DFPSDK_BUILD_TESTING=OFF
         fi
     else
         echo 'build:' > ${abspath}/colcon_defaults.yaml
