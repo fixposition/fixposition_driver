@@ -9,6 +9,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(_unused "${FPSDK_BUILD_TESTING}") # suppress warning
+set(_unused "${FPSDK_USE_PROJ}") # suppress warning
+set(_unused "${FPSDK_USE_FFMPEG}") # suppress warning
+set(_unused "${FPSDK_USE_BZ2}") # suppress warning
+set(_unused "${CMAKE_C_COMPILER}") # suppress warning
 
 # DEPENDENCIES =========================================================================================================
 find_package(Boost 1.65.0 REQUIRED COMPONENTS date_time)
