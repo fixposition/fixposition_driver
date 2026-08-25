@@ -17,6 +17,10 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 set(_unused "${FPSDK_BUILD_TESTING}") # suppress warning
+set(_unused "${FPSDK_USE_PROJ}") # suppress warning
+set(_unused "${FPSDK_USE_FFMPEG}") # suppress warning
+set(_unused "${FPSDK_USE_BZ2}") # suppress warning
+set(_unused "${CMAKE_C_COMPILER}") # suppress warning
 
 
 # DEPENDENCIES =========================================================================================================
