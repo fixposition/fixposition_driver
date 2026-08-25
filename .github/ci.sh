@@ -114,6 +114,23 @@ function build_catkin_debug
     rospack find fixposition_driver_ros1
 }
 
+TITLES["build_catkin_release_mindeps"]="Build catkin (release, with ROS1, minimal deps)"
+function build_catkin_release_mindeps
+{
+    local buildname=${FPSDK_IMAGE}_build_catkin_release_mindeps
+    ${FP_SRC_DIR}/create_ros_ws.sh ${buildname}
+    cd ${FP_SRC_DIR}/${buildname}
+    catkin config --cmake-args \
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+        -DCMAKE_BUILD_TYPE=Release -DFPSDK_BUILD_TESTING=OFF \
+        -DFPSDK_USE_BZ2=OFF -DFPSDK_USE_PROJ=OFF -DFPSDK_USE_FFMPEG=OFF || return 1
+    catkin build || return 1
+    set +u
+    source devel/setup.bash
+    set -u
+    rospack find fixposition_driver_ros1
+}
+
 ########################################################################################################################
 
 TITLES["build_colcon_release"]="Build colcon (release, with ROS2)"
@@ -135,6 +152,22 @@ function build_colcon_debug
     local buildname=${FPSDK_IMAGE}_build_colcon_debug
     ${FP_SRC_DIR}/create_ros_ws.sh -d ${buildname} || return 1
     cd ${FP_SRC_DIR}/${buildname}
+    colcon build || return 1
+    set +u
+    source install/setup.bash
+    set -u
+    ros2 pkg executables fixposition_driver_ros2
+}
+
+TITLES["build_colcon_release_mindeps"]="Build colcon (release, with ROS2, minimal deps)"
+function build_colcon_release_mindeps
+{
+    local buildname=${FPSDK_IMAGE}_build_colcon_release_mindeps
+    ${FP_SRC_DIR}/create_ros_ws.sh ${buildname} || return 1
+    cd ${FP_SRC_DIR}/${buildname}
+    yq -i '.build.cmake-args += "-DFPSDK_USE_BZ2=OFF"'    colcon_defaults.yaml
+    yq -i '.build.cmake-args += "-DFPSDK_USE_PROJ=OFF"'   colcon_defaults.yaml
+    yq -i '.build.cmake-args += "-DFPSDK_USE_FFMPEG=OFF"' colcon_defaults.yaml
     colcon build || return 1
     set +u
     source install/setup.bash
@@ -188,6 +221,8 @@ if [ "${ROS_DISTRO}" = "noetic" ]; then
     do_step build_catkin_release          || true # continue
     do_step build_catkin_debug            || true # continue
 
+    do_step build_catkin_release_mindeps  || true # continue
+
 # ROS 2
 elif [ "${ROS_DISTRO}" = "humble" -o "${ROS_DISTRO}" = "jazzy" -o "${ROS_DISTRO}" = "lyrical" ]; then
     set +u
@@ -196,6 +231,8 @@ elif [ "${ROS_DISTRO}" = "humble" -o "${ROS_DISTRO}" = "jazzy" -o "${ROS_DISTRO}
 
     do_step build_colcon_release          || true # continue
     do_step build_colcon_debug            || true # continue
+
+    do_step build_colcon_release_mindeps  || true # continue
 
     do_step build_colcon_release_clang    || true # continue
     do_step build_colcon_debug_clang      || true # continue
