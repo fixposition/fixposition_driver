@@ -66,6 +66,7 @@ class FixpositionDriverNode {
     rclcpp::Logger logger_;             //!< Logger
     FixpositionDriver driver_;          //!< Sensor driver
     rclcpp::QoS qos_settings_;          //!< QoS settings
+    LlhTransformer llh_transformer_;    //!< Optional PROJ-backed ECEF-to-LLH output conversion
 
     // ROS publishers
     // - FP_A messages

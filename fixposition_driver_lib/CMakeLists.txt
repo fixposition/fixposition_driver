@@ -17,7 +17,6 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 set(_unused "${FPSDK_BUILD_TESTING}") # suppress warning
-set(_unused "${FPSDK_USE_PROJ}") # suppress warning
 set(_unused "${FPSDK_USE_FFMPEG}") # suppress warning
 set(_unused "${FPSDK_USE_BZ2}") # suppress warning
 set(_unused "${CMAKE_C_COMPILER}") # suppress warning
@@ -28,6 +27,14 @@ find_package(Boost 1.65.0 REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(fpsdk_common REQUIRED)
 find_package(Threads REQUIRED)
+
+# Respect an explicit SDK-wide disable. Otherwise use PROJ when it is available.
+if(DEFINED FPSDK_USE_PROJ AND NOT FPSDK_USE_PROJ)
+  set(FIXPOSITION_DRIVER_USE_PROJ OFF)
+else()
+  find_package(PROJ 9.4 QUIET)
+  set(FIXPOSITION_DRIVER_USE_PROJ ${PROJ_FOUND})
+endif()
 
 include_directories(include
   ${EIGEN3_INCLUDE_DIR}
@@ -42,10 +49,38 @@ add_library(
   ${PROJECT_NAME} SHARED
   src/fixposition_driver.cpp
   src/helper.cpp
+  src/llh_transformer.cpp
   src/params.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${fpsdk_common_LIBRARIES} pthread)
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+  FIXPOSITION_DRIVER_USE_PROJ=$<BOOL:${FIXPOSITION_DRIVER_USE_PROJ}>
+)
+
+target_link_libraries(${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  ${fpsdk_common_LIBRARIES}
+  $<$<BOOL:${FIXPOSITION_DRIVER_USE_PROJ}>:PROJ::proj>
+  pthread
+)
+
+
+# TESTS =================================================================================================================
+
+if(FPSDK_BUILD_TESTING)
+  enable_testing()
+  find_package(GTest REQUIRED)
+
+  add_executable(${PROJECT_NAME}_llh_transformer_test
+    test/llh_transformer_test.cpp
+  )
+  target_link_libraries(${PROJECT_NAME}_llh_transformer_test
+    PRIVATE
+      ${PROJECT_NAME}
+      GTest::gtest_main
+  )
+  add_test(NAME ${PROJECT_NAME}_llh_transformer_test COMMAND ${PROJECT_NAME}_llh_transformer_test)
+endif()
 
 
 # INSTALL ==============================================================================================================

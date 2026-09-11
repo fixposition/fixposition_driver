@@ -15,12 +15,12 @@
 #define __FIXPOSITION_DRIVER_ROS1_DATA_TO_ROS1_HPP__
 
 /* LIBC/STL */
-#include <memory>
 #include <unordered_map>
 
 /* EXTERNAL */
 #include <fixposition_driver_lib/fixposition_driver.hpp>
 #include <fixposition_driver_lib/helper.hpp>
+#include <fixposition_driver_lib/llh_transformer.hpp>
 #include <fpsdk_common/parser/fpa.hpp>
 #include <fpsdk_common/parser/novb.hpp>
 
@@ -39,7 +39,7 @@ void PublishFpaOdometry(const fpsdk::common::parser::fpa::FpaOdometryPayload& pa
 void PublishFpaOdometryDataImu(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_,
                                ros::Publisher& pub);
 void PublishFpaOdometryDataNavSatFix(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_,
-                                     ros::Publisher& pub);
+                                     const LlhTransformer& llh_transformer, ros::Publisher& pub);
 void PublishFpaOdomenu(const fpsdk::common::parser::fpa::FpaOdomenuPayload& payload, ros::Publisher& pub);
 void PublishFpaOdomenuVector3Stamped(const fpsdk::common::parser::fpa::FpaOdomenuPayload& payload, ros::Publisher& pub);
 void PublishFpaOdomsh(const fpsdk::common::parser::fpa::FpaOdomshPayload& payload, ros::Publisher& pub);
@@ -77,7 +77,8 @@ void PublishParserMsg(const fpsdk::common::parser::ParserMsg& msg, ros::Publishe
 void PublishNmeaEpochData(const NmeaEpochData& data, ros::Publisher& pub);
 void PublishOdometryData(const OdometryData& data, ros::Publisher& pub);
 void PublishJumpWarning(const JumpDetector& jump_detector, ros::Publisher& pub);
-void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp, ros::Publisher& pub);
+void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp, const LlhTransformer& llh_transformer,
+                  ros::Publisher& pub);
 void PublishFusionEpochData(const FusionEpochData& data, ros::Publisher& pub);
 
 /* ****************************************************************************************************************** */
