@@ -36,6 +36,9 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params)
     const std::string RAW_OUTPUT = "raw_output";
     const std::string COV_WARNING = "cov_warning";
     const std::string NAV2_MODE = "nav2_mode";
+    const std::string DATUM_LLH_ENABLED = "datum_llh.enabled";
+    const std::string DATUM_LLH_ECEF_CRS = "datum_llh.ecef_crs";
+    const std::string DATUM_LLH_LLH_CRS = "datum_llh.llh_crs";
     const std::string CONVERTER_ENABLED = "converter.enabled";
     const std::string CONVERTER_INPUT_TOPIC = "converter.input_topic";
     const std::string CONVERTER_SCALE_FACTOR = "converter.scale_factor";
@@ -58,6 +61,11 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params)
     nh->declare_parameter(RAW_OUTPUT, params.raw_output_);
     nh->declare_parameter(COV_WARNING, params.cov_warning_);
     nh->declare_parameter(NAV2_MODE, params.nav2_mode_);
+    // Capture the declared values directly. Parameter overrides are applied by declare_parameter(); when no override
+    // exists, the DriverParams defaults keep configurations created by older releases backward-compatible.
+    params.datum_llh_enabled_ = nh->declare_parameter(DATUM_LLH_ENABLED, params.datum_llh_enabled_);
+    params.datum_llh_ecef_crs_ = nh->declare_parameter(DATUM_LLH_ECEF_CRS, params.datum_llh_ecef_crs_);
+    params.datum_llh_llh_crs_ = nh->declare_parameter(DATUM_LLH_LLH_CRS, params.datum_llh_llh_crs_);
     nh->declare_parameter(CONVERTER_ENABLED, params.converter_enabled_);
     nh->declare_parameter(CONVERTER_INPUT_TOPIC, params.converter_input_topic_);
     nh->declare_parameter(CONVERTER_SCALE_FACTOR, params.converter_scale_factor_);
@@ -178,6 +186,9 @@ bool LoadParamsFromRos2(std::shared_ptr<rclcpp::Node>& nh, DriverParams& params)
     RCLCPP_INFO(logger, "DriverParams: raw_output=%s", params.raw_output_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: cov_warning=%s", params.cov_warning_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: nav2_mode=%s", params.nav2_mode_ ? "true" : "false");
+    RCLCPP_INFO(logger, "DriverParams: datum_llh_enabled=%s", params.datum_llh_enabled_ ? "true" : "false");
+    RCLCPP_INFO(logger, "DriverParams: datum_llh_ecef_crs=%s", params.datum_llh_ecef_crs_.c_str());
+    RCLCPP_INFO(logger, "DriverParams: datum_llh_llh_crs=%s", params.datum_llh_llh_crs_.c_str());
     RCLCPP_INFO(logger, "DriverParams: converter_enabled=%s", params.converter_enabled_ ? "true" : "false");
     RCLCPP_INFO(logger, "DriverParams: converter_topic_type=%s", topic_type_string_.c_str());
     RCLCPP_INFO(logger, "DriverParams: converter_input_topic=%s", params.converter_input_topic_.c_str());
