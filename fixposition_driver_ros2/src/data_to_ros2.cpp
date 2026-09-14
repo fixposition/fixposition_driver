@@ -154,6 +154,7 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2
 // ---------------------------------------------------------------------------------------------------------------------
 
 void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, bool nav2_mode_,
+                                     const LlhTransformer& llh_transformer,
                                      rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         sensor_msgs::msg::NavSatFix msg;
@@ -174,14 +175,17 @@ void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, boo
             msg.position_covariance_type = msg.COVARIANCE_TYPE_UNKNOWN;
             cov_map = Eigen::Matrix3d::Zero();  // FIXME: necessary?
         } else {
-            const Eigen::Vector3d llh_pos = trafo::TfWgs84LlhEcef(pose.position);
+            Eigen::Vector3d llh_pos;
+            if (!llh_transformer.EcefToLlhRad(pose.position, llh_pos)) {
+                return;
+            }
             msg.latitude = math::RadToDeg(llh_pos(0));
             msg.longitude = math::RadToDeg(llh_pos(1));
             msg.altitude = llh_pos(2);
 
             // Populate LLH covariance
             const Eigen::Matrix3d p_cov_e = pose.cov.topLeftCorner(3, 3);
-            const Eigen::Matrix3d C_l_e = trafo::RotEnuEcef(pose.position);
+            const Eigen::Matrix3d C_l_e = trafo::RotEnuEcef(llh_pos.x(), llh_pos.y());
             const Eigen::Matrix3d p_cov_l = C_l_e * p_cov_e * C_l_e.transpose();
             cov_map = p_cov_l;
             msg.position_covariance_type = msg.COVARIANCE_TYPE_KNOWN;
@@ -884,6 +888,7 @@ void PublishJumpWarning(const JumpDetector& jump_detector, rclcpp::Publisher<fpm
 // ---------------------------------------------------------------------------------------------------------------------
 
 void PublishDatum(const geometry_msgs::msg::Vector3& payload, const builtin_interfaces::msg::Time& stamp,
+                  const LlhTransformer& llh_transformer,
                   rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr& pub) {
     if (pub->get_subscription_count() > 0) {
         sensor_msgs::msg::NavSatFix msg;
@@ -892,7 +897,10 @@ void PublishDatum(const geometry_msgs::msg::Vector3& payload, const builtin_inte
 
         // Populate LLH position
         const Eigen::Vector3d position = {payload.x, payload.y, payload.z};
-        const Eigen::Vector3d llh_pos = trafo::TfWgs84LlhEcef(position);
+        Eigen::Vector3d llh_pos;
+        if (!llh_transformer.EcefToLlhRad(position, llh_pos)) {
+            return;
+        }
         msg.latitude = math::RadToDeg(llh_pos(0));
         msg.longitude = math::RadToDeg(llh_pos(1));
         msg.altitude = llh_pos(2);

@@ -16,6 +16,7 @@
 #include <cstring>
 #include <functional>
 #include <memory>
+#include <stdexcept>
 #include <unordered_map>
 #include <vector>
 
@@ -45,7 +46,14 @@ FixpositionDriverNode::FixpositionDriverNode(const DriverParams& params, ros::No
     params_            { params },
     driver_            { params_ },
     nmea_epoch_data_   { params_.nmea_epoch_ }  // clang-format on
-{}
+{
+    if (!llh_transformer_.Init(params_.datum_llh_enabled_, params_.datum_llh_ecef_crs_, params_.datum_llh_llh_crs_)) {
+        throw std::runtime_error("Failed initializing PROJ transformation: " + llh_transformer_.error());
+    }
+    if (llh_transformer_.enabled()) {
+        ROS_INFO("PROJ enabled for ECEF to LLH output conversion");
+    }
+}
 
 FixpositionDriverNode::~FixpositionDriverNode() { StopNode(); }
 
@@ -81,7 +89,7 @@ bool FixpositionDriverNode::StartNode() {
             auto odometry_payload = dynamic_cast<const fpa::FpaOdometryPayload&>(payload);
             PublishFpaOdometry(odometry_payload, fpa_odometry_pub_);
             PublishFpaOdometryDataImu(odometry_payload, params_.nav2_mode_, poiimu_pub_);
-            PublishFpaOdometryDataNavSatFix(odometry_payload, params_.nav2_mode_, odometry_llh_pub_);
+            PublishFpaOdometryDataNavSatFix(odometry_payload, params_.nav2_mode_, llh_transformer_, odometry_llh_pub_);
             OdometryData odometry_data;
             odometry_data.SetFromFpaOdomPayload(odometry_payload);
             PublishOdometryData(odometry_data, odometry_ecef_pub_);
@@ -701,8 +709,8 @@ void FixpositionDriverNode::PublishNav2Tf() {
     // Send the transform
     tf_br_.sendTransform(tf_odom_base);
 
-    // Publish WGS84 datum
-    PublishDatum(trans_ecef_enu0, tfs_.enu0_poi_->header.stamp, datum_pub_);
+    // Publish datum in the configured LLH CRS
+    PublishDatum(trans_ecef_enu0, tfs_.enu0_poi_->header.stamp, llh_transformer_, datum_pub_);
 }
 
 /* ****************************************************************************************************************** */

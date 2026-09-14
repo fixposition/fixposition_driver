@@ -15,12 +15,12 @@
 #define __FIXPOSITION_DRIVER_ROS2_DATA_TO_ROS2_HPP__
 
 /* LIBC/STL */
-#include <memory>
 #include <unordered_map>
 
 /* EXTERNAL */
 #include <fixposition_driver_lib/fixposition_driver.hpp>
 #include <fixposition_driver_lib/helper.hpp>
+#include <fixposition_driver_lib/llh_transformer.hpp>
 #include <fpsdk_common/parser/fpa.hpp>
 #include <fpsdk_common/parser/novb.hpp>
 
@@ -40,6 +40,7 @@ void PublishFpaOdometry(const fpsdk::common::parser::fpa::FpaOdometryPayload& pa
 void PublishFpaOdometryDataImu(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_,
                                rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr& pub);
 void PublishFpaOdometryDataNavSatFix(const fpsdk::common::parser::fpa::FpaOdometryPayload& payload, bool nav2_mode_,
+                                     const LlhTransformer& llh_transformer,
                                      rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr& pub);
 void PublishFpaOdomenu(const fpsdk::common::parser::fpa::FpaOdomenuPayload& payload,
                        rclcpp::Publisher<fpmsgs::FpaOdomenu>::SharedPtr& pub);
@@ -105,6 +106,7 @@ void PublishNmeaEpochData(const NmeaEpochData& data, rclcpp::Publisher<fpmsgs::N
 void PublishOdometryData(const OdometryData& data, rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr& pub);
 void PublishJumpWarning(const JumpDetector& jump_detector, rclcpp::Publisher<fpmsgs::CovWarn>::SharedPtr& pub);
 void PublishDatum(const geometry_msgs::msg::Vector3& payload, const builtin_interfaces::msg::Time& stamp,
+                  const LlhTransformer& llh_transformer,
                   rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr& pub);
 void PublishFusionEpochData(const FusionEpochData& data, rclcpp::Publisher<fpmsgs::FusionEpoch>::SharedPtr& pub);
 
