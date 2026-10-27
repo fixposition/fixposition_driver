@@ -67,6 +67,7 @@ inline int FpaGnssFixToMsg(const RosMsgT& msg, const fpsdk::common::parser::fpa:
         case fpsdk::common::parser::fpa::FpaGnssFix::S3D_DR:      return msg.consts.GNSS_FIX_S3D_DR;
         case fpsdk::common::parser::fpa::FpaGnssFix::RTK_FLOAT:   return msg.consts.GNSS_FIX_RTK_FLOAT;
         case fpsdk::common::parser::fpa::FpaGnssFix::RTK_FIXED:   return msg.consts.GNSS_FIX_RTK_FIXED;
+        case fpsdk::common::parser::fpa::FpaGnssFix::PPP:         return msg.consts.GNSS_FIX_PPP;
     }
     // clang-format on
     return msg.consts.GNSS_FIX_UNSPECIFIED;
@@ -85,7 +86,8 @@ inline int FpaGnssFixToNavSatStatusStatus(const RosMsgT& msg, const fpsdk::commo
         case fpsdk::common::parser::fpa::FpaGnssFix::S3D:         /* FALLTHROUGH */
         case fpsdk::common::parser::fpa::FpaGnssFix::S3D_DR:      return msg.STATUS_FIX;
         case fpsdk::common::parser::fpa::FpaGnssFix::RTK_FLOAT:   /* FALLTHROUGH */
-        case fpsdk::common::parser::fpa::FpaGnssFix::RTK_FIXED:   return msg.STATUS_GBAS_FIX;
+        case fpsdk::common::parser::fpa::FpaGnssFix::RTK_FIXED:   /* FALLTHROUGH */
+        case fpsdk::common::parser::fpa::FpaGnssFix::PPP:         return msg.STATUS_GBAS_FIX;
     }
     // clang-format on
     return msg.STATUS_NO_FIX;
@@ -218,10 +220,10 @@ inline int FpaGnssStatusToMsg(const RosMsgT& msg, const fpsdk::common::parser::f
         case fpsdk::common::parser::fpa::FpaGnssStatus::NO_FIX:      return msg.consts.GNSS_STATUS_NO_FIX;
         case fpsdk::common::parser::fpa::FpaGnssStatus::SPP:         return msg.consts.GNSS_STATUS_SPP;
         case fpsdk::common::parser::fpa::FpaGnssStatus::RTK_MB:      return msg.consts.GNSS_STATUS_RTK_MB;
-        case fpsdk::common::parser::fpa::FpaGnssStatus::RESERVED3:   return msg.consts.GNSS_STATUS_RESERVED3;
+        case fpsdk::common::parser::fpa::FpaGnssStatus::PPP_FLOAT:   return msg.consts.GNSS_STATUS_PPP_FLOAT;
         case fpsdk::common::parser::fpa::FpaGnssStatus::RESERVED4:   return msg.consts.GNSS_STATUS_RESERVED4;
         case fpsdk::common::parser::fpa::FpaGnssStatus::RTK_FLOAT:   return msg.consts.GNSS_STATUS_RTK_FLOAT;
-        case fpsdk::common::parser::fpa::FpaGnssStatus::RESERVED6:   return msg.consts.GNSS_STATUS_RESERVED6;
+        case fpsdk::common::parser::fpa::FpaGnssStatus::PPP_FIXED:   return msg.consts.GNSS_STATUS_PPP_FIXED;
         case fpsdk::common::parser::fpa::FpaGnssStatus::RESERVED7:   return msg.consts.GNSS_STATUS_RESERVED7;
         case fpsdk::common::parser::fpa::FpaGnssStatus::RTK_FIXED:   return msg.consts.GNSS_STATUS_RTK_FIXED;
         case fpsdk::common::parser::fpa::FpaGnssStatus::RESERVED9:   return msg.consts.GNSS_STATUS_RESERVED9;
