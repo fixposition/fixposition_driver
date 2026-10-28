@@ -31,14 +31,24 @@ int8   STATUS_GLL_RMC_UNSPECIFIED                  =  -1  # Unspecified
 int8   STATUS_GLL_RMC_INVALID                      =   0  # Data invalid
 int8   STATUS_GLL_RMC_VALID                        =   1  # Data valid
 
-# NmeaModeGllVtg
-int8   MODE_GLL_VTG_UNSPECIFIED                    =  -1  # Unspecified
-int8   MODE_GLL_VTG_INVALID                        =   0  # Invalid (no fix)
-int8   MODE_GLL_VTG_AUTONOMOUS                     =   1  # Autonomous mode (SPP)
-int8   MODE_GLL_VTG_DGNSS                          =   2  # Differential GNSS fix
-int8   MODE_GLL_VTG_ESTIMATED                      =   3  # Estimated (dead reckoning only)
-int8   MODE_GLL_VTG_MANUAL                         =   4  # Manual input mode
-int8   MODE_GLL_VTG_SIM                            =   5  # Simulator mode
+# NmeaModeGll
+int8   MODE_GLL_UNSPECIFIED                        =  -1  # Unspecified
+int8   MODE_GLL_INVALID                            =   0  # Invalid (no fix)
+int8   MODE_GLL_AUTONOMOUS                         =   1  # Autonomous mode (SPP)
+int8   MODE_GLL_DGNSS                              =   2  # Differential GNSS fix
+int8   MODE_GLL_ESTIMATED                          =   3  # Estimated (dead reckoning only)
+int8   MODE_GLL_MANUAL                             =   4  # Manual input mode
+int8   MODE_GLL_SIM                                =   5  # Simulator mode
+
+# NmeaModeVtg
+int8   MODE_VTG_UNSPECIFIED                        =  -1  # Unspecified
+int8   MODE_VTG_INVALID                            =   0  # Invalid (no fix)
+int8   MODE_VTG_AUTONOMOUS                         =   1  # Autonomous mode (SPP)
+int8   MODE_VTG_DGNSS                              =   2  # Differential GNSS fix
+int8   MODE_VTG_ESTIMATED                          =   3  # Estimated (dead reckoning only)
+int8   MODE_VTG_MANUAL                             =   4  # Manual input mode
+int8   MODE_VTG_SIM                                =   5  # Simulator mode
+int8   MODE_VTG_PRECISE                            =   6  # Precise
 
 # NmeaModeRmcGns
 int8   MODE_RMC_GNS_UNSPECIFIED                    =  -1  # Unspecified

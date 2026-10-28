@@ -589,7 +589,7 @@ void PublishNmeaGll(const fpsdk::common::parser::nmea::NmeaGllPayload& payload, 
         msg.latitude = (payload.ll.latlon_valid ? payload.ll.lat : NAN);
         msg.longitude = (payload.ll.latlon_valid ? payload.ll.lon : NAN);
         msg.status = NmeaStatusGllRmcToMsg(msg, payload.status);
-        msg.mode = NmeaModeGllVtgToMsg(msg, payload.mode);
+        msg.mode = NmeaModeGllToMsg(msg, payload.mode);
         pub.publish(msg);
     }
 }
@@ -715,7 +715,7 @@ void PublishNmeaVtg(const fpsdk::common::parser::nmea::NmeaVtgPayload& payload, 
         msg.cogm = (payload.cogm.valid ? payload.cogm.value : NAN);
         msg.sogn = (payload.sogn.valid ? payload.sogn.value : NAN);
         msg.sogk = (payload.sogk.valid ? payload.sogk.value : NAN);
-        msg.mode = NmeaModeGllVtgToMsg(msg, payload.mode);
+        msg.mode = NmeaModeVtgToMsg(msg, payload.mode);
         pub.publish(msg);
     }
 }
@@ -781,7 +781,8 @@ void PublishNmeaEpochData(const NmeaEpochData& data, ros::Publisher& pub) {
         msg.status = NmeaStatusGllRmcToMsg(msg, data.status_);
         msg.navstatus = NmeaNavStatusRmcToMsg(msg, data.navstatus_);
         msg.mode1 = NmeaModeRmcGnsToMsg(msg, data.mode1_);
-        msg.mode2 = NmeaModeGllVtgToMsg(msg, data.mode2_);
+        msg.mode2 = NmeaModeGllToMsg(msg, data.mode2_);
+        msg.mode3 = NmeaModeVtgToMsg(msg, data.mode3_);
         msg.quality = NmeaQualityGgaToMsg(msg, data.quality_);
         msg.opmode = NmeaOpModeGsaToMsg(msg, data.opmode_);
         msg.navmode = NmeaNavModeGsaToMsg(msg, data.navmode_);

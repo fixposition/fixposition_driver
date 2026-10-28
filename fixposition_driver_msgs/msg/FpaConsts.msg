@@ -67,10 +67,10 @@ int8   GNSS_STATUS_UNSPECIFIED                     =  -1  # Unspecified
 int8   GNSS_STATUS_NO_FIX                          =   0  # No fix
 int8   GNSS_STATUS_SPP                             =   1  # Single-point positioning (SPP)
 int8   GNSS_STATUS_RTK_MB                          =   2  # RTK moving baseline
-int8   GNSS_STATUS_RESERVED3                       =   3  # Reserved
+int8   GNSS_STATUS_PPP_FLOAT                       =   3  # PPP float
 int8   GNSS_STATUS_RESERVED4                       =   4  # Reserved
 int8   GNSS_STATUS_RTK_FLOAT                       =   5  # RTK float
-int8   GNSS_STATUS_RESERVED6                       =   6  # Reserved
+int8   GNSS_STATUS_PPP_FIXED                       =   6  # PPP fixed
 int8   GNSS_STATUS_RESERVED7                       =   7  # Reserved
 int8   GNSS_STATUS_RTK_FIXED                       =   8  # RTK fixed
 int8   GNSS_STATUS_RESERVED9                       =   9  # Reserved
@@ -166,6 +166,8 @@ int8   GNSS_FIX_S3D                                =   5  # Single 3D fix
 int8   GNSS_FIX_S3D_DR                             =   6  # Single 3D fix with dead-reckoning
 int8   GNSS_FIX_RTK_FLOAT                          =   7  # RTK float fix
 int8   GNSS_FIX_RTK_FIXED                          =   8  # RTK fixed fix
+int8   GNSS_FIX_PPP_FLOAT                          =  11  # PPP float fix
+int8   GNSS_FIX_PPP_FIXED                          =  12  # PPP fixed fix
 
 # FpaTextLevel
 int8   TEXT_LEVEL_UNSPECIFIED                      =  -1  # Unspecified
