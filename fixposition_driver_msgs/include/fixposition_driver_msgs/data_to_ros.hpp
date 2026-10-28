@@ -67,7 +67,8 @@ inline int FpaGnssFixToMsg(const RosMsgT& msg, const fpsdk::common::parser::fpa:
         case fpsdk::common::parser::fpa::FpaGnssFix::S3D_DR:      return msg.consts.GNSS_FIX_S3D_DR;
         case fpsdk::common::parser::fpa::FpaGnssFix::RTK_FLOAT:   return msg.consts.GNSS_FIX_RTK_FLOAT;
         case fpsdk::common::parser::fpa::FpaGnssFix::RTK_FIXED:   return msg.consts.GNSS_FIX_RTK_FIXED;
-        case fpsdk::common::parser::fpa::FpaGnssFix::PPP:         return msg.consts.GNSS_FIX_PPP;
+        case fpsdk::common::parser::fpa::FpaGnssFix::PPP_FLOAT:   return msg.consts.GNSS_FIX_PPP_FLOAT;
+        case fpsdk::common::parser::fpa::FpaGnssFix::PPP_FIXED:   return msg.consts.GNSS_FIX_PPP_FIXED;
     }
     // clang-format on
     return msg.consts.GNSS_FIX_UNSPECIFIED;
@@ -87,7 +88,8 @@ inline int FpaGnssFixToNavSatStatusStatus(const RosMsgT& msg, const fpsdk::commo
         case fpsdk::common::parser::fpa::FpaGnssFix::S3D_DR:      return msg.STATUS_FIX;
         case fpsdk::common::parser::fpa::FpaGnssFix::RTK_FLOAT:   /* FALLTHROUGH */
         case fpsdk::common::parser::fpa::FpaGnssFix::RTK_FIXED:   /* FALLTHROUGH */
-        case fpsdk::common::parser::fpa::FpaGnssFix::PPP:         return msg.STATUS_GBAS_FIX;
+        case fpsdk::common::parser::fpa::FpaGnssFix::PPP_FLOAT:   /* FALLTHROUGH */
+        case fpsdk::common::parser::fpa::FpaGnssFix::PPP_FIXED:   return msg.STATUS_GBAS_FIX;
     }
     // clang-format on
     return msg.STATUS_NO_FIX;
@@ -509,20 +511,38 @@ inline int NmeaStatusGllRmcToMsg(const RosMsgT& msg, const fpsdk::common::parser
 }
 
 template <typename RosMsgT>
-inline int NmeaModeGllVtgToMsg(const RosMsgT& msg, const fpsdk::common::parser::nmea::NmeaModeGllVtg mode) {
+inline int NmeaModeGllToMsg(const RosMsgT& msg, const fpsdk::common::parser::nmea::NmeaModeGll mode) {
     // clang-format off
     switch (mode)
     {
-        case fpsdk::common::parser::nmea::NmeaModeGllVtg::UNSPECIFIED: return msg.consts.MODE_GLL_VTG_UNSPECIFIED;
-        case fpsdk::common::parser::nmea::NmeaModeGllVtg::INVALID:     return msg.consts.MODE_GLL_VTG_INVALID;
-        case fpsdk::common::parser::nmea::NmeaModeGllVtg::AUTONOMOUS:  return msg.consts.MODE_GLL_VTG_AUTONOMOUS;
-        case fpsdk::common::parser::nmea::NmeaModeGllVtg::DGNSS:       return msg.consts.MODE_GLL_VTG_DGNSS;
-        case fpsdk::common::parser::nmea::NmeaModeGllVtg::ESTIMATED:   return msg.consts.MODE_GLL_VTG_ESTIMATED;
-        case fpsdk::common::parser::nmea::NmeaModeGllVtg::MANUAL:      return msg.consts.MODE_GLL_VTG_MANUAL;
-        case fpsdk::common::parser::nmea::NmeaModeGllVtg::SIM:         return msg.consts.MODE_GLL_VTG_SIM;
+        case fpsdk::common::parser::nmea::NmeaModeGll::UNSPECIFIED: return msg.consts.MODE_GLL_UNSPECIFIED;
+        case fpsdk::common::parser::nmea::NmeaModeGll::INVALID:     return msg.consts.MODE_GLL_INVALID;
+        case fpsdk::common::parser::nmea::NmeaModeGll::AUTONOMOUS:  return msg.consts.MODE_GLL_AUTONOMOUS;
+        case fpsdk::common::parser::nmea::NmeaModeGll::DGNSS:       return msg.consts.MODE_GLL_DGNSS;
+        case fpsdk::common::parser::nmea::NmeaModeGll::ESTIMATED:   return msg.consts.MODE_GLL_ESTIMATED;
+        case fpsdk::common::parser::nmea::NmeaModeGll::MANUAL:      return msg.consts.MODE_GLL_MANUAL;
+        case fpsdk::common::parser::nmea::NmeaModeGll::SIM:         return msg.consts.MODE_GLL_SIM;
     }
     // clang-format on
-    return msg.consts.MODE_GLL_VTG_UNSPECIFIED;
+    return msg.consts.MODE_GLL_UNSPECIFIED;
+}
+
+template <typename RosMsgT>
+inline int NmeaModeVtgToMsg(const RosMsgT& msg, const fpsdk::common::parser::nmea::NmeaModeVtg mode) {
+    // clang-format off
+    switch (mode)
+    {
+        case fpsdk::common::parser::nmea::NmeaModeVtg::UNSPECIFIED: return msg.consts.MODE_VTG_UNSPECIFIED;
+        case fpsdk::common::parser::nmea::NmeaModeVtg::INVALID:     return msg.consts.MODE_VTG_INVALID;
+        case fpsdk::common::parser::nmea::NmeaModeVtg::AUTONOMOUS:  return msg.consts.MODE_VTG_AUTONOMOUS;
+        case fpsdk::common::parser::nmea::NmeaModeVtg::DGNSS:       return msg.consts.MODE_VTG_DGNSS;
+        case fpsdk::common::parser::nmea::NmeaModeVtg::ESTIMATED:   return msg.consts.MODE_VTG_ESTIMATED;
+        case fpsdk::common::parser::nmea::NmeaModeVtg::MANUAL:      return msg.consts.MODE_VTG_MANUAL;
+        case fpsdk::common::parser::nmea::NmeaModeVtg::SIM:         return msg.consts.MODE_VTG_SIM;
+        case fpsdk::common::parser::nmea::NmeaModeVtg::PRECISE:     return msg.consts.MODE_VTG_PRECISE;
+    }
+    // clang-format on
+    return msg.consts.MODE_VTG_UNSPECIFIED;
 }
 
 template <typename RosMsgT>

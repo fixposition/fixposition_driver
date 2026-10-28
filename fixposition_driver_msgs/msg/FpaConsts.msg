@@ -166,7 +166,8 @@ int8   GNSS_FIX_S3D                                =   5  # Single 3D fix
 int8   GNSS_FIX_S3D_DR                             =   6  # Single 3D fix with dead-reckoning
 int8   GNSS_FIX_RTK_FLOAT                          =   7  # RTK float fix
 int8   GNSS_FIX_RTK_FIXED                          =   8  # RTK fixed fix
-int8   GNSS_FIX_PPP                                =  11  # PPP fix
+int8   GNSS_FIX_PPP_FLOAT                          =  11  # PPP float fix
+int8   GNSS_FIX_PPP_FIXED                          =  12  # PPP fixed fix
 
 # FpaTextLevel
 int8   TEXT_LEVEL_UNSPECIFIED                      =  -1  # Unspecified

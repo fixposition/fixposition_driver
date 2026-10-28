@@ -311,7 +311,8 @@ NmeaEpochData NmeaEpochData::CompleteAndReset() {
     status_ = (gll_.status > rmc_.status ? gll_.status : rmc_.status);
     navstatus_ = rmc_.navstatus;
     mode1_ = rmc_.mode;
-    mode2_ = (gll_.mode > vtg_.mode ? gll_.mode : vtg_.mode);
+    mode2_ = gll_.mode;
+    mode3_ = vtg_.mode;
     quality_ = gga_.quality;
     opmode_ = gsa_.opmode;
     navmode_ = gsa_.navmode;

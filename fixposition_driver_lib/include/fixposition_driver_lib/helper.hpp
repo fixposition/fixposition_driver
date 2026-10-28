@@ -235,7 +235,8 @@ struct NmeaEpochData {
     fpsdk::common::parser::nmea::NmeaNavStatusRmc navstatus_ =
         fpsdk::common::parser::nmea::NmeaNavStatusRmc::UNSPECIFIED;
     fpsdk::common::parser::nmea::NmeaModeRmcGns mode1_ = fpsdk::common::parser::nmea::NmeaModeRmcGns::UNSPECIFIED;
-    fpsdk::common::parser::nmea::NmeaModeGllVtg mode2_ = fpsdk::common::parser::nmea::NmeaModeGllVtg::UNSPECIFIED;
+    fpsdk::common::parser::nmea::NmeaModeGll mode2_ = fpsdk::common::parser::nmea::NmeaModeGll::UNSPECIFIED;
+    fpsdk::common::parser::nmea::NmeaModeVtg mode3_ = fpsdk::common::parser::nmea::NmeaModeVtg::UNSPECIFIED;
     fpsdk::common::parser::nmea::NmeaQualityGga quality_ = fpsdk::common::parser::nmea::NmeaQualityGga::UNSPECIFIED;
     fpsdk::common::parser::nmea::NmeaOpModeGsa opmode_ = fpsdk::common::parser::nmea::NmeaOpModeGsa::UNSPECIFIED;
     fpsdk::common::parser::nmea::NmeaNavModeGsa navmode_ = fpsdk::common::parser::nmea::NmeaNavModeGsa::UNSPECIFIED;
