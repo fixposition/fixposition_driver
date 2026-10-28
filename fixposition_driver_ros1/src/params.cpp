@@ -37,13 +37,9 @@ static bool LoadRosParam(const std::string& name, T& value) {
     return true;
 }
 
-template <typename T>
-static bool LoadOptionalRosParam(const std::string& name, T& value) {
+static bool HasRosParam(const std::string& name) {
     try {
-        if (!ros::param::has(name)) {
-            return true;
-        }
-        return ros::param::get(name, value);
+        return ros::param::has(name);
     } catch (ros::InvalidNameException& e) {
         return false;
     }
@@ -94,19 +90,20 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
         ROS_WARN("Failed loading %s/nav2_mode param", ns.c_str());
         ok = false;
     }
-    // These parameters were added after the initial driver release. Keep the DriverParams defaults when they are
-    // absent so configurations created by older releases remain valid.
-    if (!LoadOptionalRosParam(ns + "/datum_llh/enabled", params.datum_llh_enabled_)) {
-        ROS_WARN("Failed loading %s/datum_llh/enabled param", ns.c_str());
-        ok = false;
-    }
-    if (!LoadOptionalRosParam(ns + "/datum_llh/ecef_crs", params.datum_llh_ecef_crs_)) {
-        ROS_WARN("Failed loading %s/datum_llh/ecef_crs param", ns.c_str());
-        ok = false;
-    }
-    if (!LoadOptionalRosParam(ns + "/datum_llh/llh_crs", params.datum_llh_llh_crs_)) {
-        ROS_WARN("Failed loading %s/datum_llh/llh_crs param", ns.c_str());
-        ok = false;
+    // Optional, keep defaults if datum_llh absent
+    if (HasRosParam(ns + "/datum_llh")) {
+        if (!LoadRosParam(ns + "/datum_llh/enabled", params.datum_llh_enabled_)) {
+            ROS_WARN("Failed loading %s/datum_llh/enabled param", ns.c_str());
+            ok = false;
+        }
+        if (!LoadRosParam(ns + "/datum_llh/ecef_crs", params.datum_llh_ecef_crs_)) {
+            ROS_WARN("Failed loading %s/datum_llh/ecef_crs param", ns.c_str());
+            ok = false;
+        }
+        if (!LoadRosParam(ns + "/datum_llh/llh_crs", params.datum_llh_llh_crs_)) {
+            ROS_WARN("Failed loading %s/datum_llh/llh_crs param", ns.c_str());
+            ok = false;
+        }
     }
     if (!LoadRosParam(ns + "/converter/enabled", params.converter_enabled_)) {
         ROS_WARN("Failed loading %s/converter/enabled param", ns.c_str());

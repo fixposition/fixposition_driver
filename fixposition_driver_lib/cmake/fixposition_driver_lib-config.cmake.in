@@ -3,9 +3,6 @@
 include(CMakeFindDependencyMacro)
 set(_fixposition_driver_lib_package_prefix_dir "${PACKAGE_PREFIX_DIR}")
 find_dependency(fpsdk_common)
-if(@FIXPOSITION_DRIVER_USE_PROJ@)
-    find_dependency(PROJ 9.4)
-endif()
 set(PACKAGE_PREFIX_DIR "${_fixposition_driver_lib_package_prefix_dir}")
 unset(_fixposition_driver_lib_package_prefix_dir)
 

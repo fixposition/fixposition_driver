@@ -59,10 +59,13 @@ class FixpositionDriverNode {
     void StopNode();
 
    private:
-    ros::NodeHandle nh_;              //!< ROS node handle
-    DriverParams params_;             //!< Sensor/driver parameters
-    FixpositionDriver driver_;        //!< Sensor driver
-    LlhTransformer llh_transformer_;  //!< Optional PROJ-backed ECEF-to-LLH output conversion
+    ros::NodeHandle nh_;        //!< ROS node handle
+    DriverParams params_;       //!< Sensor/driver parameters
+    FixpositionDriver driver_;  //!< Sensor driver
+
+#if FPSDK_USE_PROJ
+    std::unique_ptr<fpsdk::common::trafo::Transformer> llh_trafo_;  //!< ECEF to LLH, nullptr = built-in WGS84
+#endif
 
     // ROS publishers
     // - FP_A messages

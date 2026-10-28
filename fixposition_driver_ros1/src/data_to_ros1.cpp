@@ -154,7 +154,10 @@ void PublishFpaOdometryDataImu(const fpa::FpaOdometryPayload& payload, bool nav2
 // ---------------------------------------------------------------------------------------------------------------------
 
 void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, bool nav2_mode_,
-                                     const LlhTransformer& llh_transformer, ros::Publisher& pub) {
+#if FPSDK_USE_PROJ
+                                     const trafo::Transformer* llh_trafo,
+#endif
+                                     ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         sensor_msgs::NavSatFix msg;
         msg.header.stamp = ros1::ConvTime(FpaGpsTimeToTime(payload.gps_time));
@@ -175,9 +178,13 @@ void PublishFpaOdometryDataNavSatFix(const fpa::FpaOdometryPayload& payload, boo
             cov_map = Eigen::Matrix3d::Zero();  // FIXME: necessary?
         } else {
             Eigen::Vector3d llh_pos;
-            if (!llh_transformer.EcefToLlhRad(pose.position, llh_pos)) {
+#if FPSDK_USE_PROJ
+            if (!EcefToLlhRad(llh_trafo, pose.position, llh_pos)) {
                 return;
             }
+#else
+            llh_pos = trafo::TfWgs84LlhEcef(pose.position);
+#endif
             msg.latitude = math::RadToDeg(llh_pos(0));
             msg.longitude = math::RadToDeg(llh_pos(1));
             msg.altitude = llh_pos(2);
@@ -868,7 +875,10 @@ void PublishJumpWarning(const JumpDetector& jump_detector, ros::Publisher& pub) 
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp, const LlhTransformer& llh_transformer,
+void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp,
+#if FPSDK_USE_PROJ
+                  const trafo::Transformer* llh_trafo,
+#endif
                   ros::Publisher& pub) {
     if (pub.getNumSubscribers() > 0) {
         sensor_msgs::NavSatFix msg;
@@ -878,9 +888,13 @@ void PublishDatum(const geometry_msgs::Vector3& payload, const ros::Time& stamp,
         // Populate LLH position
         const Eigen::Vector3d position = {payload.x, payload.y, payload.z};
         Eigen::Vector3d llh_pos;
-        if (!llh_transformer.EcefToLlhRad(position, llh_pos)) {
+#if FPSDK_USE_PROJ
+        if (!EcefToLlhRad(llh_trafo, position, llh_pos)) {
             return;
         }
+#else
+        llh_pos = trafo::TfWgs84LlhEcef(position);
+#endif
         msg.latitude = math::RadToDeg(llh_pos(0));
         msg.longitude = math::RadToDeg(llh_pos(1));
         msg.altitude = llh_pos(2);

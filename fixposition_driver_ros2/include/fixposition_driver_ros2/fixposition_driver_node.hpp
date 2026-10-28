@@ -66,7 +66,10 @@ class FixpositionDriverNode {
     rclcpp::Logger logger_;             //!< Logger
     FixpositionDriver driver_;          //!< Sensor driver
     rclcpp::QoS qos_settings_;          //!< QoS settings
-    LlhTransformer llh_transformer_;    //!< Optional PROJ-backed ECEF-to-LLH output conversion
+
+#if FPSDK_USE_PROJ
+    std::unique_ptr<fpsdk::common::trafo::Transformer> llh_trafo_;  //!< ECEF to LLH, nullptr = built-in WGS84
+#endif
 
     // ROS publishers
     // - FP_A messages

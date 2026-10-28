@@ -12,10 +12,12 @@
  */
 
 /* LIBC/STL */
+#include <atomic>
 #include <utility>
 
 /* EXTERNAL */
 #include <fpsdk_common/logging.hpp>
+#include <fpsdk_common/math.hpp>
 #include <fpsdk_common/parser/crc.hpp>
 #include <fpsdk_common/string.hpp>
 #include <fpsdk_common/trafo.hpp>
@@ -411,6 +413,63 @@ FusionEpochData FusionEpochData::CompleteAndReset(const fpsdk::common::parser::f
     std::swap(data, *this);
     return data;
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+
+#if FPSDK_USE_PROJ
+bool InitLlhTrafo(const DriverParams& params, std::unique_ptr<trafo::Transformer>& llh_trafo, std::string& error) {
+    llh_trafo.reset();
+    error.clear();
+    if (!params.datum_llh_enabled_) {
+        return true;
+    }
+
+    // Normalized output has longitude, latitude and height order regardless of the CRS's native axis order.
+    trafo::TransformerOpts opts;
+    opts.precise_ = true;
+    opts.normalize_axes_ = true;
+    auto new_trafo = std::make_unique<trafo::Transformer>("datum_llh");
+    if (!new_trafo->Init(params.datum_llh_ecef_crs_, params.datum_llh_llh_crs_, opts)) {
+        error = "invalid CRS or transformation unavailable";
+        return false;
+    }
+
+    const auto source = new_trafo->SourceCrs();
+    const auto target = new_trafo->TargetCrs();
+    if (source.type_ != trafo::CrsType::GEOCENTRIC) {
+        error = "source CRS must be geocentric";
+        return false;
+    }
+    const std::vector<trafo::CrsType> geo2d_vertical = {trafo::CrsType::GEOGRAPHIC_2D, trafo::CrsType::VERTICAL};
+    if (!((target.type_ == trafo::CrsType::GEOGRAPHIC_3D) ||
+          ((target.type_ == trafo::CrsType::COMPOUND) && (target.sub_types_ == geo2d_vertical)))) {
+        error = "target CRS must be geographic 3D or geographic 2D plus vertical";
+        return false;
+    }
+
+    llh_trafo = std::move(new_trafo);
+    return true;
+}
+
+bool EcefToLlhRad(const trafo::Transformer* llh_trafo, const Eigen::Vector3d& ecef, Eigen::Vector3d& llh_rad) {
+    if (llh_trafo == nullptr) {
+        llh_rad = trafo::TfWgs84LlhEcef(ecef);
+        return true;
+    }
+
+    Eigen::Vector3d lonlath;
+    if (!llh_trafo->Transform(ecef, lonlath)) {
+        // Report only once
+        static std::atomic<bool> warned = false;
+        if (!warned.exchange(true)) {
+            WARNING("PROJ ECEF to LLH transformation failed");
+        }
+        return false;
+    }
+    llh_rad = {math::DegToRad(lonlath.y()), math::DegToRad(lonlath.x()), lonlath.z()};
+    return true;
+}
+#endif  // FPSDK_USE_PROJ
 
 // ---------------------------------------------------------------------------------------------------------------------
 
