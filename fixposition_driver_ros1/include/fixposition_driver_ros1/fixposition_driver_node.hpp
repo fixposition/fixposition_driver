@@ -63,6 +63,10 @@ class FixpositionDriverNode {
     DriverParams params_;       //!< Sensor/driver parameters
     FixpositionDriver driver_;  //!< Sensor driver
 
+#if FPSDK_USE_PROJ
+    std::unique_ptr<fpsdk::common::trafo::Transformer> llh_trafo_;  //!< ECEF to LLH, nullptr = built-in WGS84
+#endif
+
     // ROS publishers
     // - FP_A messages
     ros::Publisher fpa_eoe_pub_;         //!< FP_A-EOE message

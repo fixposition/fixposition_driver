@@ -16,6 +16,7 @@
 
 /* LIBC/STL */
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -27,6 +28,7 @@
 #include <fpsdk_common/parser/nmea.hpp>
 #include <fpsdk_common/parser/novb.hpp>
 #include <fpsdk_common/time.hpp>
+#include <fpsdk_common/trafo.hpp>
 
 /* PACKAGE */
 #include "fixposition_driver_lib/params.hpp"
@@ -306,6 +308,35 @@ struct FusionEpochData {
     // Completes the data and returns it, and sets up the instance for the next epoch
     FusionEpochData CompleteAndReset(const fpsdk::common::parser::fpa::FpaEoePayload& eoe);
 };
+
+#if FPSDK_USE_PROJ
+/**
+ * @brief Initialise ECEF to LLH transformer
+ *
+ * Creates a PROJ transformer (see fpsdk::common::trafo::Transformer) if params.datum_llh_enabled_ is true. The source
+ * CRS must be geocentric. The target CRS must be either geographic 3D, or compound geographic 2D plus vertical.
+ *
+ * @param[in]  params     Driver parameters (datum_llh_...)
+ * @param[out] llh_trafo  The transformer, nullptr if disabled
+ * @param[out] error      Error message, on failure
+ *
+ * @returns true if disabled or if the transformer is valid, false otherwise
+ */
+bool InitLlhTrafo(const DriverParams& params, std::unique_ptr<fpsdk::common::trafo::Transformer>& llh_trafo,
+                  std::string& error);
+
+/**
+ * @brief Convert ECEF to latitude, longitude and height
+ *
+ * @param[in]  llh_trafo  Transformer from InitLlhTrafo(), nullptr to use the built-in WGS84 conversion
+ * @param[in]  ecef       ECEF position [m]
+ * @param[out] llh_rad    Latitude [rad], longitude [rad], height [m]
+ *
+ * @returns true on success, false if the transformation failed
+ */
+bool EcefToLlhRad(const fpsdk::common::trafo::Transformer* llh_trafo, const Eigen::Vector3d& ecef,
+                  Eigen::Vector3d& llh_rad);
+#endif  // FPSDK_USE_PROJ
 
 void HelloWorld();
 

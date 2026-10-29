@@ -37,6 +37,14 @@ static bool LoadRosParam(const std::string& name, T& value) {
     return true;
 }
 
+static bool HasRosParam(const std::string& name) {
+    try {
+        return ros::param::has(name);
+    } catch (ros::InvalidNameException& e) {
+        return false;
+    }
+}
+
 bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
     bool ok = true;
     ROS_INFO("DriverParams: loading from %s", ns.c_str());
@@ -81,6 +89,21 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
     if (!LoadRosParam(ns + "/nav2_mode", params.nav2_mode_)) {
         ROS_WARN("Failed loading %s/nav2_mode param", ns.c_str());
         ok = false;
+    }
+    // Optional, keep defaults if datum_llh absent
+    if (HasRosParam(ns + "/datum_llh")) {
+        if (!LoadRosParam(ns + "/datum_llh/enabled", params.datum_llh_enabled_)) {
+            ROS_WARN("Failed loading %s/datum_llh/enabled param", ns.c_str());
+            ok = false;
+        }
+        if (!LoadRosParam(ns + "/datum_llh/ecef_crs", params.datum_llh_ecef_crs_)) {
+            ROS_WARN("Failed loading %s/datum_llh/ecef_crs param", ns.c_str());
+            ok = false;
+        }
+        if (!LoadRosParam(ns + "/datum_llh/llh_crs", params.datum_llh_llh_crs_)) {
+            ROS_WARN("Failed loading %s/datum_llh/llh_crs param", ns.c_str());
+            ok = false;
+        }
     }
     if (!LoadRosParam(ns + "/converter/enabled", params.converter_enabled_)) {
         ROS_WARN("Failed loading %s/converter/enabled param", ns.c_str());
@@ -146,6 +169,9 @@ bool LoadParamsFromRos1(const std::string& ns, DriverParams& params) {
     ROS_INFO("DriverParams: raw_output=%s", params.raw_output_ ? "true" : "false");
     ROS_INFO("DriverParams: cov_warning=%s", params.cov_warning_ ? "true" : "false");
     ROS_INFO("DriverParams: nav2_mode=%s", params.nav2_mode_ ? "true" : "false");
+    ROS_INFO("DriverParams: datum_llh_enabled=%s", params.datum_llh_enabled_ ? "true" : "false");
+    ROS_INFO("DriverParams: datum_llh_ecef_crs=%s", params.datum_llh_ecef_crs_.c_str());
+    ROS_INFO("DriverParams: datum_llh_llh_crs=%s", params.datum_llh_llh_crs_.c_str());
     ROS_INFO("DriverParams: converter_enabled=%s", params.converter_enabled_ ? "true" : "false");
     ROS_INFO("DriverParams: converter_topic_type=%s", topic_type_string_.c_str());
     ROS_INFO("DriverParams: converter_input_topic=%s", params.converter_input_topic_.c_str());

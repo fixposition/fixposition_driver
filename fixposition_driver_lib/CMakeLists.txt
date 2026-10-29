@@ -45,7 +45,35 @@ add_library(
   src/params.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${fpsdk_common_LIBRARIES} pthread)
+target_link_libraries(${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  ${fpsdk_common_LIBRARIES}
+  pthread
+)
+
+
+# TESTS =================================================================================================================
+
+# Defines BUILD_TESTING (default ON), calls enable_testing()
+include(CTest)
+
+# Build tests only if GTest is available
+if(BUILD_TESTING)
+  find_package(GTest 1.11.0 QUIET)
+  if(GTest_FOUND)
+    add_executable(${PROJECT_NAME}_llh_trafo_test
+      test/llh_trafo_test.cpp
+    )
+    target_link_libraries(${PROJECT_NAME}_llh_trafo_test
+      PRIVATE
+        ${PROJECT_NAME}
+        GTest::gtest_main
+    )
+    add_test(NAME ${PROJECT_NAME}_llh_trafo_test COMMAND ${PROJECT_NAME}_llh_trafo_test)
+  else()
+    message(STATUS "${PROJECT_NAME}: GTest not found, not building tests")
+  endif()
+endif()
 
 
 # INSTALL ==============================================================================================================
