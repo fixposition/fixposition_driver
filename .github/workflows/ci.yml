@@ -6,6 +6,8 @@ on:
     pull_request:
         branches: [main]
     workflow_dispatch:
+    schedule:  # applies to default branch only
+        - cron: "17 21 * * 0"  # Sundays 21:17 UTC
 
 jobs:
     # Note: job names should be unique across all workflows (e.g. to reference them as pull request checks)!
